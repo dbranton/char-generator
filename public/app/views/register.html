@@ -1,0 +1,58 @@
+
+<div class="container">
+	<form class="form-horizontal" ng-submit="register()">
+
+		<div class="panel panel-primary">
+
+			<div class="panel-heading">
+				<h3 class="panel-title">Register</h3>
+			</div>
+
+			<div class="panel-body">
+
+				<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+
+				<fieldset>
+					<!--<legend>Registration Information</legend>-->
+					<div class="form-group">
+						<label class="col-md-2 control-label" for="inputEmail">Email</label>
+						<div class="col-md-10">
+							<input type="email" id="inputEmail" placeholder="Email" ng-model="email" required>
+						</div>
+					</div>
+
+                    <div class="form-group">
+                        <label class="col-md-2 control-label" for="username">User Name</label>
+                        <div class="col-md-10">
+                            <input type="text" id="username" placeholder="Enter a username" ng-model="username">
+                        </div>
+                    </div>
+
+					<div class="form-group">
+						<label class="col-md-2 control-label" for="inputPassword">Password</label>
+						<div class="col-md-10">
+							<input type="password" ng-pattern="/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,18}/" min="6" maxlength="18" id="inputPassword" placeholder="Password" ng-model="password" required>
+							<span class="help-block">Must include at least one number, lowercase letter, uppercase letter and must be between 6 and 16 characters long.</span>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-md-2 control-label" for="confirmPassword">Confirm Password</label>
+						<div class="col-md-10">
+							<input type="password" ng-pattern="/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,18}/" min="6" maxlength="18" id="confirmPassword" placeholder="Password" ng-model="password_confirmation" required>
+							<span class="help-block">Must include at least one number, lowercase letter, uppercase letter and must be between 6 and 16 characters long.</span>
+						</div>
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<div class="form-group">
+						<div class="col-md-offset-2 col-md-10">
+							<button type="submit" class="btn btn-primary">Sign in</button>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+	</form>
+</div>

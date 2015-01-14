@@ -1,0 +1,46 @@
+
+<div class="container">
+	<form class="form-horizontal" ng-submit="login()">
+
+		<div class="panel panel-primary">
+
+			<div class="panel-heading">
+				<h3 class="panel-title">Login</h3>
+			</div>
+
+			<div class="panel-body">
+
+                <alert type="success" close="closeAlert($index)" ng-show="flash">{{flash}}</alert>
+				<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+
+				<fieldset>
+					<div class="form-group">
+						<label class="col-md-2 control-label" for="inputEmail">Email</label>
+						<div class="col-md-10">
+							<input type="email" id="inputEmail" placeholder="Email" ng-model="email" required>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-md-2 control-label" for="inputPassword">Password</label>
+						<div class="col-md-10">
+							<input type="password" ng-pattern="/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,16}/" min="6" maxlength="18" id="inputPassword" placeholder="Password" ng-model="password" required>
+						</div>
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<div class="form-group">
+						<div class="col-md-offset-2 col-md-10">
+							<button type="submit" class="btn btn-primary">Sign in</button>
+						</div>
+					</div>
+
+				</fieldset>
+
+			</div>
+
+		</div>
+
+	</form>
+</div>

@@ -1,0 +1,196 @@
+<div class="col-md-6">
+    <h3>{{character.name}}</h3>
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th colspan="2">Level {{character.level}} {{character.race}} {{character.class}}
+                    <span ng-if="character.pseudo_class">({{character.pseudo_class}})</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Background</th>
+            <td>{{character.background}}</td>
+        </tr>
+        <tr>
+            <th>Armor Class</th>
+            <td>{{character.armor_class}}</td>
+        </tr>
+        <tr>
+            <th>Hit Points</th>
+            <td>{{character.hit_points}}</td>
+        </tr>
+        <tr>
+            <th>Initiative</th>
+            <td>{{character.initiative | addPlus}}</td>
+        </tr>
+        <tr>
+            <th>Speed</th>
+            <td>{{character.speed}} ft.</td>
+        </tr>
+        <tr>
+            <th>Proficiency Bonus</th>
+            <td>+{{character.proficiency_bonus}}</td>
+        </tr>
+        <tr>
+            <th>Proficiencies</th>
+            <td>{{character.proficiencies}}</td>
+        </tr>
+        <tr>
+            <th>Languages</th>
+            <td>{{character.languages}}</td>
+        </tr>
+        <tr>
+            <th>Passive Perception</th>
+            <td>{{10 + character.perception}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <div>
+        <h4>Ability Scores</h4>
+        <table class="table table-condensed">
+            <thead>
+                <th>Ability</th>
+                <th>Base</th>
+                <th>Mod</th>
+                <th><abbr title="Saving Throws">ST</abbr></th>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Strength</td>
+                <td>{{character.strength}}</td>
+                <td>{{character.str_mod | addPlus}}</td>
+                <td>{{character.str_save | addPlus}}</td>
+            </tr>
+            <tr>
+                <td>Dexterity</td>
+                <td>{{character.dexterity}}</td>
+                <td>{{character.dex_mod | addPlus}}</td>
+                <td>{{character.dex_save | addPlus}}</td>
+            </tr>
+            <tr>
+                <td>Constitution</td>
+                <td>{{character.constitution}}</td>
+                <td>{{character.con_mod | addPlus}}</td>
+                <td>{{character.con_save | addPlus}}</td>
+            </tr>
+            <tr>
+                <td>Intelligence</td>
+                <td>{{character.intelligence}}</td>
+                <td>{{character.int_mod | addPlus}}</td>
+                <td>{{character.int_save | addPlus}}</td>
+            </tr>
+            <tr>
+                <td>Wisdom</td>
+                <td>{{character.wisdom}}</td>
+                <td>{{character.wis_mod | addPlus}}</td>
+                <td>{{character.wis_save | addPlus}}</td>
+            </tr>
+            <tr>
+                <td>Charisma</td>
+                <td>{{character.charisma}}</td>
+                <td>{{character.cha_mod | addPlus}}</td>
+                <td>{{character.cha_save | addPlus}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h4>Skills</h4>
+        <ul class="list-inline">
+            <li>Acrobatics {{character.acrobatics | addPlus}}</li>
+            <li>Animal Handling {{character.animal_handling | addPlus}}</li>
+            <li>Arcana {{character.arcana | addPlus}}</li>
+            <li>Athletics {{character.athletics | addPlus}}</li>
+            <li>Deception {{character.deception | addPlus}}</li>
+            <li>History {{character.history | addPlus}}</li>
+            <li>Insight {{character.insight | addPlus}}</li>
+            <li>Intimidation {{character.intimidation | addPlus}}</li>
+            <li>Investigation {{character.investigation | addPlus}}</li>
+            <li>Medicine {{character.medicine | addPlus}}</li>
+            <li>Nature {{character.nature | addPlus}}</li>
+            <li>Perception {{character.perception | addPlus}}</li>
+            <li>Performance {{character.performance | addPlus}}</li>
+            <li>Persuasion {{character.persuasion | addPlus}}</li>
+            <li>Religion {{character.religion | addPlus}}</li>
+            <li>Sleight of Hand {{character.sleight_of_hand | addPlus}}</li>
+            <li>Stealth {{character.stealth | addPlus}}</li>
+            <li>Survival {{character.survival | addPlus}}</li>
+        </ul>
+    </div>
+    <div ng-if="character.spell_ability">
+        <h4>Spellcasting</h4>
+        <table class="table table-condensed">
+            <tr>
+                <th>Spellcasting Ability: </th>
+                <td>{{character.spell_ability | ability}}</td>
+            </tr>
+            <tr>
+                <th>Spell Save DC: </th>
+                <td>{{character.spell_save_dc}}</td>
+            </tr>
+            <tr>
+                <th>Spell Attack Bonus: </th>
+                <td>{{character.spell_attk_bonus | addPlus}}</td>
+            </tr>
+            <tr ng-if="character.cantrips">
+                <th>Cantrips: </th>
+                <td>
+                    <ul class="list-inline">
+                        <li ng-repeat="cantrip in character.cantrips">
+                            <a href="" popover="{{cantrip.html}}" popover-trigger="focus" tabindex="{{$index}}">
+                                {{cantrip.name}}
+                            </a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+            <tr ng-repeat="(level, spells) in character.spells track by level">
+                <th class="col-sm-4">Level {{level}} Spells: </th>
+                <td>
+                    <ul class="list-inline">
+                        <li ng-repeat="spell in spells">
+                            <a href="" popover="{{spell.html}}" popover-trigger="focus" tabindex="{{$index}}">
+                                {{spell.name}}
+                            </a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div ng-if="character.bonus_spell_ability">
+        <h4>Bonus Spellcasting</h4>
+        <table class="table table-condensed">
+            <tr>
+                <th>Spellcasting Ability: </th>
+                <td>{{character.bonus_spell_ability | ability}}</td>
+            </tr>
+            <tr>
+                <th>Spell Save DC: </th>
+                <td>{{character.bonus_spell_save_dc}}</td>
+            </tr>
+            <tr>
+                <th>Spell Attack Bonus: </th>
+                <td>{{character.bonus_spell_attk_bonus | addPlus}}</td>
+            </tr>
+            <tr>
+                <th>Cantrips: </th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="col-md-6">
+    <div ng-if="character.traits">
+        <h3>Race Traits</h3>
+        <p ng-repeat="trait in character.traits"><b>{{trait.name}}</b>: <span ng-bind-html="trait.benefit_desc"></span></p>
+    </div>
+    <div ng-if="character.features">
+        <h3>Class Features</h3>
+        <p ng-repeat="feature in character.features"><b>{{feature.name}}</b>: <span ng-bind-html="feature.benefit_desc"></span></p>
+    </div>
+    <h3>Background Feature</h3>
+    <p><b>{{character.trait_name}}</b>: {{character.trait_desc}}</p>
+</div>

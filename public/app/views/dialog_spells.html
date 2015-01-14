@@ -1,0 +1,51 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+
+    <p>{{spellsLeft - tempSpells.length}} Spells Left:</p>
+    <div class="row">
+        <div class="col-md-5">
+            <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
+            <div ng-if="cantrips" class="list-group">
+                <a ng-repeat="spell in cantrips | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item" ng-class="{'active': spell.active}" href="">
+                    {{spell.name}}
+                </a>
+            </div>
+
+            <div ng-if="spells" class="panel panel-default" ng-repeat="(level, spells) in spells track by level" style="margin-bottom:0;">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <a href="#{{$index}}" data-toggle="collapse">{{level}} <i class="fa fa-caret-down"></i></a>
+                    </h3>
+                </div>
+                <div id="{{$index}}" class="panel-body collapse in" style="padding:0;">
+                    <div class="list-group" style="margin-bottom:0;">
+                        <a ng-repeat="spell in spells | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item" ng-class="{'active': spell.active}" href="">
+                            {{spell.name}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>	<!-- end span -->
+        <div class="col-md-7">
+            <div ng-show="selectedSpell">
+                <h4>{{selectedSpell.name}}</h4>
+                <i>{{typeDescription}}</i>
+                <ul class="list-unstyled">
+                    <li><b>Casting Time:</b> {{selectedSpell.casting_time}}</li>
+                    <li><b>Range:</b> {{selectedSpell.range}}</li>
+                    <li><b>Components:</b> {{selectedSpell.components}}</li>
+                    <li><b>Duration:</b> {{selectedSpell.duration}}</li>
+                </ul>
+                <p ng-bind-html="selectedSpell.description"></p>
+            </div>
+        </div> <!-- end span -->
+    </div>
+</div>
+<div class="modal-footer">
+    <button ng-click="done()" ng-disabled="disabled" class="btn btn-primary">Done</button>
+    <button ng-click="close()" class="btn btn-default">Cancel</button>
+</div>

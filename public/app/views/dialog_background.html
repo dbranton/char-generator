@@ -1,0 +1,50 @@
+<!--<div ng-app="generator" ng-controller="CharGen">-->
+<div class="modal-header">
+    <h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-5">
+            <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
+            <div class="list-group">
+                <a ng-repeat="background in backgrounds | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item" ng-class="{true:'active', false:''}[$index==selectedIndex]" href="">
+                    {{background.name}}
+                </a>
+            </div>
+        </div>	<!-- end span -->
+        <div class="col-md-7">
+            <h4>{{featureType}}</h4>
+            <dl ng-hide="!tempBackground">
+                <div>
+                    <dt>{{traitName}}</dt>
+                    <dd>{{traitDesc}}</dd>
+                </div>
+                <div>
+                    <dt>Skills</dt>
+                    <dd>
+                        {{skills}}
+                        <!--<ul>
+                            <li ng-repeat="skill in skills">{{skill}}</li>
+                        </ul>-->
+                    </dd>
+                </div>
+                <div ng-show="tools">
+                    <dt>Tools</dt>
+                    <dd>
+                        {{tools}}
+                    </dd>
+                </div>
+                <div ng-show="languages">
+                    <dt>Languages</dt>
+                    <dd>
+                        {{languages}}
+                    </dd>
+                </div>
+            </dl>
+        </div> <!-- end span -->
+    </div>
+</div>
+<div class="modal-footer">
+    <button ng-click="done()" ng-disabled="disabled" class="btn btn-primary">Done</button>
+    <button ng-click="close()" class="btn btn-default">Cancel</button>
+</div>

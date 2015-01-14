@@ -1,0 +1,21 @@
+.modal-body {
+    height: 400px;
+    overflow: hidden;
+}
+
+.modal-sm .modal-body {
+    height: auto;
+}
+
+.modal-body [class*=col-md] {
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+/*.modal-body .nav.nav-tabs + .tab-content [class*=col-md] {
+    max-height: 340px;
+}*/
+
+.popover-lg {
+    min-width: 400px;
+}
