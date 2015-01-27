@@ -29,8 +29,8 @@ $app = new Illuminate\Foundation\Application;
 $env = $app->detectEnvironment(array(
 
 	'local' => array('DanielBranton'),
-    'staging' => array('DanielBranton'),
-    'production' => array('DanielBranton')
+    //'staging' => array('DanielBranton'),
+    'production' => array('gator3222.hostgator.com')
 
 ));
 

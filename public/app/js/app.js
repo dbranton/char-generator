@@ -2,6 +2,8 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
 
+        var path = locationName ? locationName + '/' + location2Name : '';
+
 		$locationProvider.html5Mode(true);
 
 		$urlRouterProvider.otherwise("/");
@@ -9,28 +11,28 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 		// Now set up the states
 		$stateProvider
 			.state('home', {
-				url: "/",
-				templateUrl: "/app/views/character_generator.html",
+				url: locationName + "/",
+				templateUrl: path + "/app/views/character_generator.html",
 				controller: 'homeController'
 			})
 			.state('dashboard', {
-				url: "/dashboard",
-				templateUrl: "/app/views/dashboard.html",
+				url: locationName + "/dashboard",
+				templateUrl: path + "/app/views/dashboard.html",
 				controller: 'dashboardController'
 			})
             .state('character', {
-                url: "/character/:characterId",
-                templateUrl: "/app/views/dashboard.character.html",
+                url: locationName + "/character/:characterId",
+                templateUrl: path + "/app/views/dashboard.character.html",
                 controller: 'characterController'
             })
 			.state('login', {
-				url: "/login",
-				templateUrl: "/app/views/login.html",
+				url: locationName + "/login",
+				templateUrl: path + "/app/views/login.html",
 				controller: 'loginController'
 			})
 			.state('register', {
-				url: "/register",
-				templateUrl: "/app/views/register.html",
+				url: locationName + "/register",
+				templateUrl: path + "/app/views/register.html",
 				controller: 'registerController'
 			})
 

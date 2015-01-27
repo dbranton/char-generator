@@ -54,10 +54,10 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			'host'      => 'localhost',
-			'database'  => 'char-gen',
-			'username'  => 'root',
-			'password'  => 'dragons4',
+			'host'      => 'http://danielbranton.com',
+			'database'  => 'dbranton_char-gen',
+			'username'  => 'dbranton_me',
+			'password'  => 'mab1956.01',
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',

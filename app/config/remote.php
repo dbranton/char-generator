@@ -29,9 +29,9 @@ return array(
 	'connections' => array(
 
 		'production' => array(
-			'host'      => '',
-			'username'  => '',
-			'password'  => '',
+			'host'      => 'danielbranton.com',
+			'username'  => 'dbranton_me',
+			'password'  => 'mab1956.01',
 			'key'       => '',
 			'keyphrase' => '',
 			'root'      => '/var/www',
