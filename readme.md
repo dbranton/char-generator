@@ -1,7 +1,7 @@
-## Laravel 4 & AngularJS Starter Site
-This is a starter website for Laravel 4 & AngularJS projects where Laravel 4 manages an API back-end and AngularJS manages the user interface. This project is also outfitted with composer, bower and grunt to automate development.
-### Packages
-
+## Character Generator
+This is an app that can generate a Dungeons and Dragons-like character.
+### Technologies
+It uses Angular as its client-side framework and BootstrapJS as its CSS library. It also utilizes Laravel, a PHP framework, and lo-dash for array utilities.
 #### Composer Packages
 * [Ardent](https://github.com/laravelbook/ardent)
     * Self-validating smart models for Laravel Framework 4's Eloquent O/RM.
