@@ -71,7 +71,7 @@
     var hostname = '<?php echo gethostname(); ?>';
     var locationName = location2Name = '';
     if (hostname === 'gator3222.hostgator.com') {
-        locationName = 'char-generator';
+        locationName = '/char-generator';
         location2Name = 'public';
     }
 </script>

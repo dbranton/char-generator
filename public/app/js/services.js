@@ -597,7 +597,6 @@ angular.module('myApp')
             }
         };
 
-        var locationPath = locationName ? '/' + locationName : '';
         var returnObj = {
             getNewCharacter: function(level) {
                 var charLevel = level ? level : 1;
@@ -619,19 +618,19 @@ angular.module('myApp')
                 return _.range(1, 21);
             },
             getLanguages: function() {
-                return $http.get(locationPath + '/service/language_table');
+                return $http.get(locationName + '/service/language_table');
             },
             Races: function() {
-                return $resource(locationPath + '/service/race_table');
+                return $resource(locationName + '/service/race_table');
             },
             Backgrounds: function() {
-                return $resource(locationPath + '/service/background_table');
+                return $resource(locationName + '/service/background_table');
             },
             Classes: function() {
-                return $resource(locationPath + '/service/class_table');
+                return $resource(locationName + '/service/class_table');
             },
             Skills: function() {
-                return $resource(locationPath + '/service/skills_table');
+                return $resource(locationName + '/service/skills_table');
             },
             Spells: function(classId, maxSpellLevel, school, term) {
                 var path = '/service/';
