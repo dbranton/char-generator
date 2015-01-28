@@ -6,7 +6,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 		$locationProvider.html5Mode(true);
 
-		$urlRouterProvider.otherwise("/");
+		$urlRouterProvider.otherwise(locationName + "/");
 
 		// Now set up the states
 		$stateProvider

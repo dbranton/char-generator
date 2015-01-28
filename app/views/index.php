@@ -50,7 +50,7 @@
 	<footer>
 		<div class="row">
 			<div class="col-lg-12">
-				<p>Copyright &copy; Daniel Branton 2014</p>
+				<p>Copyright &copy; Daniel Branton <?php echo date("Y") ?></p>
 			</div>
 		</div>
 	</footer>
