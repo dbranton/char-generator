@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<?php $path = gethostname() === 'gator3222.hostgator.com' ? '/char-generator/public' : ''; ?>
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
 	<meta name="Daniel Branton" content="">
 	<title>Character Generator</title>
 	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-	<link href="/assets/style.min.css" rel="stylesheet">
+	<link href="<?php echo $path; ?>/assets/style.min.css" rel="stylesheet">
     <!--<link href="/assets/style.css" rel="stylesheet">-->
     <base href="/">
 </head>
@@ -58,14 +58,14 @@
 </div>
 <!-- /.container -->
 
-<script src="/assets/script.min.js"></script>
-<script src="/assets/js/select.js"></script>
+<script src="<?php echo $path; ?>/assets/script.min.js"></script>
+<script src="<?php echo $path; ?>/assets/js/select.js"></script>
 
-<script src="/app/js/app.js"></script>
-<script src="/app/js/controllers.js"></script>
-<script src="/app/js/directives.js"></script>
-<script src="/app/js/filters.js"></script>
-<script src="/app/js/services.js"></script>
+<script src="<?php echo $path; ?>/app/js/app.js"></script>
+<script src="<?php echo $path; ?>/app/js/controllers.js"></script>
+<script src="<?php echo $path; ?>/app/js/directives.js"></script>
+<script src="<?php echo $path; ?>/app/js/filters.js"></script>
+<script src="<?php echo $path; ?>/app/js/services.js"></script>
 <script>
 	angular.module("myApp").constant("CSRF_TOKEN", '<?php echo csrf_token(); ?>');
     var hostname = '<?php echo gethostname(); ?>';
