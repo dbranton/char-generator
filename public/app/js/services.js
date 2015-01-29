@@ -646,10 +646,10 @@ angular.module('myApp')
                 return $http.get(path);
             },*/
             Spell: function(spellId) {
-                return $resource('/service/spells/' + spellId);
+                return $resource(locationName + '/service/spells/' + spellId);
             },
             Character: function(characterId) {
-                var url = '/service/character';
+                var url = locationName + '/service/character';
                 if (characterId) {
                     url += '/' + characterId;
                 }

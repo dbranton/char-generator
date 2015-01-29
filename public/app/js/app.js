@@ -6,12 +6,12 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 		$locationProvider.html5Mode(true);
 
-		$urlRouterProvider.otherwise(locationName + "/");
+		$urlRouterProvider.otherwise(locationName);
 
 		// Now set up the states
 		$stateProvider
 			.state('home', {
-				url: locationName + "/",
+				url: locationName,
 				templateUrl: path + "/app/views/character_generator.html",
 				controller: 'homeController'
 			})

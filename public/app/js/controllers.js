@@ -16,7 +16,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     if (sessionStorage.userId){
         $scope.isLoggedIn = true;
     } else {
-        //$location.path('/login');
+        //$location.path(locationName + '/login');
         //Flash.show("you should be authenticated to access this page");
     }
 
@@ -54,7 +54,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
             if ($scope.isLoggedIn) {
                 CharGenFactory.Character().save({character: $scope.character},  // called at least 3 times!!!!
                     function(data, status, headers, config) {
-                        $location.path('/dashboard');
+                        $location.path(locationName + '/dashboard');
                         Flash.show("You have successfully saved your character");
                         //$scope.errorMessage = null;
                     },
@@ -66,7 +66,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
                     }
                 );
             } else {    // not logged in
-                $location.path('/login');
+                $location.path(locationName + '/login');
                 /*CharGenFactory.storeCharacter();
                 $scope.storedCharacter = CharGenFactory.returnStoredCharacter();    // update stored character
                 $scope.successMessage = "Character saved locally. Warning: you will lose your character if you clear your cache.";
@@ -101,7 +101,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openRaceDialog = function() {
-        opts.templateUrl = 'app/views/dialog_race.html';
+        opts.templateUrl = locationName + 'app/views/dialog_race.html';
         opts.controller = DialogRaceController;
         opts.resolve = {
             raceData: function() { return angular.copy($scope.raceData); }
@@ -110,7 +110,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openBackgroundDialog = function() {
-        opts.templateUrl = 'app/views/dialog_background.html';
+        opts.templateUrl = locationName + 'app/views/dialog_background.html';
         opts.controller = DialogBackgroundController;
         opts.resolve = {
             backgroundData: function() { return angular.copy($scope.backgroundData); }
@@ -119,7 +119,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openClassDialog = function() {
-        opts.templateUrl = 'app/views/dialog_class.html';
+        opts.templateUrl = locationName + 'app/views/dialog_class.html';
         opts.controller = DialogClassController;
         opts.resolve = {
             classData: function() { return angular.copy($scope.classData); }
@@ -128,7 +128,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openSubclassDialog = function() {
-        opts.templateUrl = 'app/views/dialog_class.html';
+        opts.templateUrl = locationName + 'app/views/dialog_class.html';
         opts.controller = DialogSubclassController;
         opts.resolve = {
             subclasses: function() { return angular.copy($scope.character.classObj.subclasses); }
@@ -137,7 +137,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openFeatureDialog = function(selectedFeature, type) {
-        opts.templateUrl = 'app/views/dialog_features.html';
+        opts.templateUrl = locationName + 'app/views/dialog_features.html';
         opts.controller = DialogFeatureController;
         opts.resolve = {
             features: function() { return angular.copy(selectedFeature.choices); },    //$scope.character.classObj.featureChoices
@@ -150,7 +150,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openSummary = function() {
-        opts.templateUrl = 'app/views/dialog_summary.html'; //'dialog/summary';
+        opts.templateUrl = locationName + 'app/views/dialog_summary.html'; //'dialog/summary';
         opts.controller = DialogSummaryController;
         opts.resolve = {
             character: function() { return angular.copy($scope.character); }
@@ -910,7 +910,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
 
 .controller('dashboardController', function($scope, $location, $modal, CharGenFactory, ngTableParams, Flash){
     if (!sessionStorage.userId){
-        $location.path('/login');
+        $location.path(locationName + '/login');
     } else {
         if ($scope.$parent.flash) {
             $scope.flash = $scope.$parent.flash;
@@ -940,7 +940,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
 
     $scope.removeCharacter = function(character) {
         var opts = {
-            templateUrl: 'app/views/dialog_confirm.html',
+            templateUrl: locationName + 'app/views/dialog_confirm.html',
             size: 'sm',
             controller: function($scope, $modalInstance) {
                 $scope.ok = function () {
@@ -964,7 +964,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
 })
 .controller('characterController', function($scope, $stateParams, $location, CharGenFactory) {
     if (!sessionStorage.userId){
-        $location.path('/login');
+        $location.path(locationName + '/login');
     } else {
         CharGenFactory.Character($stateParams.characterId).get({}, function(data) {
             $scope.character = data.character;
@@ -989,7 +989,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
                 });
             }
         }, function(response) {
-            $location.path('/dashboard');    // redirect if character does not exist
+            $location.path(locationName + '/dashboard');    // redirect if character does not exist
         });
     }
 });
