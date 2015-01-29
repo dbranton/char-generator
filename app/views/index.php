@@ -69,9 +69,9 @@
 <script>
 	angular.module("myApp").constant("CSRF_TOKEN", '<?php echo csrf_token(); ?>');
     var hostname = '<?php echo gethostname(); ?>';
-    var locationName = location2Name = '';
+    var locationName = '/', location2Name = '';
     if (hostname === 'gator3222.hostgator.com') {
-        locationName = '/char-generator';
+        locationName = '/char-generator/';
         location2Name = 'public';
     }
 </script>

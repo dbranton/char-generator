@@ -54,9 +54,9 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			'host'      => 'http://danielbranton.com',
+			'host'      => 'gator3222.hostgator.com',
 			'database'  => 'dbranton_char-gen',
-			'username'  => 'dbranton_me',
+			'username'  => 'dbranton_admin',
 			'password'  => 'mab1956.01',
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',

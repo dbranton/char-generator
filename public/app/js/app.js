@@ -2,7 +2,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
 
-        var path = locationName ? locationName + '/' + location2Name : '';
+        var path = locationName !== '/' ? locationName + '/' + location2Name : '';
 
 		$locationProvider.html5Mode(true);
 
@@ -16,22 +16,22 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 				controller: 'homeController'
 			})
 			.state('dashboard', {
-				url: locationName + "/dashboard",
+				url: locationName + "dashboard",
 				templateUrl: path + "/app/views/dashboard.html",
 				controller: 'dashboardController'
 			})
             .state('character', {
-                url: locationName + "/character/:characterId",
+                url: locationName + "character/:characterId",
                 templateUrl: path + "/app/views/dashboard.character.html",
                 controller: 'characterController'
             })
 			.state('login', {
-				url: locationName + "/login",
+				url: locationName + "login",
 				templateUrl: path + "/app/views/login.html",
 				controller: 'loginController'
 			})
 			.state('register', {
-				url: locationName + "/register",
+				url: locationName + "register",
 				templateUrl: path + "/app/views/register.html",
 				controller: 'registerController'
 			})

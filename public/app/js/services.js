@@ -618,19 +618,19 @@ angular.module('myApp')
                 return _.range(1, 21);
             },
             getLanguages: function() {
-                return $http.get(locationName + '/service/language_table');
+                return $http.get(locationName + 'service/language_table');
             },
             Races: function() {
-                return $resource(locationName + '/service/race_table');
+                return $resource(locationName + 'service/race_table');
             },
             Backgrounds: function() {
-                return $resource(locationName + '/service/background_table');
+                return $resource(locationName + 'service/background_table');
             },
             Classes: function() {
-                return $resource(locationName + '/service/class_table');
+                return $resource(locationName + 'service/class_table');
             },
             Skills: function() {
-                return $resource(locationName + '/service/skills_table');
+                return $resource(locationName + 'service/skills_table');
             },
             Spells: function(classId, maxSpellLevel, school, term) {
                 var path = '/service/';
@@ -646,10 +646,10 @@ angular.module('myApp')
                 return $http.get(path);
             },*/
             Spell: function(spellId) {
-                return $resource(locationName + '/service/spells/' + spellId);
+                return $resource(locationName + 'service/spells/' + spellId);
             },
             Character: function(characterId) {
-                var url = locationName + '/service/character';
+                var url = locationName + 'service/character';
                 if (characterId) {
                     url += '/' + characterId;
                 }
