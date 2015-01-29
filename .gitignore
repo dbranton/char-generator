@@ -1,10 +1,22 @@
+# Laravel
 /bootstrap/compiled.php
 /vendor
+
+# Configuration
+/app/config
+
+# Composer
 composer.phar
 composer.lock
+
+# OS
 .DS_Store
 .idea/*
+
+# Other
 /node_modules
+
+# Public
 /public/vendor
 /public/assets/fonts
 /public/assets/js

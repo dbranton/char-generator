@@ -101,7 +101,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openRaceDialog = function() {
-        opts.templateUrl = locationName + 'app/views/dialog_race.html';
+        opts.templateUrl = path + '/app/views/dialog_race.html';
         opts.controller = DialogRaceController;
         opts.resolve = {
             raceData: function() { return angular.copy($scope.raceData); }
@@ -110,7 +110,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openBackgroundDialog = function() {
-        opts.templateUrl = locationName + 'app/views/dialog_background.html';
+        opts.templateUrl = path + '/app/views/dialog_background.html';
         opts.controller = DialogBackgroundController;
         opts.resolve = {
             backgroundData: function() { return angular.copy($scope.backgroundData); }
@@ -119,7 +119,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openClassDialog = function() {
-        opts.templateUrl = locationName + 'app/views/dialog_class.html';
+        opts.templateUrl = path + '/app/views/dialog_class.html';
         opts.controller = DialogClassController;
         opts.resolve = {
             classData: function() { return angular.copy($scope.classData); }
@@ -128,7 +128,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openSubclassDialog = function() {
-        opts.templateUrl = locationName + 'app/views/dialog_class.html';
+        opts.templateUrl = path + '/app/views/dialog_class.html';
         opts.controller = DialogSubclassController;
         opts.resolve = {
             subclasses: function() { return angular.copy($scope.character.classObj.subclasses); }
@@ -137,7 +137,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openFeatureDialog = function(selectedFeature, type) {
-        opts.templateUrl = locationName + 'app/views/dialog_features.html';
+        opts.templateUrl = path + '/app/views/dialog_features.html';
         opts.controller = DialogFeatureController;
         opts.resolve = {
             features: function() { return angular.copy(selectedFeature.choices); },    //$scope.character.classObj.featureChoices
@@ -150,7 +150,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     };
 
     $scope.openSummary = function() {
-        opts.templateUrl = locationName + 'app/views/dialog_summary.html'; //'dialog/summary';
+        opts.templateUrl = path + '/app/views/dialog_summary.html'; //'dialog/summary';
         opts.controller = DialogSummaryController;
         opts.resolve = {
             character: function() { return angular.copy($scope.character); }
@@ -859,7 +859,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
             'email': $sanitize($scope.email),
             'password': $sanitize($scope.password)
         },function(response) {
-            $location.path('/dashboard');    // route to character generator screen
+            $location.path(locationName + '/dashboard');    // route to character generator screen
             Flash.clear();
             sessionStorage.userId = response.user.id;
             $scope.$emit('handleAuthentication', {userId: response.user.id});
@@ -891,7 +891,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
             'password_confirmation': $sanitize($scope.password_confirmation),
             'username': $sanitize($scope.username)
         }, function(response) {
-            $location.path('/login');
+            $location.path(locationName + '/login');
             //$scope.alerts = [{type: "success", msg: response.message}];
             Flash.show(response.data.message);
             //Flash.clear();
@@ -940,7 +940,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
 
     $scope.removeCharacter = function(character) {
         var opts = {
-            templateUrl: locationName + 'app/views/dialog_confirm.html',
+            templateUrl: path + '/app/views/dialog_confirm.html',
             size: 'sm',
             controller: function($scope, $modalInstance) {
                 $scope.ok = function () {

@@ -48,8 +48,8 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
             var error = function(response){
                 if (response.status === 401){
                     delete sessionStorage.authenticated;
-                    if ($location.path() !== '/register') {
-                        $location.path('/login');
+                    if ($location.path() !== locationName + 'register') {
+                        $location.path(locationName + 'login');
                     }
                     //Flash.show(response.data.message);    // handled now in the controllers
                 }

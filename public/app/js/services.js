@@ -2,15 +2,15 @@ angular.module('myApp')
     .factory('Authenticate', function($resource){
         return {
             register: function() {
-                return $resource("/service/register/")
+                return $resource(locationName + "service/register/")
             },
             login: function() {
-                return $resource("/service/authenticate/");
+                return $resource(locationName + "service/authenticate/");
             }
         };
     })
     .factory('Movies', function($resource){
-        return $resource("/service/movies");
+        return $resource(locationName + "service/movies");
     })
     .factory('Flash', function($rootScope){
         return {
