@@ -633,7 +633,7 @@ angular.module('myApp')
                 return $resource(locationName + 'service/skills_table');
             },
             Spells: function(classId, maxSpellLevel, school, term) {
-                var path = '/service/';
+                var path = locationName + 'service/';
                 path += ((maxSpellLevel === 0) ? 'cantrips/' + classId : 'spells_table/' + classId + '/' + maxSpellLevel);
                 path += ((school) ? '/' + school : '');
                 path += ((term) ? '/' + term : '');
