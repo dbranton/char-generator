@@ -5,7 +5,7 @@ class RaceController extends \BaseController {
     public $raceList = array();
 
     public function __construct() {
-        $this->beforeFilter('serviceAuth');
+        //$this->beforeFilter('serviceAuth');
         $this->beforeFilter('serviceCSRF');
     }
 

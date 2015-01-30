@@ -3,7 +3,7 @@
 class SkillController extends \BaseController {
 
     public function __construct() {
-        $this->beforeFilter('serviceAuth');
+        //$this->beforeFilter('serviceAuth');
         $this->beforeFilter('serviceCSRF');
     }
 

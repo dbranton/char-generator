@@ -9,7 +9,7 @@ class ClassController extends \BaseController {
     public $subclassFeatureList = array();
 
     public function __construct() {
-        $this->beforeFilter('serviceAuth');
+        //$this->beforeFilter('serviceAuth');
         $this->beforeFilter('serviceCSRF');
     }
 

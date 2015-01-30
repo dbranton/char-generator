@@ -2,8 +2,6 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
 
-        var path = locationName !== '/' ? locationName + '/' + location2Name : '';
-
 		$locationProvider.html5Mode(true);
 
 		$urlRouterProvider.otherwise(locationName);
