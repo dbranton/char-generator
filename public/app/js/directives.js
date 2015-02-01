@@ -1,4 +1,38 @@
 angular.module('myApp')
+    .directive('uiSelect', function (){
+        return {
+            restrict: 'EA',
+            require: 'uiSelect',
+            link: function($scope, $element, $attributes, ctrl) {
+                $attributes.$observe('max', function(value) {
+                    $scope.$select.limit = (angular.isDefined(value)) ? parseInt(value, 10) : undefined;
+                });
+                var superSelect = ctrl.select,
+                    superRemoveChoice = ctrl.removeChoice;
+                ctrl.select = function() {
+                    if (ctrl.multiple && (ctrl.selected.length+1) < ctrl.limit) {   // needs to add one to account for selected not getting updated yet
+                        ctrl.closeOnSelect = false; // keep dropdown open until user reaches limit
+                    } else {
+                        ctrl.closeOnSelect = true;
+                    }
+                    superSelect.apply(ctrl, arguments);
+                    if(ctrl.multiple && ctrl.limit !== undefined && ctrl.selected.length >= ctrl.limit) {
+                        $($element).find('.ui-select-choices').hide();  // show list
+                        $($element).find('.select2-drop').append(   // show max capacity message
+                            '<div class="max-msg bg-warning">You can only select ' + ctrl.limit + ' item(s)</div>'
+                        );
+                    }
+                };
+                ctrl.removeChoice = function() {
+                    superRemoveChoice.apply(ctrl, arguments);
+                    if(ctrl.multiple && ctrl.limit !== undefined && ctrl.selected.length < ctrl.limit) {
+                        $($element).find('.ui-select-choices').show();   // show list and show max capacity message
+                        $($element).find('.max-msg').remove();  // remove message
+                    }
+                };
+            }
+        }
+    })
 	.directive('pwCheck', [function () {
 		return {
 			require: 'ngModel',

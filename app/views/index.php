@@ -9,7 +9,7 @@
 	<title>Character Generator</title>
 	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 	<link href="<?php echo $path; ?>/assets/style.min.css" rel="stylesheet">
-    <!--<link href="/assets/style.css" rel="stylesheet">-->
+    <link href="<?php echo $path; ?>/assets/style.css" rel="stylesheet">
     <base href="/">
 </head>
 
@@ -59,7 +59,6 @@
 <!-- /.container -->
 
 <script src="<?php echo $path; ?>/assets/script.min.js"></script>
-<script src="<?php echo $path; ?>/assets/js/select.js"></script>
 
 <script src="<?php echo $path; ?>/app/js/app.js"></script>
 <script src="<?php echo $path; ?>/app/js/controllers.js"></script>

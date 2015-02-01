@@ -25,7 +25,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
 
     // Initialize variables
     $scope.racialBonus = {};
-    $scope.searchText = '';
+    $scope.searchText = ''; // necessary?
     $scope.subclasses = [];
     $scope.selectedExpertise = [];
     $scope.levels = CharGenFactory.getLevels(20);
@@ -100,6 +100,25 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         $scope.$broadcast('handleBroadcast', {checked: true, clazz: $scope.character.classObj});
     };
 
+    $scope.openProgressDialog = function() {
+        opts.templateUrl = 'progressBar.html';
+        opts.backdrop = 'static';
+        opts.controller = function($scope, $modalInstance, progress) {
+            $scope.progress = 0;   //progress;
+
+            $scope.$watch('progress', function(val) {
+                if (val === 100) {
+                    $modalInstance.dismiss('cancel');
+                }
+            })
+
+        };
+        opts.resolve = {
+            progress: function() { return $scope.progress; }
+        };
+        openDialog('sm');
+    };
+
     $scope.openRaceDialog = function() {
         opts.templateUrl = path + '/app/views/dialog_race.html';
         opts.controller = DialogRaceController;
@@ -168,15 +187,18 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         //$scope.storedCharacter = CharGenFactory.returnStoredCharacter();
         CharGenFactory.Races().get({}, function(data){
             $scope.raceData = data.races;
+            $scope.$$nextSibling.progress += 33;
         });
         CharGenFactory.Backgrounds().get({}, function(data) {
             $scope.backgroundData = data.backgrounds;
+            $scope.$$nextSibling.progress += 33;
         });
         CharGenFactory.Classes().get({}, function(data) {
             $scope.classData = data.classes;
+            $scope.$$nextSibling.progress += 34;
         });
         //$scope.character = CharGenFactory.getPreparedCharacter();   // TODO: REMOVE LATER
-        //$scope.openNewCharDialog();
+        $scope.openProgressDialog();
     };
 
     $scope.broadcastObj = function(arr, name, prop) {
@@ -586,6 +608,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     function DialogRaceController($scope, $modalInstance, raceData) {
         $scope.title = 'Select Race';
         $scope.races = raceData;
+        $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
         $scope.tempClass = '';
@@ -631,6 +654,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         $scope.title = 'Select Background';
         var data = backgroundData;
         $scope.backgrounds = backgroundData;
+        $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
         $scope.disabled = true;
@@ -671,6 +695,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     // the dialog is injected in the specified controller
     function DialogClassController($scope, $modalInstance, classData){
         $scope.classes = classData;
+        $scope.searchText = '';
         $scope.title = 'Select Class';
         $scope.description = 'Click a list item to view more information';
         $scope.featureType = '';
@@ -720,6 +745,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         //$scope.class = character.classObj.name;
         $scope.title = 'Select Subclass';   // change later
         $scope.classes = subclasses;
+        $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.featureType = '';
         $scope.features = [];
@@ -758,6 +784,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     function DialogFeatureController($scope, $modalInstance, features, index, type, max) {    // selectedFeatures
         $scope.title = 'Select Feature';
         $scope.values = features;   // needed for UI
+        $scope.searchText = '';
         $scope.tempFeatures = [];
         _.each($scope.values, function(obj, index, list) {
             if (obj.locked) {
@@ -839,7 +866,6 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         this.benefit = desc;
     }
 })
-
 
 .controller('loginController',function($scope,$sanitize,$location,Authenticate,Flash, $state, $stateParams, $interpolate){
 

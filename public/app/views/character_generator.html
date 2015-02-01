@@ -2,6 +2,7 @@
 <!--<?php $is_mobile = ($mobile) ? 'true' : 'false'; $is_logged_in = ($logged_in) ? 'true' : 'false'; ?>-->
 
 <div id="charGenApp" class="form-horizontal" ng-init="init()" ng-cloak>
+
     <!--<span class="hide">{{isMobile=<?php echo $is_mobile; ?>}} {{isLoggedIn=<?php echo $is_logged_in; ?>}}</span>-->
     <span ng-hide="true">Loading Character Generator...</span>
     <div ng-if="!isLoggedIn" class="alert alert-warning" ng-hide="successMessage">
@@ -89,6 +90,7 @@
                         <spell-dialog ng-model="character.raceObj.cantrip"></spell-dialog>
                         <ui-select id="bonusRaceCantrip"
                                    multiple
+                                   max="1"
                                    ng-model="character.raceObj.cantrip"
                                    select2-spellcasting="character.raceObj.spellcasting"
                                    list="bonusRaceCantrips"
@@ -516,4 +518,14 @@
         </form>
     </div>
     </div> <!-- panel -->
+    <script type="text/ng-template" id="progressBar.html">
+        <!--<div class="modal" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false">-->
+            <div class="modal-header">
+                <h4 class="modal-title">Processing...</h4>
+            </div>
+            <div class="modal-body">
+                <progressbar class="progress-striped active" animate="false" value="progress"></progressbar>
+            </div>
+        <!--</div>-->
+    </script>
 </div> <!-- ng-app -->
