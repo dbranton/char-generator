@@ -1,21 +1,33 @@
-.modal-body {
-    height: 400px;
-    overflow: hidden;
-}
+@media (min-width: 992px) {
+    .modal-body {
+        height: 400px;
+        overflow: hidden;
+    }
 
-.modal-sm .modal-body {
-    height: auto;
-}
+    .modal-sm .modal-body {
+        height: auto;
+    }
 
-.modal-body [class*=col-md] {
-    max-height: 340px;
-    overflow-y: auto;
-}
+    .modal-body [class*=col-md] {
+        max-height: 340px;
+        overflow-y: auto;
+    }
 
-/*.modal-body .nav.nav-tabs + .tab-content [class*=col-md] {
-    max-height: 340px;
-}*/
+    /*.modal-body .nav.nav-tabs + .tab-content [class*=col-md] {
+        max-height: 340px;
+    }*/
+}
 
 .popover-lg {
     min-width: 400px;
+}
+
+@media (max-width: 767px) {
+    .hide-mobile {
+        display: none;
+    }
+
+    .input-group {
+        width: 100%;
+    }
 }

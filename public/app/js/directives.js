@@ -250,7 +250,7 @@ angular.module('myApp')
             restrict: 'EA',
             replace: true,
             require: "?ngModel",
-            template: '<label class="input-group-addon btn btn-default" ng-click="openSpellDialog()">' +
+            template: '<label class="hide-mobile input-group-addon btn btn-default" ng-click="openSpellDialog()">' +
                 '<span class="fa fa-columns"></span>' +
                 '</label>',
             scope: {
