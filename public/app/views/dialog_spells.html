@@ -14,9 +14,9 @@
             </div>
 
             <div ng-if="spells" class="panel panel-default" ng-repeat="(level, spells) in spells track by level" style="margin-bottom:0;">
-                <div class="panel-heading">
+                <div class="panel-heading" data-target="#{{$index}}" data-toggle="collapse">
                     <h3 class="panel-title">
-                        <a href="#{{$index}}" data-toggle="collapse">{{level}} <i class="fa fa-caret-down"></i></a>
+                        {{level}} <i class="fa fa-caret-down"></i>
                     </h3>
                 </div>
                 <div id="{{$index}}" class="panel-body collapse in" style="padding:0;">
@@ -27,10 +27,8 @@
                     </div>
                 </div>
             </div>
-
-
         </div>	<!-- end span -->
-        <div class="col-md-7">
+        <div class="col-md-7 desc-col">
             <div ng-show="selectedSpell">
                 <h4>{{selectedSpell.name}}</h4>
                 <i>{{typeDescription}}</i>

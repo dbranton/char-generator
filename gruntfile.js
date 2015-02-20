@@ -21,6 +21,16 @@ module.exports = function(grunt) {
 					{ expand: true, cwd: '<%= bowerDir %>/angular-cookies', src: ['angular-cookies.js'], dest: '<%= assetsDir %>/js' }
 				]
 			},
+			angularloadingbar: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/angular-loading-bar/src', src: ['loading-bar.js'], dest: '<%= assetsDir %>/js' }
+				]
+			},
+			angulartouch: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/angular-touch', src: ['angular-touch.js'], dest: '<%= assetsDir %>/js' }
+				]
+			},
 			bootstrap: {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/bootstrap/less', src: ['bootstrap.less'], dest: '<%= assetsDir %>/tmp/bootstrap' },
@@ -47,6 +57,13 @@ module.exports = function(grunt) {
 			lodash: {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/lodash/dist', src: ['lodash.js'], dest: '<%= assetsDir %>/js' }
+				]
+			},
+			mobileangularui: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/src/less', src: ['mobile-angular-ui.less'], dest: '<%= assetsDir %>/tmp/mobile-angular-ui' },
+					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/dist/js', src: ['mobile-angular-ui.js'], dest: '<%= assetsDir %>/js' },
+					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/dist/fonts', src: ['*'], dest: '<%= assetsDir %>/fonts' }
 				]
 			},
 			ng: {
@@ -91,7 +108,7 @@ module.exports = function(grunt) {
 			},
 			ngstorage: {
 				files: [
-					{ expand: true, cwd: '<%= bowerDir %>/ng-storage/src', src: ['angularLocalStorage.js'], dest: '<%= assetsDir %>/js' }
+					{ expand: true, cwd: '<%= bowerDir %>/ng-storage/src', src: ['angular-local-storage.js'], dest: '<%= assetsDir %>/js' }
 				]
 			},
 			ngtranslate: {
@@ -156,25 +173,49 @@ module.exports = function(grunt) {
 				files: {
 					'<%= assetsDir %>/tmp/font-awesome.css': '<%= assetsDir %>/less/font-awesome/main.less'
 				}
-			}
+			},
+			/*mobileangularui: {
+				options: {
+					ieCompat: true,
+					yuicompress: true,
+					paths: ['<%= assetsDir %>/less/mobile-angular-ui', '<%= assetsDir %>/tmp/mobile-angular-ui', '<%= bowerDir %>/mobile-angular-ui/src/less']
+				},
+				files: {
+					// target.css file: source.less file
+					'<%= assetsDir %>/tmp/mobile-angular-ui.css': '<%= assetsDir %>/less/mobile-angular-ui/mobile-angular-ui.less'
+					//'<%= assetsDir %>/tmp/mobile-angular-ui-desktop.css': '<%= assetsDir %>/less/mobile-angular-ui/mobile-angular-ui-desktop.less',
+					//'<%= assetsDir %>/tmp/mobile-angular-ui-migrate.css': '<%= assetsDir %>/less/mobile-angular-ui/mobile-angular-ui-migrate.less'
+				}
+			}*/
 		},
 
 		concat: {
 			css: {
-				src: ['<%= assetsDir %>/tmp/bootstrap.css', '<%= assetsDir %>/tmp/font-awesome.css', '<%= bowerDir %>/ui-select/dist/select.css', '<%= bowerDir %>/select2/select2.css'],
+				src: [ 
+					'<%= bowerDir %>/ui-select/dist/select.css', 
+					'<%= bowerDir %>/select2/select2.css', 
+					'<%= bowerDir %>/angular-loading-bar/src/loading-bar.css',
+					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-hover.css',
+					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-base.css',
+					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-desktop.css',
+					'<%= assetsDir %>/tmp/bootstrap.css'
+					//'<%= assetsDir %>/tmp/font-awesome.css'
+				],
 				dest: '<%= assetsDir %>/tmp/concat.css'
 			},
 			js: {
 				src: [
 					'<%= assetsDir %>/js/angular.js',
 					'<%= assetsDir %>/js/angular-cookies.js',
+					'<%= assetsDir %>/js/loading-bar.js',
+					'<%= assetsDir %>/js/angular-touch.js',
 					'<%= assetsDir %>/js/lodash.js',
 					'<%= assetsDir %>/js/angular-locale_en.js',
 					'<%= assetsDir %>/js/angular-resource.js',
 					'<%= assetsDir %>/js/restangular.js',
 					'<%= assetsDir %>/js/angular-route.js',
 					'<%= assetsDir %>/js/angular-sanitize.js',
-					'<%= assetsDir %>/js/angularLocalStorage.js',
+					'<%= assetsDir %>/js/angular-local-storage.js',
 					'<%= assetsDir %>/js/angular-translate.js',
 					'<%= assetsDir %>/js/angular-file-upload.js',
 					'<%= assetsDir %>/js/ng-infinite-scroll.js',
@@ -184,6 +225,7 @@ module.exports = function(grunt) {
 					'<%= assetsDir %>/js/ng-table.js',
 					'<%= assetsDir %>/js/jquery.js',
 					'<%= assetsDir %>/js/bootstrap.js',
+					'<%= assetsDir %>/js/mobile-angular-ui.js'
 				],
 				dest: '<%= assetsDir %>/tmp/concat.js'
 			}

@@ -410,9 +410,11 @@ angular.module('myApp')
                         that.raceObj.spellcasting = {};
                         that.raceObj.spellcasting.spellAbility = bonusArray[1];
                         that.handleSpellcasting('raceObj');
-                        returnObj.Spell(bonusArray[0]).get({}, function(response) {
-                            that.raceObj.cantrip = response.spell;  // array
-                        });
+                        if (!that.raceObj.cantrip || parseInt(bonusArray[0]) !== that.raceObj.cantrip[0].id) {
+                            returnObj.Spell(bonusArray[0]).get({}, function(response) {
+                                that.raceObj.cantrip = response.spell;  // array
+                            });
+                        }
                         //that.raceObj.cantrip = bonusArray[0];
                     } else if (prop === 'bonus_race_cantrip_choice') {  // High Elf bonus cantrip
                         bonusArray = featureBonus[prop].split(', ');

@@ -48,11 +48,26 @@ angular.module('myApp')
 		}
 	}])
     .directive('skills', function() {
+        function returnTemplate(element, attrs) {
+            if (deviceType === 'phone' || deviceType === 'tablet') {
+                return '<div class="list-group">' +
+                    '<label class="list-group-item" ng-repeat="skill in character.skills" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
+                    '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
+                    '<span ng-show="skill.val >= 0">+</span>{{skill.val}} {{skill.name}} ({{skill.ability}})' +
+                    '</label>' +
+                    '</div>';
+            } else {
+                return '<div class="list-group">' +
+                        '<label class="list-group-item" ng-repeat="skill in character.skills" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
+                            '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
+                            '<span ng-show="skill.val >= 0">+</span>{{skill.val}} <span tooltip-placement="right" tooltip-html-unsafe="{{skill.description}}">{{skill.name}} ({{skill.ability}})</span>' +
+                        '</label>' +
+                    '</div>';
+            }
+        }
         return {
             restrict: 'E',
-            template: '<div class="skillUI" ng-repeat="skill in character.skills">' +
-                '<label><input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> <span ng-show="skill.val >= 0">+</span>{{skill.val}} {{skill.name}} ({{skill.ability}})</label>' +
-                '</div>',
+            template: returnTemplate,
             link: function(scope, element, attrs) {
                 scope.selectSkill = function(skill) {
                     scope.character.updateSkillProficiency(skill.name, skill.proficient);
@@ -60,16 +75,88 @@ angular.module('myApp')
             }
         };
     })
-    .directive('languages', function(CharGenFactory) {
+    .directive('languages', function(CharGenFactory, $modal) {
         return {
             restrict: 'A',
-            require: 'ngModel',
+            //require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
+                function DialogLanguageController($scope, $modalInstance, languageData, max, languageIds) {
+                    $scope.title = 'Select Language';
+                    $scope.languages = languageData;
+                    $scope.searchText = '';
+                    $scope.description = 'Click a list item to view more information';
+                    $scope.tempLanguages = [];
+                    _.each($scope.languages, function(obj, index, list) {
+                        if (obj.locked || (angular.isArray(languageIds) && languageIds.indexOf(obj.id) !== -1)) {
+                            obj.active = true;
+                            $scope.tempLanguages.push(obj);
+                        }
+                    });
+
+                    $scope.description = 'Click a list item to view more information';
+                    $scope.max = parseInt(max);
+                    $scope.disabled = $scope.max  - $scope.tempLanguages.length > 0;
+                    $scope.featureType = '';
+
+                    $scope.showDescription = function(selectobj) {
+                        $scope.featureType = 'Languages';
+                        $scope.selectedLanguage = angular.copy(selectobj); // used in UI
+                        if (!$scope.selectedLanguage.locked) {
+                            if (!$scope.selectedLanguage.active && $scope.max - $scope.tempLanguages.length > 0) {
+                                $scope.tempLanguages.push($scope.selectedLanguage);
+                                selectobj.active = true;
+                            } else if ($scope.selectedLanguage.active) {
+                                $scope.tempLanguages = _.reject($scope.tempLanguages, {'name': $scope.selectedLanguage.name});
+                                selectobj.active = false;
+                            }
+                            $scope.disabled = $scope.max - $scope.tempLanguages.length > 0; // disabled is true if there are still features left to choose
+                        }
+                    };
+
+                    $scope.done = function() {
+                        if (angular.isArray($scope.tempLanguages)) {
+                            //$scope.$emit('handleEmit', {selectedLanguage: $scope.tempLanguages, checked: true});
+                            $modalInstance.close($scope.tempLanguages);
+                        } else {
+                            alert("Please select your features");
+                        }
+                    };
+
+                    $scope.close = function(){
+                        $modalInstance.dismiss('cancel');
+                    };
+                }
+
+
                 var LANGUAGE_LIST = [];
                 CharGenFactory.getLanguages().success(function(data) {
                     LANGUAGE_LIST = data.languages;
                     scope.availableLanguages = angular.copy(LANGUAGE_LIST);
                 });
+
+                scope.openLanguageDialog = function() {
+                    var opts = {
+                        backdrop: true,
+                        keyboard: true,
+                        backdropClick: true,
+                        templateUrl: path + '/app/views/dialog_languages.html',
+                        controller: DialogLanguageController,
+                        resolve: {
+                            languageData: function() { return scope.availableLanguages; },
+                            max: function() { return parseInt(attrs.max) || 1; },
+                            languageIds: function() { return scope.character.selectedLanguages ?
+                                _.pluck(scope.character.selectedLanguages, 'id') : null; }
+                        }
+                    };
+                    if (deviceType === 'phone') {
+                        opts.windowClass = 'modal-overlay';
+                    }
+                    // TODO: test this!!!
+                    $modal.open(opts).result.then(function(selectedLanguages) {
+                        scope.character.selectedLanguages = selectedLanguages;
+                    });
+                };
+
                 scope.$watch(attrs.languages, function(newValue) {  // watches numLanguages
                     if (angular.isDefined(newValue)) {//} && $scope.character.background) {
                         scope.character.selectedLanguages = scope.character.selectedLanguages || [];
@@ -79,7 +166,7 @@ angular.module('myApp')
                     }
                 });
                 scope.$watch('character.selectedLanguages', function(newValue, oldValue) {   // triggered whenever a language is selected
-                    if ((angular.isArray(newValue) && angular.isArray(oldValue) && newValue.length !== oldValue.length) && scope.character.raceObj.name) {   // requires race
+                    if ((angular.isArray(newValue) && angular.isArray(oldValue)) && scope.character.raceObj.name) {   // requires race
                         scope.character.selectedLanguages = scope.character.selectedLanguages || oldValue;
                         var selectedLanguages = _.pluck(newValue, 'name') || _.pluck(oldValue, 'name');
                         var languages = scope.character.defaultLanguages ? scope.character.defaultLanguages.split(', ') : [];
@@ -161,7 +248,7 @@ angular.module('myApp')
                 };
 
                 scope.$watch(attrs.select2Spellcasting, function(newVal, oldVal) {
-                    if (newVal && newVal.classId) {
+                    if (newVal && newVal.classId && !angular.equals(newVal, oldVal)) {
                         var classId = newVal.classId, maxSpellLevel = newVal.maxSpellLevel,
                             school = newVal.restrictedSchools;
                         CharGenFactory.Spells(classId, maxSpellLevel, school).get({}, function(response) {
@@ -203,17 +290,31 @@ angular.module('myApp')
         }
     })
     .directive('spellDialog', function(CharGenFactory, $modal) {
-        function DialogSpellController($scope, $modalInstance, list, numSpells) {
+        function DialogSpellController($scope, $modalInstance, list, numSpells, spellIds) {
             $scope.title = 'Select Spells';
+            $scope.tempSpells = [];
+            var preselectSpells = function(arr) {
+                if (spellIds) {
+                    angular.forEach(arr, function(obj) {
+                        if (spellIds.indexOf(obj.id) !== -1) {
+                            obj.active = true;
+                            $scope.tempSpells.push(obj);
+                        }
+                    });
+                }
+            };
             if (list[0].level === 0) {
                 $scope.cantrips = angular.copy(list);
+                preselectSpells($scope.cantrips);
             } else {
                 $scope.spells = _.groupBy(angular.copy(list), 'level_desc');
+                preselectSpells($scope.spells);
             }
+            $scope.searchText = '';
             $scope.description = 'Click a list item to view more information';
             $scope.featureType = '';
-            $scope.tempSpells = [];
-            $scope.disabled = true;
+            $scope.selectedIndex = '';
+            $scope.disabled = !angular.isArray(spellIds);
             $scope.spellsLeft = angular.copy(numSpells);
 
             $scope.showDescription = function(selectobj) {
@@ -231,11 +332,7 @@ angular.module('myApp')
                 $scope.disabled = $scope.spellsLeft - $scope.tempSpells.length !== 0; // disabled is true if there are still cantrips left to choose
             };
             $scope.done = function() {
-                var tempSpells = '';
                 if (angular.isArray($scope.tempSpells)) {
-                    //$scope.tempSpells = numSpells === 1 ? $scope.tempSpells[0] : $scope.tempSpells;
-                    //$scope.$emit('spellEmit', {selectedSpells: $scope.tempSpells});
-                    //$scope.$broadcast('broadcastSpells', $scope.tempSpells);
                     $modalInstance.close($scope.tempSpells);
                 } else {
                     alert("Please select your spells");   // should be impossible to get here since button is disabled
@@ -246,44 +343,70 @@ angular.module('myApp')
                 $modalInstance.dismiss('cancel');
             };
         }
+        function returnTemplate(element, attrs) {
+            var placeholder = attrs.placeholder || 'spell(s)';
+            if (deviceType === 'phone' || deviceType === 'tablet') {
+                return '<div>' +
+                    '<a href="" class="btn btn-default btn-block" ng-click="openSpellDialog()">' +
+                        '<span ng-if="!selectedCantrips">Select your ' + placeholder + '</span>' +
+                        '<span ng-if="selectedCantrips.length > 1">{{selectedCantrips.length}} ' + placeholder + ' selected</span>' +
+                        '<span ng-if="selectedCantrips.length == 1">{{selectedCantrips[0].name}}</span>' +
+                    '</a>' +
+                '</div>';
+            } else {
+                return  '<label class="hide-mobile input-group-addon btn btn-default" ng-click="openSpellDialog()">' +
+                    '<span class="fa fa-columns"></span>' +
+                    '</label>';
+            }
+        }
+
         return {
             restrict: 'EA',
             replace: true,
             require: "?ngModel",
-            template: '<label class="hide-mobile input-group-addon btn btn-default" ng-click="openSpellDialog()">' +
-                '<span class="fa fa-columns"></span>' +
-                '</label>',
+            template: returnTemplate,
             scope: {
-                //spellObj: '=',
-                //list: '='
+                select2Spellcasting: '=',
+                list: '=',
+                otherSpell: '='
             },
             link: function(scope, element, attrs, ngModel) {
-                //if (!attrs.spellObj) throw new Error('The spell-obj attribute is required!');
-                var uiSelect = element.parent().find('ui-select'),
-                    spellObjAttr = uiSelect.attr('select2-spellcasting'),
-                    listAttr = uiSelect.attr('list');
                 scope.openSpellDialog = function() {
-                    var spellObj = scope.$parent.$eval(spellObjAttr);//scope.spellObj;
-                    var list = scope.$parent.$eval(listAttr + 'Filtered');
+                    var spellObj = scope.select2Spellcasting;
+                    var list = scope.list;
+                    var otherSpell = scope.otherSpell;
+                    if (angular.isArray(otherSpell)) {
+                        var spellIds = _.pluck(otherSpell, 'id');
+                        list = _.reject(list, function(item) {
+                            return spellIds.indexOf(item.id) !== -1;
+                        });
+                    } else if (angular.isObject(otherSpell)) {
+                        list = _.reject(list, {'id': otherSpell.id});
+                    }
                     var opts = {
                         backdrop: true,
                         keyboard: true,
                         backdropClick: true,
-                        templateUrl: 'app/views/dialog_spells.html',
+                        templateUrl: path + '/app/views/dialog_spells.html',
                         controller: DialogSpellController,
                         resolve: {
                             //classId: function() { return spellObj.classId; },
                             //maxSpellLevel: function() { return spellObj.maxSpellLevel; },
                             list: function() { return list; },
-                            numSpells: function() { return spellObj.numSpellsKnown || 1; }
+                            numSpells: function() { return spellObj.numSpellsKnown || 1; },
+                            spellIds: function() { return ngModel.$viewValue ? _.pluck(ngModel.$viewValue, 'id') : null; }
                             //schools: function() { return spellObj.restrictedSchools || null; }
                         }
                     };
+                    if (deviceType === 'phone') {
+                        opts.windowClass = 'modal-overlay';
+                    }
                     $modal.open(opts).result.then(function(selectedSpells) {
                         var spellIds = _.pluck(selectedSpells, 'id'); // [12, 42, 52, ...]
                         ngModel.$setViewValue(_.filter(list, function(spell) {
                             return _.indexOf(spellIds, spell.id) > -1;
                         }));
+                        scope.selectedCantrips = ngModel.$viewValue;
                     });
                 };
             }

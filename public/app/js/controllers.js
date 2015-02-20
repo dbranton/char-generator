@@ -1,6 +1,6 @@
 //var app = angular.module('myApp.controllers', ['ui.router'])
 
-app.controller('homeController',function($scope,$sanitize,$location,$modal,Authenticate,Flash,CharGenFactory){
+app.controller('homeController', function($scope, $sanitize, $location, $modal, Authenticate, Flash, CharGenFactory){
     /********
      * Alerts
      ********/
@@ -35,8 +35,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     var opts = {
         backdrop: true,
         keyboard: true,
-        backdropClick: true,
-        templateUrl: 'dialog'
+        backdropClick: true
     };
     $scope.numLanguagesLeft = 0;
 
@@ -87,6 +86,9 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         if (size) {
             localOpts.size = size;
         }
+        if (deviceType === 'phone') {
+            localOpts.windowClass = 'modal-overlay';
+        }
         $modal.open(localOpts);
     }
 
@@ -100,30 +102,12 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         $scope.$broadcast('handleBroadcast', {checked: true, clazz: $scope.character.classObj});
     };
 
-    $scope.openProgressDialog = function() {
-        opts.templateUrl = 'progressBar.html';
-        opts.backdrop = 'static';
-        opts.controller = function($scope, $modalInstance, progress) {
-            $scope.progress = 0;   //progress;
-
-            $scope.$watch('progress', function(val) {
-                if (val === 100) {
-                    $modalInstance.dismiss('cancel');
-                }
-            })
-
-        };
-        opts.resolve = {
-            progress: function() { return $scope.progress; }
-        };
-        openDialog('sm');
-    };
-
     $scope.openRaceDialog = function() {
         opts.templateUrl = path + '/app/views/dialog_race.html';
         opts.controller = DialogRaceController;
         opts.resolve = {
-            raceData: function() { return angular.copy($scope.raceData); }
+            raceData: function() { return angular.copy($scope.raceData); },
+            raceId: function() { return $scope.character.raceObj.id; }
         };
         openDialog();
     };
@@ -132,7 +116,8 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         opts.templateUrl = path + '/app/views/dialog_background.html';
         opts.controller = DialogBackgroundController;
         opts.resolve = {
-            backgroundData: function() { return angular.copy($scope.backgroundData); }
+            backgroundData: function() { return angular.copy($scope.backgroundData); },
+            backgroundId: function() { return $scope.character.background.id; }
         };
         openDialog();
     };
@@ -141,7 +126,8 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         opts.templateUrl = path + '/app/views/dialog_class.html';
         opts.controller = DialogClassController;
         opts.resolve = {
-            classData: function() { return angular.copy($scope.classData); }
+            classData: function() { return angular.copy($scope.classData); },
+            classId: function() { return $scope.character.classObj.id; }
         };
         openDialog();
     };
@@ -150,7 +136,8 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         opts.templateUrl = path + '/app/views/dialog_class.html';
         opts.controller = DialogSubclassController;
         opts.resolve = {
-            subclasses: function() { return angular.copy($scope.character.classObj.subclasses); }
+            subclasses: function() { return angular.copy($scope.character.classObj.subclasses); },
+            subclassId: function() { return $scope.character.classObj.subclassObj ? $scope.character.classObj.subclassObj.id : null; }
         };
         openDialog();
     };
@@ -163,10 +150,22 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
             index: function() { return selectedFeature.index; },
             type: function() { return type; },
             //selectedFeatures: function() { return $scope.character.selectedFeatures; },
-            max: function() { return selectedFeature.max; }
+            max: function() { return selectedFeature.max; },
+            featureIds: function() { return selectedFeature.name ? _.pluck(selectedFeature.name, 'id') : null; }
         };
         openDialog();
     };
+
+    /*$scope.openLanguageDialog = function() {
+        opts.templateUrl = path + '/app/views/dialog_languages.html';
+        opts.controller = DialogLanguageController;
+        opts.resolve = {
+            languageData: function() { return angular.copy($scope.availableLanguages); },
+            max: function() { return $scope.select2Languages; },
+            languageIds: function() { return $scope.character.selectedLanguages ? _.pluck($scope.character.selectedLanguages, 'id') : null; }
+        };
+        openDialog();
+    };*/
 
     $scope.openSummary = function() {
         opts.templateUrl = path + '/app/views/dialog_summary.html'; //'dialog/summary';
@@ -187,18 +186,14 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         //$scope.storedCharacter = CharGenFactory.returnStoredCharacter();
         CharGenFactory.Races().get({}, function(data){
             $scope.raceData = data.races;
-            $scope.$$nextSibling.progress += 33;
         });
         CharGenFactory.Backgrounds().get({}, function(data) {
             $scope.backgroundData = data.backgrounds;
-            $scope.$$nextSibling.progress += 33;
         });
         CharGenFactory.Classes().get({}, function(data) {
             $scope.classData = data.classes;
-            $scope.$$nextSibling.progress += 34;
         });
         //$scope.character = CharGenFactory.getPreparedCharacter();   // TODO: REMOVE LATER
-        $scope.openProgressDialog();
     };
 
     $scope.broadcastObj = function(arr, name, prop) {
@@ -240,6 +235,16 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
             }
         });
         return tempArr;
+    };
+
+    // mobile only
+    $scope.selectItem = function(callBack, arr1, arr2, arr3, modalName) {
+        $scope.$parent.Ui.turnOff(modalName);
+        callBack.apply(undefined, [arr1, arr2, arr3]);
+    };
+    // mobile only
+    $scope.selectFeature = function(feature) {
+        $scope.selectedFeature = feature;
     };
 
     $scope.$on('handleBroadcast', function(event, args) {
@@ -605,14 +610,15 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         }
     }
 
-    function DialogRaceController($scope, $modalInstance, raceData) {
+    function DialogRaceController($scope, $modalInstance, raceData, raceId) {
         $scope.title = 'Select Race';
         $scope.races = raceData;
         $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
-        $scope.tempClass = '';
-        $scope.disabled = true;
+        $scope.selectedIndex = angular.isNumber(raceId) ? $scope.races.getIndexBy('id', raceId) : null;
+        $scope.tempRace = angular.isNumber($scope.selectedIndex) ? $scope.races[$scope.selectedIndex] : '';
+        $scope.disabled = !angular.isNumber(raceId);
         $scope.featureType = '';
 
         $scope.showDescription = function(selectobj) {
@@ -650,14 +656,15 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         };
     }
 
-    function DialogBackgroundController($scope, $modalInstance, backgroundData) {
+    function DialogBackgroundController($scope, $modalInstance, backgroundData, backgroundId) {
         $scope.title = 'Select Background';
-        var data = backgroundData;
         $scope.backgrounds = backgroundData;
         $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
-        $scope.disabled = true;
+        $scope.selectedIndex = angular.isNumber(backgroundId) ? $scope.backgrounds.getIndexBy('id', backgroundId) : null;
+        $scope.tempBackground = angular.isNumber($scope.selectedIndex) ? $scope.backgrounds[$scope.selectedIndex] : '';
+        $scope.disabled = !angular.isNumber(backgroundId);
         $scope.featureType = '';
         //$scope.tempBackground = '';
 
@@ -693,7 +700,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
     }
 
     // the dialog is injected in the specified controller
-    function DialogClassController($scope, $modalInstance, classData){
+    function DialogClassController($scope, $modalInstance, classData, classId){
         $scope.classes = classData;
         $scope.searchText = '';
         $scope.title = 'Select Class';
@@ -701,13 +708,16 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         $scope.featureType = '';
         $scope.features = [];
         $scope.tempClass = '';
-        $scope.disabled = true;
+        $scope.selectedIndex = angular.isNumber(classId) ? $scope.classes.getIndexBy('id', classId) : null;
+        $scope.tempClass = angular.isNumber($scope.selectedIndex) ? $scope.classes[$scope.selectedIndex] : '';
+        $scope.disabled = !angular.isNumber(classId);
 
         $scope.showDescription = function(selectobj) {
             $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
             $scope.tempClass = selectobj.class;
             $scope.featureType = 'Class Features';
-            $scope.traits = [], $scope.traits2 = [];
+            $scope.traits = [];
+            $scope.traits2 = [];
             $scope.features = [];
             $scope.disabled = false;
             $scope.description = $scope.tempClass.desc;
@@ -741,7 +751,7 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         };
     }
 
-    function DialogSubclassController($scope, $modalInstance, subclasses){
+    function DialogSubclassController($scope, $modalInstance, subclasses, subclassId){
         //$scope.class = character.classObj.name;
         $scope.title = 'Select Subclass';   // change later
         $scope.classes = subclasses;
@@ -750,7 +760,9 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         $scope.featureType = '';
         $scope.features = [];
         $scope.tempSubclass = '';
-        $scope.disabled = true;
+        $scope.selectedIndex = angular.isNumber(subclassId) ? $scope.classes.getIndexBy('id', subclassId) : null;
+        $scope.tempSubclass = angular.isNumber($scope.selectedIndex) ? $scope.classes[$scope.selectedIndex] : '';
+        $scope.disabled = !angular.isNumber(subclassId);
 
         $scope.showDescription = function(selectobj) {
             $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
@@ -781,13 +793,13 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         };
     }
     // TODO: support multiple selections
-    function DialogFeatureController($scope, $modalInstance, features, index, type, max) {    // selectedFeatures
+    function DialogFeatureController($scope, $modalInstance, features, index, type, max, featureIds) {    // selectedFeatures
         $scope.title = 'Select Feature';
         $scope.values = features;   // needed for UI
         $scope.searchText = '';
         $scope.tempFeatures = [];
         _.each($scope.values, function(obj, index, list) {
-            if (obj.locked) {
+            if (obj.locked || (angular.isArray(featureIds) && featureIds.indexOf(obj.id) !== -1)) {
                 obj.active = true;
                 $scope.tempFeatures.push(obj);
             }
@@ -795,8 +807,8 @@ app.controller('homeController',function($scope,$sanitize,$location,$modal,Authe
         });
 
         $scope.description = 'Click a list item to view more information';
-        $scope.disabled = true;
         $scope.max = parseInt(max);
+        $scope.disabled = $scope.max - $scope.tempFeatures.length !== 0;
         $scope.featureType = '';
 
         $scope.showDescription = function(selectobj) {

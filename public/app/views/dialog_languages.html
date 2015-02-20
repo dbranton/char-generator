@@ -1,0 +1,28 @@
+<!--<div ng-app="generator" ng-controller="CharGen">-->
+<div class="modal-header">
+    <h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+    <p>{{max - tempLanguages.length}} Languages Left:</p>
+    <div class="row">
+        <div class="col-md-5">
+            <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
+            <div class="list-group">
+                <a ng-repeat="language in languages | filter: {name: searchText}" ng-click="showDescription(this.language)" class="list-group-item" ng-class="{'active': language.active}" href="">
+                    {{language.name}}
+                </a>
+            </div>
+        </div>	<!-- end span -->
+        <div class="col-md-7 desc-col">
+            <h4>{{featureType}}</h4>
+            <dl>
+                <dt>{{selectedLanguage.name}}</dt>
+                <dd ng-bind-html="selectedLanguage.description"></dd>
+            </dl>
+        </div> <!-- end span -->
+    </div>
+</div>
+<div class="modal-footer">
+    <button ng-click="done()" ng-disabled="disabled" class="btn btn-primary">Done</button>
+    <button ng-click="close()" class="btn btn-default">Cancel</button>
+</div>

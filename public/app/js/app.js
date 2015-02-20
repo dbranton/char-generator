@@ -1,4 +1,5 @@
-var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.router', 'ui.select', 'ngTable'])
+var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ngTouch', 'ui.bootstrap', 'ui.router', 'ui.select',
+        'ngTable', 'angular-loading-bar'])
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
 
@@ -6,11 +7,16 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 		$urlRouterProvider.otherwise(locationName);
 
+        var mobilePath = '';
+        if (deviceType === 'phone' || deviceType === 'tablet') {
+            mobilePath = '/mobile';
+        }
+
 		// Now set up the states
 		$stateProvider
 			.state('home', {
 				url: locationName,
-				templateUrl: path + "/app/views/character_generator.html",
+				templateUrl: path + "/app/views" + mobilePath + "/character_generator.html",
 				controller: 'homeController'
 			})
 			.state('dashboard', {
@@ -32,7 +38,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 				url: locationName + "register",
 				templateUrl: path + "/app/views/register.html",
 				controller: 'registerController'
-			})
+			});
 
 	}])
 
