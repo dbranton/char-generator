@@ -5,10 +5,6 @@
     <h3>Character Generator</h3>
     <!--<span class="hide">{{isLoggedIn=<?php echo $is_logged_in; ?>}}</span>-->
     <span ng-hide="true">Loading Character Generator...</span>
-    <div ng-if="!isLoggedIn" class="alert alert-warning" ng-hide="successMessage">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        <p>You are not currently logged in. If saved, your character will be stored on the browser instead of your account.</p>
-    </div>
     <div id="successMsg" class="alert alert-success" ng-show="successMessage">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <p>{{successMessage}}</p>
@@ -110,7 +106,7 @@
                     <div>
                         <a href="" class="btn btn-default btn-block" ng-click="openFeatureDialog(selectedFeature, 'classArr')">
                             <span ng-if="!selectedFeature.name.length">Select {{selectedFeature.label}}</span>
-                            <span ng-if="selectedFeature.name.length == 1">{{selectedFeature.name[0]}}</span>
+                            <span ng-if="selectedFeature.name.length == 1">{{selectedFeature.name[0].name}}</span>
                             <span ng-if="selectedFeature.name.length > 1">{{selectedFeature.name.length}} features selected</span>
                         </a>
                     </div>
@@ -127,21 +123,6 @@
                             <span ng-if="selectedFeature.name.length > 1">{{selectedFeature.name.length}} features selected</span>
                         </a>
                     </div>
-                    <!--<div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openFeatureDialog(selectedFeature, 'subclassArr')">
-                            <span class="fa fa-columns"></span>
-                        </label>
-                        <ui-select multiple ng-model="selectedFeature.name"
-                                   max="{{selectedFeature.max}}"
-                                   ng-change="broadcastArray(selectedFeature, 'selectedFeatures', 'subclassArr')"
-                                   theme="select2"
-                                   style="width: 100%;">
-                            <ui-select-match placeholder="Select a feature">{{$item.name}}</ui-select-match>
-                            <ui-select-choices repeat="feature in selectedFeature.choices">
-                                <div ng-bind-html="feature.name | highlight: $select.search"></div>
-                            </ui-select-choices>
-                        </ui-select>
-                    </div>-->
                 </div>
             </div>
             <div class="form-group" ng-show="character.classObj.cantrip">
@@ -151,22 +132,6 @@
                         <spell-dialog ng-model="character.classObj.selectedCantrips" list="classCantrips" placeholder="cantrip(s)"
                                       select2-spellcasting="character.classObj.cantrip"
                                       other-spell="character.raceObj.cantrip"></spell-dialog>
-                        <!--<spell-dialog ng-model="character.classObj.selectedCantrips"></spell-dialog>
-                        <ui-select ng-model="character.classObj.selectedCantrips"
-                                   multiple
-                                   list="classCantrips"
-                                   max="{{character.classObj.cantrip.numSpellsKnown}}"
-                                   select2-spellcasting="character.classObj.cantrip"
-                                   theme="select2"
-                                   style="width: 100%;">
-                            <ui-select-match placeholder="Pick your cantrips">{{$item.name}}</ui-select-match>
-                            <ui-select-choices repeat="cantrip in $parent.classCantripsFiltered = (classCantrips | filterSpells: character.raceObj.cantrip)
-                                                | filter: {name: $select.search} | filterSpells: character.raceObj.cantrip"
-                                               refresh="refreshSpells($select.search)"
-                                               refresh-delay="500">
-                                <div ng-bind-html="cantrip.name | highlight: $select.search"></div>
-                            </ui-select-choices>
-                        </ui-select>-->
                     </div>
                 </div>
             </div>
@@ -205,29 +170,9 @@
                 <label class="col-sm-4 control-label">Spells:</label>
                 <div class="col-sm-8">
                     <div>
-                        <!--<label class="input-group-addon btn btn-default" ng-click="openSpellDialog(character.classObj.spellcasting)">
-                            <span class="fa fa-columns"></span>
-                        </label>-->
                         <spell-dialog ng-model="character.classObj.selectedSpells" list="classSpells"
                                       select2-spellcasting="character.classObj.spellcasting"
                                       other-spell="character.classObj.spellcasting.bonusSelectedSpells"></spell-dialog>
-                        <!--<spell-dialog ng-model="character.classObj.selectedSpells"></spell-dialog>
-                        <ui-select ng-model="character.classObj.selectedSpells"
-                                   multiple
-                                   list="classSpells"
-                                   max="{{character.classObj.spellcasting.numSpellsKnown}}"
-                                   select2-spellcasting="character.classObj.spellcasting"
-                                   theme="select2"
-                                   style="width: 100%;">
-                            <ui-select-match placeholder="Pick your spells">{{$item.name}}</ui-select-match>
-                            <ui-select-choices group-by="'level_desc'"
-                                               repeat="spell in $parent.classSpellsFiltered = (classSpells | filterSpells: character.classObj.spellcasting.bonusSelectedSpells)
-                                                | filter: {name: $select.search} | filterSpells: character.classObj.spellcasting.bonusSelectedSpells"
-                                               refresh="refreshSpells($select.search)"
-                                               refresh-delay="500">
-                                <div ng-bind-html="spell.name | highlight: $select.search"></div>
-                            </ui-select-choices>
-                        </ui-select>-->
                     </div>
                 </div>
             </div>
@@ -239,22 +184,6 @@
                         <spell-dialog ng-model="character.classObj.bonusSelectedSpells" list="classBonusSpells"
                                 select2-spellcasting="character.classObj.spellcasting.bonus"
                                 other-spell="character.classObj.selectedSpells"></spell-dialog>
-                        <!--<ui-select ng-model="character.classObj.bonusSelectedSpells"
-                                   multiple
-                                   list="classBonusSpells"
-                                   max="{{character.classObj.spellcasting.numSpellsKnown}}"
-                                   select2-spellcasting="character.classObj.spellcasting.bonus"
-                                   theme="select2"
-                                   style="width: 100%;">
-                            <ui-select-match placeholder="Pick your spells">{{$item.name}}</ui-select-match>
-                            <ui-select-choices group-by="'level_desc'"
-                                               repeat="spell in $parent.classBonusSpellsFiltered = (classBonusSpells | filterSpells: character.classObj.selectedSpells)
-                                                | filter: {name: $select.search} | filterSpells: character.classObj.selectedSpells"
-                                               refresh="refreshSpells($select.search)"
-                                               refresh-delay="500">
-                                <div ng-bind-html="spell.name | highlight: $select.search"></div>
-                            </ui-select-choices>
-                        </ui-select>-->
                     </div>
                 </div>
             </div>
@@ -395,7 +324,20 @@
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Tools:</label>
-                    <div class="col-sm-8 text"><span ng-hide="character.tools">None</span>{{character.tools}}</div>
+                    <div class="col-sm-8 text">
+                        <span ng-hide="character.tools">None</span>
+                        {{character.tools}}
+                        <div ng-show="character.numToolChoices > 0">
+                            <a href="" class="btn btn-default btn-block" ng-click="openToolDialog()"
+                                    tools
+                                    ng-model="character.selectedTools"
+                                    max="{{character.numToolChoices}}">
+                                <span ng-if="character.selectedTools.length == 0">Select your tool(s)</span>
+                                <span ng-if="character.selectedTools.length == 1">{{character.selectedTools[0].name}}</span>
+                                <span ng-if="character.selectedTools.length > 1">{{character.selectedTools.length}} tools selected</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Languages:</label>
@@ -404,6 +346,7 @@
                         {{character.languages}}
                         <div ng-hide="!character.background.name || character.numLanguages == 0">
                             <a href="" class="btn btn-default btn-block" ng-click="openLanguageDialog()"
+                                    ng-model="character.selectedLanguages"
                                     languages="character.numLanguages"
                                     bonus-languages="character.classObj.bonusLanguages"
                                     max="{{select2Languages}}">
@@ -461,6 +404,6 @@
 
     <!-- Modals and Overlays -->
     <!--<div id="modals">
-        <div ng-include="'app/views/dialog_languages.html'"></div>
+        <div ng-include="'app/views/dialog_items.html'"></div>
     </div>-->
 </div> <!-- ng-app -->

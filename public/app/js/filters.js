@@ -41,6 +41,18 @@ app.filter('joinBy', function() {
             return items;
         };
     })
+    .filter('filterTools', function() {
+        return function(items, character) {
+            var parentTool;
+            if (character.numToolChoices > 0) {
+                parentTool = "Artisan's Tools"; //character.background.tools;
+                return _.filter(items, function(item) {
+                    return parentTool.indexOf(item.parent) !== -1 && (!character.tools || character.tools.indexOf(item.name) === -1);
+                });
+            }
+            return items;
+        };
+    })
     .filter('unsafe', ['$sce', function ($sce) {
         return function (val) {
             return $sce.trustAsHtml(val);

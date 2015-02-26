@@ -1,6 +1,6 @@
 //var app = angular.module('myApp.controllers', ['ui.router'])
 
-app.controller('homeController', function($scope, $sanitize, $location, $modal, Authenticate, Flash, CharGenFactory){
+app.controller('homeController', function($scope, $sanitize, $location, $state, Authenticate, Flash, General, CharGenFactory){
     /********
      * Alerts
      ********/
@@ -12,13 +12,6 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
     /*******
      * Character Generator
      *******/
-
-    if (sessionStorage.userId){
-        $scope.isLoggedIn = true;
-    } else {
-        //$location.path(locationName + '/login');
-        //Flash.show("you should be authenticated to access this page");
-    }
 
     $scope.Math = window.Math;
     $scope.character = CharGenFactory.getNewCharacter();    // defaults to level 1 character if user chooses not to select a level at first
@@ -32,11 +25,6 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
     $scope.storedCharacter = null;
     //$scope.selectedSpells = [];
     //$scope.bonusSelectedSpells = [];
-    var opts = {
-        backdrop: true,
-        keyboard: true,
-        backdropClick: true
-    };
     $scope.numLanguagesLeft = 0;
 
     $scope.fillInCharacter = function() {
@@ -50,28 +38,19 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
         //var stringifiedCharacter = JSON.stringify($scope.character);
         $scope.validating = true;
         if ($scope.charGenForm.$valid) {
-            if ($scope.isLoggedIn) {
-                CharGenFactory.Character().save({character: $scope.character},  // called at least 3 times!!!!
-                    function(data, status, headers, config) {
-                        $location.path(locationName + '/dashboard');
-                        Flash.show("You have successfully saved your character");
-                        //$scope.errorMessage = null;
-                    },
-                    function(data, status, headers, config) {
-                        $scope.successMessage = null;
-                        $scope.errorMessage = data; // html string
-                        //$location.hash('wrap');
-                        //$anchorScroll();
-                    }
-                );
-            } else {    // not logged in
-                $location.path(locationName + '/login');
-                /*CharGenFactory.storeCharacter();
-                $scope.storedCharacter = CharGenFactory.returnStoredCharacter();    // update stored character
-                $scope.successMessage = "Character saved locally. Warning: you will lose your character if you clear your cache.";
-                $location.hash('wrap');
-                $anchorScroll();*/
-            }
+            CharGenFactory.Character().save({character: $scope.character},  // called at least 3 times!!!!
+                function(data, status, headers, config) {
+                    $location.path(locationName + '/dashboard');
+                    Flash.show("You have successfully saved your character");
+                    //$scope.errorMessage = null;
+                },
+                function(data, status, headers, config) {
+                    $scope.successMessage = null;
+                    $scope.errorMessage = data; // html string
+                    //$location.hash('wrap');
+                    //$anchorScroll();
+                }
+            );
         }
     };
 
@@ -80,17 +59,6 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
             return value.name.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1;
         }
     };
-
-    function openDialog(size) {
-        var localOpts = angular.copy(opts);
-        if (size) {
-            localOpts.size = size;
-        }
-        if (deviceType === 'phone') {
-            localOpts.windowClass = 'modal-overlay';
-        }
-        $modal.open(localOpts);
-    }
 
     /*$scope.openNewCharDialog = function() {
         opts.templateUrl = 'app/views/dialog_new_character.html';
@@ -103,46 +71,51 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
     };
 
     $scope.openRaceDialog = function() {
+        var opts = {};
         opts.templateUrl = path + '/app/views/dialog_race.html';
         opts.controller = DialogRaceController;
         opts.resolve = {
             raceData: function() { return angular.copy($scope.raceData); },
             raceId: function() { return $scope.character.raceObj.id; }
         };
-        openDialog();
+        General.openDialog(opts);
     };
 
     $scope.openBackgroundDialog = function() {
+        var opts = {};
         opts.templateUrl = path + '/app/views/dialog_background.html';
         opts.controller = DialogBackgroundController;
         opts.resolve = {
             backgroundData: function() { return angular.copy($scope.backgroundData); },
             backgroundId: function() { return $scope.character.background.id; }
         };
-        openDialog();
+        General.openDialog(opts);
     };
 
     $scope.openClassDialog = function() {
+        var opts = {};
         opts.templateUrl = path + '/app/views/dialog_class.html';
         opts.controller = DialogClassController;
         opts.resolve = {
             classData: function() { return angular.copy($scope.classData); },
             classId: function() { return $scope.character.classObj.id; }
         };
-        openDialog();
+        General.openDialog(opts);
     };
 
     $scope.openSubclassDialog = function() {
+        var opts = {};
         opts.templateUrl = path + '/app/views/dialog_class.html';
         opts.controller = DialogSubclassController;
         opts.resolve = {
             subclasses: function() { return angular.copy($scope.character.classObj.subclasses); },
             subclassId: function() { return $scope.character.classObj.subclassObj ? $scope.character.classObj.subclassObj.id : null; }
         };
-        openDialog();
+        General.openDialog(opts);
     };
 
     $scope.openFeatureDialog = function(selectedFeature, type) {
+        var opts = {};
         opts.templateUrl = path + '/app/views/dialog_features.html';
         opts.controller = DialogFeatureController;
         opts.resolve = {
@@ -153,11 +126,11 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
             max: function() { return selectedFeature.max; },
             featureIds: function() { return selectedFeature.name ? _.pluck(selectedFeature.name, 'id') : null; }
         };
-        openDialog();
+        General.openDialog(opts);
     };
 
     /*$scope.openLanguageDialog = function() {
-        opts.templateUrl = path + '/app/views/dialog_languages.html';
+        opts.templateUrl = path + '/app/views/dialog_items.html';
         opts.controller = DialogLanguageController;
         opts.resolve = {
             languageData: function() { return angular.copy($scope.availableLanguages); },
@@ -168,12 +141,14 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
     };*/
 
     $scope.openSummary = function() {
+        var opts = {};
         opts.templateUrl = path + '/app/views/dialog_summary.html'; //'dialog/summary';
         opts.controller = DialogSummaryController;
         opts.resolve = {
             character: function() { return angular.copy($scope.character); }
         };
-        openDialog('lg');
+        opts.size = 'lg';
+        General.openDialog(opts);
     };
 
     // determines points left
@@ -512,6 +487,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
             if (args.background || $scope.background) {
                 $scope.background = args.background || $scope.background;
                 $scope.character.background = $scope.background;
+                $scope.character.determineBackground();
             }
             /*if (args.selectedCantrips) {
                 $scope.character.classObj.selectedCantrips = args.selectedCantrips; //.split(', ');
@@ -524,7 +500,6 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
                 $scope.character.raceObj.cantrip = args.selectedBonusRaceCantrip;
             }*/
 
-            $scope.character.handleTools();
             $scope.character.numLanguages = $scope.character.background ? parseInt($scope.character.background.languages) : 0;
             $scope.character.calculateModifiers(); // update ability modifiers
 
@@ -534,6 +509,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
                 $scope.character.handleSkills();
             }
             $scope.character.handleFeatureBonuses(features);
+            $scope.character.handleTools();
             args.checked = false;
         }
     });
@@ -879,13 +855,14 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
     }
 })
 
-.controller('loginController',function($scope,$sanitize,$location,Authenticate,Flash, $state, $stateParams, $interpolate){
+.controller('loginController',function($scope, $sanitize, $location, Authenticate, Flash, $state, $stateParams, $interpolate){
 
     /********
      * Alerts
      ********/
     $scope.alerts = [];
     $scope.closeAlert = function(index) {
+        Flash.clear();
         $scope.alerts.splice(index, 1);
     };
 
@@ -893,17 +870,20 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
      * Login
      ********/
     $scope.login = function(){
-        Authenticate.login().save({
-            'email': $sanitize($scope.email),
-            'password': $sanitize($scope.password)
-        },function(response) {
-            $location.path(locationName + '/dashboard');    // route to character generator screen
-            Flash.clear();
-            sessionStorage.userId = response.user.id;
-            $scope.$emit('handleAuthentication', {userId: response.user.id});
-        },function(response){
-            $scope.alerts = [{ type: "danger", msg: response.data.message }];
-        })
+        $scope.submitted = true;
+        if ($scope.loginForm.$valid) {
+            Authenticate.login().save({
+                'email': $sanitize($scope.email),
+                'password': $sanitize($scope.password)
+            },function(response) {
+                $state.go('dashboard');    // route to character generator screen
+                Flash.clear();
+                sessionStorage.userId = response.user.id;
+                $scope.$emit('handleAuthentication', {userId: response.user.id});
+            },function(response){
+                $scope.alerts = [{ type: "danger", msg: response.data.message }];
+            });
+        }
     }
 
 
@@ -923,25 +903,28 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
      * Register
      ********/
     $scope.register = function(){
-        Authenticate.register().save({
-            'email': $sanitize($scope.email),
-            'password': $sanitize($scope.password),
-            'password_confirmation': $sanitize($scope.password_confirmation),
-            'username': $sanitize($scope.username)
-        }, function(response) {
-            $location.path(locationName + '/login');
-            //$scope.alerts = [{type: "success", msg: response.message}];
-            Flash.show(response.data.message);
-            //Flash.clear();
-            //sessionStorage.authenticated = true;
-        }, function(response){
-            if (angular.isArray(response.data.message)) {
-                $scope.alerts = [];
-                angular.forEach(response.data.message, function(message) {
-                    $scope.alerts.push({type: "danger", msg: message});
-                });
-            }
-        })
+        $scope.submitted = true;
+        if ($scope.registerForm.$valid) {
+            Authenticate.register().save({
+                'email': $sanitize($scope.email),
+                'password': $sanitize($scope.password),
+                'password_confirmation': $sanitize($scope.password_confirmation),
+                'username': $sanitize($scope.username)
+            }, function(response) {
+                $location.path(locationName + '/login');
+                //$scope.alerts = [{type: "success", msg: response.message}];
+                Flash.show(response.data.message);
+                //Flash.clear();
+                //sessionStorage.authenticated = true;
+            }, function(response){
+                if (angular.isArray(response.data.message)) {
+                    $scope.alerts = [];
+                    angular.forEach(response.data.message, function(message) {
+                        $scope.alerts.push({type: "danger", msg: message});
+                    });
+                }
+            });
+        }
     }
 
 })
@@ -1000,34 +983,39 @@ app.controller('homeController', function($scope, $sanitize, $location, $modal, 
         });
     };
 })
-.controller('characterController', function($scope, $stateParams, $location, CharGenFactory) {
-    if (!sessionStorage.userId){
-        $location.path(locationName + '/login');
-    } else {
-        CharGenFactory.Character($stateParams.characterId).get({}, function(data) {
-            $scope.character = data.character;
-            $scope.character.proficiencies = $scope.character.armor_prof ? $scope.character.armor_prof + ', ' + $scope.character.weapon_prof :
-                $scope.character.weapon_prof;
-            if ($scope.character.tool_prof) {
-                $scope.character.proficiencies += ', ' + $scope.character.tool_prof;
-            }
-            // handle spells
-            if (angular.isArray($scope.character.cantrips)) {
-                angular.forEach($scope.character.cantrips, function(cantrip) {
-                    cantrip.html = CharGenFactory.generateSpellHtml(cantrip);
-                });
-            }
-            if (angular.isArray($scope.character.spells)) {
-                _.sortBy($scope.character.spells, 'level');
-                $scope.character.spells = _.groupBy($scope.character.spells, 'level');
-                angular.forEach($scope.character.spells, function(spellsByLevel) {
-                    angular.forEach(spellsByLevel, function(spell) {
-                        spell.html = CharGenFactory.generateSpellHtml(spell);
-                    });
-                });
-            }
-        }, function(response) {
-            $location.path(locationName + '/dashboard');    // redirect if character does not exist
-        });
+.controller('characterController', function($scope, $stateParams, $location, CharGenFactory, General) {
+    $scope.openSpellInfoDialog = function(spellObj) {
+        var opts = {};
+        opts.templateUrl = path + '/app/views/dialog_spell_info.html';
+        opts.controller = DialogSpellInfoController;
+        opts.resolve = {
+            spellObj: function() { return spellObj; }
+        };
+        //opts.size = 'sm';
+        General.openDialog(opts);
+    };
+
+    function DialogSpellInfoController($scope, $modalInstance, spellObj) {
+        $scope.spellObj = spellObj;
+
+        $scope.close = function() {
+            $modalInstance.dismiss('cancel');
+        };
     }
+
+    CharGenFactory.Character($stateParams.characterId).get({}, function(data) {
+        $scope.character = data.character;
+        $scope.character.proficiencies = $scope.character.armor_prof ? $scope.character.armor_prof + ', ' + $scope.character.weapon_prof :
+            $scope.character.weapon_prof;
+        if ($scope.character.tool_prof) {
+            $scope.character.proficiencies += ', ' + $scope.character.tool_prof;
+        }
+        // handle spells
+        if (angular.isArray($scope.character.spells)) {
+            _.sortBy($scope.character.spells, 'level');
+            $scope.character.spells = _.groupBy($scope.character.spells, 'level');
+        }
+    }, function(response) {
+        $location.path(locationName + '/dashboard');    // redirect if character does not exist
+    });
 });

@@ -1,6 +1,6 @@
 @media (min-width: 992px) {
     .modal-body {
-        height: 400px;
+        max-height: 400px;
         overflow: hidden;
     }
 
@@ -24,6 +24,14 @@
 
 .modal-overlay .desc-col {
     display: none;
+}
+
+input.ng-invalid, .ng-dirty input.ng-invalid {
+    border-color: #ddd;
+}
+
+.form-group {
+    margin-bottom: 0;
 }
 
 @media (max-width: 767px) {

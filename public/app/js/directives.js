@@ -4,11 +4,17 @@ angular.module('myApp')
             restrict: 'EA',
             require: 'uiSelect',
             link: function($scope, $element, $attributes, ctrl) {
+                var superSelect = ctrl.select,
+                    superRemoveChoice = ctrl.removeChoice;
+
                 $attributes.$observe('max', function(value) {
                     $scope.$select.limit = (angular.isDefined(value)) ? parseInt(value, 10) : undefined;
                 });
-                var superSelect = ctrl.select,
-                    superRemoveChoice = ctrl.removeChoice;
+                $scope.$watch('$select.selected', function(newValue, oldValue) {
+                    if (newValue && oldValue && newValue.length === 0 && (oldValue.length > newValue.length)) {    // on reset of selections, call removeChoice
+                        showHideMaxMsg();
+                    }
+                });
                 ctrl.select = function() {
                     if (ctrl.multiple && (ctrl.selected.length+1) < ctrl.limit) {   // needs to add one to account for selected not getting updated yet
                         ctrl.closeOnSelect = false; // keep dropdown open until user reaches limit
@@ -23,12 +29,15 @@ angular.module('myApp')
                         );
                     }
                 };
-                ctrl.removeChoice = function() {
-                    superRemoveChoice.apply(ctrl, arguments);
+                function showHideMaxMsg() {
                     if(ctrl.multiple && ctrl.limit !== undefined && ctrl.selected.length < ctrl.limit) {
                         $($element).find('.ui-select-choices').show();   // show list and show max capacity message
                         $($element).find('.max-msg').remove();  // remove message
                     }
+                }
+                ctrl.removeChoice = function() {
+                    superRemoveChoice.apply(ctrl, arguments);
+                    showHideMaxMsg();
                 };
             }
         }
@@ -75,59 +84,14 @@ angular.module('myApp')
             }
         };
     })
-    .directive('languages', function(CharGenFactory, $modal) {
+    .directive('languages', function(CharGenFactory, General, $modal) {
         return {
             restrict: 'A',
-            //require: 'ngModel',
+            require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
-                function DialogLanguageController($scope, $modalInstance, languageData, max, languageIds) {
-                    $scope.title = 'Select Language';
-                    $scope.languages = languageData;
-                    $scope.searchText = '';
-                    $scope.description = 'Click a list item to view more information';
-                    $scope.tempLanguages = [];
-                    _.each($scope.languages, function(obj, index, list) {
-                        if (obj.locked || (angular.isArray(languageIds) && languageIds.indexOf(obj.id) !== -1)) {
-                            obj.active = true;
-                            $scope.tempLanguages.push(obj);
-                        }
-                    });
-
-                    $scope.description = 'Click a list item to view more information';
-                    $scope.max = parseInt(max);
-                    $scope.disabled = $scope.max  - $scope.tempLanguages.length > 0;
-                    $scope.featureType = '';
-
-                    $scope.showDescription = function(selectobj) {
-                        $scope.featureType = 'Languages';
-                        $scope.selectedLanguage = angular.copy(selectobj); // used in UI
-                        if (!$scope.selectedLanguage.locked) {
-                            if (!$scope.selectedLanguage.active && $scope.max - $scope.tempLanguages.length > 0) {
-                                $scope.tempLanguages.push($scope.selectedLanguage);
-                                selectobj.active = true;
-                            } else if ($scope.selectedLanguage.active) {
-                                $scope.tempLanguages = _.reject($scope.tempLanguages, {'name': $scope.selectedLanguage.name});
-                                selectobj.active = false;
-                            }
-                            $scope.disabled = $scope.max - $scope.tempLanguages.length > 0; // disabled is true if there are still features left to choose
-                        }
-                    };
-
-                    $scope.done = function() {
-                        if (angular.isArray($scope.tempLanguages)) {
-                            //$scope.$emit('handleEmit', {selectedLanguage: $scope.tempLanguages, checked: true});
-                            $modalInstance.close($scope.tempLanguages);
-                        } else {
-                            alert("Please select your features");
-                        }
-                    };
-
-                    $scope.close = function(){
-                        $modalInstance.dismiss('cancel');
-                    };
+                function DialogLanguageController($scope, $modalInstance, languageData, max, languageIds, title, featureType) {
+                    General.DialogItemsController.apply(undefined, arguments);
                 }
-
-
                 var LANGUAGE_LIST = [];
                 CharGenFactory.getLanguages().success(function(data) {
                     LANGUAGE_LIST = data.languages;
@@ -139,21 +103,23 @@ angular.module('myApp')
                         backdrop: true,
                         keyboard: true,
                         backdropClick: true,
-                        templateUrl: path + '/app/views/dialog_languages.html',
+                        templateUrl: path + '/app/views/dialog_items.html',
                         controller: DialogLanguageController,
                         resolve: {
                             languageData: function() { return scope.availableLanguages; },
                             max: function() { return parseInt(attrs.max) || 1; },
                             languageIds: function() { return scope.character.selectedLanguages ?
-                                _.pluck(scope.character.selectedLanguages, 'id') : null; }
+                                _.pluck(scope.character.selectedLanguages, 'id') : null; },
+                            title: function() { return 'Select Language(s)'; },
+                            featureType: function() { return 'Languages'; }
                         }
                     };
                     if (deviceType === 'phone') {
                         opts.windowClass = 'modal-overlay';
                     }
-                    // TODO: test this!!!
                     $modal.open(opts).result.then(function(selectedLanguages) {
-                        scope.character.selectedLanguages = selectedLanguages;
+                        ngModel.$setViewValue(selectedLanguages);
+                        //scope.character.selectedLanguages = selectedLanguages;
                     });
                 };
 
@@ -165,7 +131,7 @@ angular.module('myApp')
                         //$scope.selectedLanguages.length = newValue; //determineNumItems('#chosenLanguages', newValue);
                     }
                 });
-                scope.$watch('character.selectedLanguages', function(newValue, oldValue) {   // triggered whenever a language is selected
+                scope.$watch(attrs.ngModel, function(newValue, oldValue) {   // triggered whenever a language is selected
                     if ((angular.isArray(newValue) && angular.isArray(oldValue)) && scope.character.raceObj.name) {   // requires race
                         scope.character.selectedLanguages = scope.character.selectedLanguages || oldValue;
                         var selectedLanguages = _.pluck(newValue, 'name') || _.pluck(oldValue, 'name');
@@ -177,7 +143,7 @@ angular.module('myApp')
                         scope.numLanguagesLeft = scope.character.numLanguages - selectedLanguages.length;
                     }
                 });
-                // move to language directive
+
                 scope.$watch('character.raceObj.languages', function(newValue) {
                     if (newValue) {
                         scope.availableLanguages = _.filter(LANGUAGE_LIST, function(language) {
@@ -202,6 +168,57 @@ angular.module('myApp')
 
             }
         }
+    })
+    .directive('tools', function(CharGenFactory, General, $modal) {
+        return {
+            restrict: 'EA',
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                scope.availableTools = [];
+                var TOOLS_LIST = [];
+                CharGenFactory.getTools().success(function(data) {
+                    TOOLS_LIST = data.tools;
+                    scope.availableTools = angular.copy(TOOLS_LIST);
+                });
+
+                function DialogToolController($scope, $modalInstance, toolData, max, toolIds, title, featureType) {
+                    General.DialogItemsController.apply(undefined, arguments);
+                }
+                scope.openToolDialog = function() {
+                    var opts = {
+                        backdrop: true,
+                        keyboard: true,
+                        backdropClick: true,
+                        templateUrl: path + '/app/views/dialog_items.html',
+                        controller: DialogToolController,
+                        resolve: {
+                            toolData: function() {
+                                return _.filter(scope.availableTools, function(obj) {
+                                    return obj.parent === "Artisan's Tools";
+                                })
+                            },
+                            max: function() { return parseInt(attrs.max) || 1; },
+                            toolIds: function() {
+                                return scope.character.selectedTools ? _.pluck(scope.character.selectedTools, 'id') : null;
+                            },
+                            title: function() { return 'Select Tool'; },
+                            featureType: function() { return 'Tools'; }
+                        }
+                    };
+                    if (deviceType === 'phone') {
+                        opts.windowClass = 'modal-overlay';
+                    }
+                    $modal.open(opts).result.then(function(selectedTools) {
+                        ngModel.$setViewValue(selectedTools);
+                    });
+                };
+                scope.$watch(attrs.ngModel, function(newValue, oldValue) {
+                    if (angular.isArray(newValue)) {
+                        scope.character.handleTools(newValue);
+                    }
+                });
+            }
+        };
     })
     .directive('expertise', function() {
         return {

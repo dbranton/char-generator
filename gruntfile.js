@@ -38,6 +38,11 @@ module.exports = function(grunt) {
 					{ expand: true, cwd: '<%= bowerDir %>/bootstrap/dist/fonts', src: ['*'], dest: '<%= assetsDir %>/fonts' }
 				]
 			},
+			fastclick: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/fastclick/lib', src: ['fastclick.js'], dest: '<%= assetsDir %>/js' },
+				]
+			},
 			fontawesome: {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/font-awesome/less', src: ['font-awesome.less'], dest: '<%= assetsDir %>/tmp/font-awesome' },
@@ -208,7 +213,8 @@ module.exports = function(grunt) {
 					'<%= assetsDir %>/js/angular.js',
 					'<%= assetsDir %>/js/angular-cookies.js',
 					'<%= assetsDir %>/js/loading-bar.js',
-					'<%= assetsDir %>/js/angular-touch.js',
+					//'<%= assetsDir %>/js/fastclick.js',
+					//'<%= assetsDir %>/js/angular-touch.js',
 					'<%= assetsDir %>/js/lodash.js',
 					'<%= assetsDir %>/js/angular-locale_en.js',
 					'<%= assetsDir %>/js/angular-resource.js',

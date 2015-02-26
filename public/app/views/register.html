@@ -1,58 +1,40 @@
+<h3>Register</h3>
+<div class="well">
+	<form ng-submit="register()" novalidate="" name="registerForm">
 
-<div class="container">
-	<form class="form-horizontal" ng-submit="register()">
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
 
-		<div class="panel panel-primary">
+        <fieldset>
+            <!--<legend>Registration Information</legend>-->
+            <div class="form-group" ng-class="{'has-error': registerForm.inputEmail.$invalid && submitted}">
+                <label for="inputEmail" class="control-label">Email</label>
+                <input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Email" ng-model="email" required>
+                <span ng-show="registerForm.inputEmail.$error.required && submitted" class="help-block">Email is required.</span>
+                <span ng-show="registerForm.inputEmail.$error.email && submitted" class="help-block">Email is invalid.</span>
+            </div>
 
-			<div class="panel-heading">
-				<h3 class="panel-title">Register</h3>
-			</div>
+            <div class="form-group">
+                <label for="username" class="control-label">User Name</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter a username" ng-model="username">
+            </div>
 
-			<div class="panel-body">
+            <div class="form-group" ng-class="{'has-error': registerForm.inputPassword.$invalid && submitted}">
+                <label class="control-label" for="inputPassword">Password</label>
+                <input type="password" class="form-control" ng-pattern="/^(?=.*[0-9])(?=.*[a-zA-Z])[0-9a-zA-Z]{6,18}/" min="6" maxlength="18" id="inputPassword" name="inputPassword" placeholder="Password" ng-model="password" required>
+                <span class="help-block" ng-hide="!submitted || !registerForm.inputPassword.$error.pattern">Must include at least one number, one letter and must be between 6 and 16 characters long.</span>
+                <span ng-show="registerForm.inputPassword.$error.required && submitted" class="help-block">Password is required.</span>
+                <span ng-show="registerForm.inputPassword.$error.minlength && submitted" class="help-block">Password needs to be at least 6 characters long.</span>
+                <span ng-show="registerForm.inputPassword.$error.maxlength && submitted" class="help-block">Password needs to be at most 18 characters long.</span>
+            </div>
 
-				<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+            <div class="form-group" ng-class="{'has-error': registerForm.confirmPassword.$invalid && submitted}">
+                <label class="control-label" for="confirmPassword">Confirm Password</label>
+                <input type="password" class="form-control" ng-pattern="/^(?=.*[0-9])(?=.*[a-zA-Z])[0-9a-zA-Z]{6,18}/" min="6" maxlength="18" id="confirmPassword" name="confirmPassword" placeholder="Password" ng-model="password_confirmation" required>
+                <span ng-show="registerForm.confirmPassword.$error.required && submitted" class="help-block">Password needs to be entered a second time.</span>
+                <span class="help-block" ng-show="registerForm.inputPassword.$error.pattern && submitted">Must include at least one number, one letter and must be between 6 and 16 characters long.</span>
+            </div>
+        </fieldset>
 
-				<fieldset>
-					<!--<legend>Registration Information</legend>-->
-					<div class="form-group">
-						<label class="col-md-2 control-label" for="inputEmail">Email</label>
-						<div class="col-md-10">
-							<input type="email" id="inputEmail" placeholder="Email" ng-model="email" required>
-						</div>
-					</div>
-
-                    <div class="form-group">
-                        <label class="col-md-2 control-label" for="username">User Name</label>
-                        <div class="col-md-10">
-                            <input type="text" id="username" placeholder="Enter a username" ng-model="username">
-                        </div>
-                    </div>
-
-					<div class="form-group">
-						<label class="col-md-2 control-label" for="inputPassword">Password</label>
-						<div class="col-md-10">
-							<input type="password" ng-pattern="/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,18}/" min="6" maxlength="18" id="inputPassword" placeholder="Password" ng-model="password" required>
-							<span class="help-block">Must include at least one number, lowercase letter, uppercase letter and must be between 6 and 16 characters long.</span>
-						</div>
-					</div>
-
-					<div class="form-group">
-						<label class="col-md-2 control-label" for="confirmPassword">Confirm Password</label>
-						<div class="col-md-10">
-							<input type="password" ng-pattern="/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,18}/" min="6" maxlength="18" id="confirmPassword" placeholder="Password" ng-model="password_confirmation" required>
-							<span class="help-block">Must include at least one number, lowercase letter, uppercase letter and must be between 6 and 16 characters long.</span>
-						</div>
-					</div>
-				</fieldset>
-
-				<fieldset>
-					<div class="form-group">
-						<div class="col-md-offset-2 col-md-10">
-							<button type="submit" class="btn btn-primary">Sign in</button>
-						</div>
-					</div>
-				</fieldset>
-			</div>
-		</div>
+        <button type="submit" class="btn btn-primary">Sign in</button>
 	</form>
 </div>

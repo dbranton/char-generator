@@ -1,5 +1,5 @@
-var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ngTouch', 'ui.bootstrap', 'ui.router', 'ui.select',
-        'ngTable', 'angular-loading-bar'])
+var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.router', 'ui.select',
+        'ngTable', 'angular-loading-bar', 'mobile-angular-ui.core.fastclick'])
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
 
@@ -67,7 +67,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ngTouch
 
 	})
 
-	.run(function($rootScope, $http, CSRF_TOKEN, Flash){
+	.run(function($rootScope, $http, $state, CSRF_TOKEN, Flash){
 
 		$http.defaults.headers.common['csrf_token'] = CSRF_TOKEN;
         /*
@@ -80,7 +80,17 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ngTouch
         $rootScope.$on('handleAuthentication', function(event, args) {
             $rootScope.userId = args.userId;
         });
+
+        $rootScope.$on('$stateChangeSuccess', function (evt, toState) {
+            if (toState.name === 'home' || toState.name === 'character') {
+                if (!sessionStorage.userId) {
+                    $state.go('login');
+                }
+            }
+        });
         $rootScope.userId = sessionStorage.userId || null;
+
+        //FastClick.attach(document.body);
 
         $rootScope.logout = function() {
             delete sessionStorage.userId;

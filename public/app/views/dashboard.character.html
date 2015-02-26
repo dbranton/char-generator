@@ -139,7 +139,7 @@
                 <td>
                     <ul class="list-inline">
                         <li ng-repeat="cantrip in character.cantrips">
-                            <a href="" popover="{{cantrip.html}}" popover-trigger="focus" tabindex="{{$index}}">
+                            <a href="" ng-click="openSpellInfoDialog(cantrip)">
                                 {{cantrip.name}}
                             </a>
                         </li>
@@ -151,7 +151,7 @@
                 <td>
                     <ul class="list-inline">
                         <li ng-repeat="spell in spells">
-                            <a href="" popover="{{spell.html}}" popover-trigger="focus" tabindex="{{$index}}">
+                            <a href="" ng-click="openSpellInfoDialog(spell)">
                                 {{spell.name}}
                             </a>
                         </li>

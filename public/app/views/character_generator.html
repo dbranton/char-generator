@@ -5,10 +5,6 @@
     <h3>Character Generator</h3>
     <!--<span class="hide">{{isLoggedIn=<?php echo $is_logged_in; ?>}}</span>-->
     <span ng-hide="true">Loading Character Generator...</span>
-    <div ng-if="!isLoggedIn" class="alert alert-warning" ng-hide="successMessage">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        <p>You are not currently logged in. If saved, your character will be stored on the browser instead of your account.</p>
-    </div>
     <div id="successMsg" class="alert alert-success" ng-show="successMessage">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <p>{{successMessage}}</p>
@@ -334,7 +330,7 @@
     <fieldset>
         <legend>Abilities</legend>
         <div collapse="!character.classObj.name">
-            <table class="table table-bordered table-striped table-condensed">
+            <table class="table-bordered table-striped table-condensed">
                 <thead>
                 <tr>
                     <th>Ability</th>
@@ -351,7 +347,7 @@
                     <td>Strength</td>
                     <td class="input-group">
                         <span type="button" class="input-group-addon btn btn-default" ng-click="incrementAbility('str', -1)"><i class="fa fa-minus"></i></span>
-                        <input type="text" class="ability form-control" readonly value="{{character.ability.str.score + (bonusAbility.str)}}" />
+                        <input type="text" class="ability form-control text-center" readonly value="{{character.ability.str.score + (bonusAbility.str)}}" />
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('str', 1)"><i class="fa fa-plus"></i></span>
                     </td>
                     <td><span ng-show="character.ability.str.mod >= 0">+</span>{{character.ability.str.mod}}</td>
@@ -361,7 +357,7 @@
                     <td>Dexterity</td>
                     <td class="input-group">
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('dex', -1)"><i class="fa fa-minus"></i></span>
-                        <input type="text" class="ability form-control" readonly value="{{character.ability.dex.score + (bonusAbility.dex)}}" />
+                        <input type="text" class="ability form-control text-center" readonly value="{{character.ability.dex.score + (bonusAbility.dex)}}" />
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('dex', 1)"><i class="fa fa-plus"></i></span>
                     </td>
                     <td><span ng-show="character.ability.dex.mod >= 0">+</span>{{character.ability.dex.mod}}</td>
@@ -371,7 +367,7 @@
                     <td>Constitution</td>
                     <td class="input-group">
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('con', -1)"><i class="fa fa-minus"></i></span>
-                        <input type="text" class="ability form-control" readonly value="{{character.ability.con.score + (bonusAbility.con)}}" />
+                        <input type="text" class="ability form-control text-center" readonly value="{{character.ability.con.score + (bonusAbility.con)}}" />
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('con', 1)"><i class="fa fa-plus"></i></span>
                     </td>
                     <td><span ng-show="character.ability.con.mod >= 0">+</span>{{character.ability.con.mod}}</td>
@@ -381,7 +377,7 @@
                     <td>Intelligence</td>
                     <td class="input-group">
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('int', -1)"><i class="fa fa-minus"></i></span>
-                        <input type="text" class="ability form-control" readonly value="{{character.ability.int.score + (bonusAbility.int)}}" />
+                        <input type="text" class="ability form-control text-center" readonly value="{{character.ability.int.score + (bonusAbility.int)}}" />
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('int', 1)"><i class="fa fa-plus"></i></span>
                     </td>
                     <td><span ng-show="character.ability.int.mod >= 0">+</span>{{character.ability.int.mod}}</td>
@@ -391,7 +387,7 @@
                     <td>Wisdom</td>
                     <td class="input-group">
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('wis', -1)"><i class="fa fa-minus"></i></span>
-                        <input type="text" class="ability form-control" readonly value="{{character.ability.wis.score + (bonusAbility.wis)}}" />
+                        <input type="text" class="ability form-control text-center" readonly value="{{character.ability.wis.score + (bonusAbility.wis)}}" />
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('wis', 1)"><i class="fa fa-plus"></i></span>
                     </td>
                     <td><span ng-show="character.ability.wis.mod >= 0">+</span>{{character.ability.wis.mod}}</td>
@@ -401,7 +397,7 @@
                     <td>Charisma</td>
                     <td class="input-group">
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('cha', -1)"><i class="fa fa-minus"></i></span>
-                        <input type="text" class="ability form-control" readonly value="{{character.ability.cha.score + (bonusAbility.cha)}}" />
+                        <input type="text" class="ability form-control text-center" readonly value="{{character.ability.cha.score + (bonusAbility.cha)}}" />
                         <span class="input-group-addon btn btn-default" ng-click="incrementAbility('cha', 1)"><i class="fa fa-plus"></i></span>
                     </td>
                     <td><span ng-show="character.ability.cha.mod >= 0">+</span>{{character.ability.cha.mod}}</td>
@@ -466,7 +462,22 @@
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Tools:</label>
-                    <div class="col-sm-8 text"><span ng-hide="character.tools">None</span>{{character.tools}}</div>
+                    <div class="col-sm-8 text">
+                        <span ng-hide="character.tools">None</span>
+                        {{character.tools}}
+                        <div ng-show="character.numToolChoices > 0">
+                            <ui-select multiple ng-model="character.selectedTools"
+                                       tools
+                                       max="{{character.numToolChoices}}"
+                                       theme="select2"
+                                       style="width: 100%;">
+                                <ui-select-match placeholder="Select your tools(s)">{{$item.name}}</ui-select-match>
+                                <ui-select-choices repeat="tool in availableTools | filter: {name: $select.search} | filterTools: character">
+                                    <div ng-bind-html="tool.name | highlight: $select.search"></div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-4 control-label">Languages:</label>

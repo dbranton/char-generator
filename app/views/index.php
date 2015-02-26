@@ -18,7 +18,7 @@
 </head>
 
 <body ng-app="myApp">
-<div class="scrollable">
+<div class="scrollable" style="padding-top:40px;">
 <!-- HEADER -->
 <div class="scrollable-header">
 <nav class="navbar-static-top navbar-inverse" role="navigation"> <!--navbar-fixed-top-->

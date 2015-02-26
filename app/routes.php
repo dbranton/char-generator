@@ -22,6 +22,7 @@ Route::group(array('prefix' => 'service'), function() {
     Route::resource('background_table', 'BackgroundController');
     Route::resource('class_table', 'ClassController');
     Route::resource('language_table', 'LanguageController');
+    Route::resource('tools_table', 'ToolsController');
     Route::get('spells_table/{class_id}/{max_spell_level}/{term?}', 'SpellsController@getSpellsBySchool'); //->where(array('class_id' => '[0-9]+', 'max_spell_level' => '[0-9]+', 'term' => '[a-z]+'));
     Route::get('cantrips/{class_id}/{term?}', 'SpellsController@getCantrips');
     Route::get('spells/{spell_id}', 'SpellsController@getSpell');
