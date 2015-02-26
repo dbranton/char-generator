@@ -83,7 +83,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
         $rootScope.$on('$stateChangeSuccess', function (evt, toState) {
             if ((toState.name === 'home' || toState.name === 'dashboard' || toState.name === 'character') &&
-                    !sessionStorage.userId) {
+                    !$rootScope.userId) {
                 $state.go('login');
             }
         });

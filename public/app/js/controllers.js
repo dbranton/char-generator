@@ -877,9 +877,9 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
                 'password': $sanitize($scope.password)
             },function(response) {
                 sessionStorage.userId = response.user.id;
+                $scope.$emit('handleAuthentication', {userId: sessionStorage.userId});
                 $state.go('dashboard');
                 Flash.clear();
-                $scope.$emit('handleAuthentication', {userId: response.user.id});
             },function(response){
                 $scope.alerts = [{ type: "danger", msg: response.data.message }];
             });
