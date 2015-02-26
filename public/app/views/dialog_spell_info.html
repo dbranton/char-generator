@@ -1,0 +1,23 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{spellObj.name}}</h4>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <i ng-if="spellObj.level == 0">{{spellObj.type}} Cantrip</i>
+                <i ng-if="spellObj.level > 0">Level {{spellObj.level}} {{spellObj.type}}</i>
+            </div>
+            <ul class="list-unstyled">
+                <li><b>Casting Time:</b> {{spellObj.casting_time}}</li>
+                <li><b>Range:</b> {{spellObj.range}}</li>
+                <li><b>Components:</b> {{spellObj.components}}</li>
+                <li><b>Duration:</b> {{spellObj.duration}}</li>
+            </ul>
+            <div ng-bind-html="spellObj.description"></div>
+        </div>	<!-- end col-md -->
+    </div>
+</div>
+<div class="modal-footer">
+    <button ng-click="close()" class="btn btn-default">Close</button>
+</div>

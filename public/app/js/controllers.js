@@ -876,9 +876,9 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
                 'email': $sanitize($scope.email),
                 'password': $sanitize($scope.password)
             },function(response) {
-                $state.go('dashboard');    // route to character generator screen
-                Flash.clear();
                 sessionStorage.userId = response.user.id;
+                $state.go('dashboard');
+                Flash.clear();
                 $scope.$emit('handleAuthentication', {userId: response.user.id});
             },function(response){
                 $scope.alerts = [{ type: "danger", msg: response.data.message }];
@@ -930,34 +930,30 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 })
 
 .controller('dashboardController', function($scope, $location, $modal, CharGenFactory, ngTableParams, Flash){
-    if (!sessionStorage.userId){
-        $location.path(locationName + '/login');
-    } else {
-        if ($scope.$parent.flash) {
-            $scope.flash = $scope.$parent.flash;
-            Flash.clear();  // clear $rootScope.flash
-        }
-        $scope.tableParams = new ngTableParams({
-            page: 1,            // show first page
-            count: 10           // count per page
-            /*sorting: {
-
-            }*/
-        }, {
-            counts: [], // hide page counts control
-            total: 0,   //$scope.characters.length, // length of data
-            getData: function($defer, params) {
-                CharGenFactory.Character().get({}, function(data) {
-                    $scope.characters = data.characters;
-                    // update table params
-                    params.total(data.characters.length);
-                    // set new data
-                    $defer.resolve(data.characters);
-                    //$defer.resolve($scope.characters.slice((params.page() - 1) * params.count(), params.page() * params.count()));
-                });
-            }
-        });
+    if ($scope.$parent.flash) {
+        $scope.flash = $scope.$parent.flash;
+        Flash.clear();  // clear $rootScope.flash
     }
+    $scope.tableParams = new ngTableParams({
+        page: 1,            // show first page
+        count: 10           // count per page
+        /*sorting: {
+
+        }*/
+    }, {
+        counts: [], // hide page counts control
+        total: 0,   //$scope.characters.length, // length of data
+        getData: function($defer, params) {
+            CharGenFactory.Character().get({}, function(data) {
+                $scope.characters = data.characters;
+                // update table params
+                params.total(data.characters.length);
+                // set new data
+                $defer.resolve(data.characters);
+                //$defer.resolve($scope.characters.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            });
+        }
+    });
 
     $scope.removeCharacter = function(character) {
         var opts = {
