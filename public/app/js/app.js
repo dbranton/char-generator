@@ -44,7 +44,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 	.config(function($httpProvider){
 
-		var interceptor = function($rootScope,$location,$q,Flash){
+		var interceptor = function($rootScope, $location, $q, Flash){
             var success = function(response){
                 return response;
             };

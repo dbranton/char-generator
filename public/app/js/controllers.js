@@ -855,7 +855,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
     }
 })
 
-.controller('loginController',function($scope, $sanitize, $location, Authenticate, Flash, $state, $stateParams, $interpolate){
+.controller('loginController',function($scope, $sanitize, $location, Authenticate, Flash, General, $state){
 
     /********
      * Alerts
@@ -876,7 +876,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
                 'email': $sanitize($scope.email),
                 'password': $sanitize($scope.password)
             },function(response) {
-                sessionStorage.userId = response.user.id;
+                General.setSessionStorageProp('userId', response.user.id);
                 $scope.$emit('handleAuthentication', {userId: response.user.id});
                 $state.go('dashboard');
                 Flash.clear();

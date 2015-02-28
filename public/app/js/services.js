@@ -21,6 +21,14 @@ angular.module('myApp')
     })
     .factory('General', function($modal) {
         return {
+            setSessionStorageProp: function(prop, val) {
+                try {
+                    sessionStorage[prop] = val;
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            },
             openDialog: function openDialog(opts) {
                 var localOpts = {
                     backdrop: true,
@@ -633,8 +641,8 @@ angular.module('myApp')
         };
         Character.prototype.determineBackground = function() {
             this.numToolChoices = 0;  // reset
-            if (this.background.num_tool_choices) {
-                this.numToolChoices++
+            if (this.background.num_tool_choices > 0) {
+                this.numToolChoices++;
                 this.selectedTools = [];    // reset
             }
         };
