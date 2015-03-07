@@ -421,7 +421,7 @@
                 <label>Passive Perception:</label> {{character.passivePerception}}
                 <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft}} Skills Left</div>
                 <skills></skills>
-                <div class="form-group" ng-show="character.classObj.expertise">
+                <div class="form-group" ng-if="character.classObj.expertise">
                     <label class="col-sm-4 control-label">{{character.classObj.expertise.label}}:</label>
                     <div class="col-sm-8">
                         <!--character.classObj.expertise.selectedExpertise-->
@@ -430,9 +430,9 @@
                                    max="{{character.classObj.expertise.numExpertise}}"
                                    theme="select2"
                                    style="width: 100%;">
-                            <ui-select-match>{{$item}}</ui-select-match>
-                            <ui-select-choices repeat="expertise in character.classObj.expertise.list | filter: $select.search">
-                                <div ng-bind-html="expertise | highlight: $select.search"></div>
+                            <ui-select-match>{{$item.name}}</ui-select-match>
+                            <ui-select-choices repeat="expertise in character.classObj.expertise.list | orderBy: 'name' | filter: $select.search">
+                                <div ng-bind-html="expertise.name | highlight: $select.search"></div>
                             </ui-select-choices>
                         </ui-select>
                     </div>

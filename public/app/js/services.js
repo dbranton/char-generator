@@ -62,14 +62,14 @@ angular.module('myApp')
                 $scope.featureType = featureType;
 
                 $scope.showDescription = function(selectobj) {
-                    $scope.selectedItem = angular.copy(selectobj); // used in UI
+                    $scope.selectedItem = angular.copy(selectobj.item); // used in UI
                     if (!$scope.selectedItem.locked) {
                         if (!$scope.selectedItem.active && $scope.max - $scope.tempItems.length > 0) {
                             $scope.tempItems.push($scope.selectedItem);
-                            selectobj.active = true;
+                            selectobj.item.active = true;
                         } else if ($scope.selectedItem.active) {
                             $scope.tempItems = _.reject($scope.tempItems, {'name': $scope.selectedItem.name});
-                            selectobj.active = false;
+                            selectobj.item.active = false;
                         }
                         $scope.disabled = $scope.max - $scope.tempItems.length > 0; // disabled is true if there are still features left to choose
                     }
@@ -139,9 +139,9 @@ angular.module('myApp')
                             }
                             that.updateSkillScore(skill.name);
                             if (isAdded) {  // add skill
-                                if (that.classObj.selectedSkills && that.classObj.selectedSkills.indexOf(skill.name) === -1) {
-                                    that.classObj.selectedSkills.push(skill.name);
-                                    that.classObj.selectedSkills.sort(); // no need to sort a spliced array
+                                if (that.classObj.selectedSkills && that.classObj.selectedSkills.getIndexBy('id', skill.id) === -1) {
+                                    that.classObj.selectedSkills.push({id: skill.id, name: skill.name});
+                                    //that.classObj.selectedSkills.sort(); // no need to sort a spliced array
                                     that.numSkillsLeft--;
                                 }
                                 if (that.numSkillsLeft === 0) {
@@ -154,11 +154,11 @@ angular.module('myApp')
                                     that.enableSkills(false);  // then disable all skills except the checked ones
                                 }
                             } else {    // remove skill
-                                _.pull(that.classObj.selectedSkills, skill.name);
+                                _.remove(that.classObj.selectedSkills, {'id': skill.id});
                                 // remove skill from expertise if it exists
                                 if (that.classObj.expertise && that.classObj.expertise.selectedExpertise &&
-                                        that.classObj.expertise.selectedExpertise.indexOf(skill.name) !== -1) {
-                                    _.pull(that.classObj.expertise.selectedExpertise, skill.name);
+                                        that.classObj.expertise.selectedExpertise.getIndexBy('id', skill.id) !== -1) {
+                                    _.remove(that.classObj.expertise.selectedExpertise, {'id': skill.id});
                                     if (that.classObj.expertise.type === 'expertise') {
                                         that.numSkillsLeft++; // +4 to +0: 'expertise' only
                                     }
@@ -229,11 +229,11 @@ angular.module('myApp')
             angular.forEach(this.skills, function(skill, i) {
                 if (!skillName || skill.name === skillName) {   // skillName might be an array of skills
                     if (angular.isDefined(isAdded)) {   // means that it is an expertise skill
-                        if (selectedExpertise.indexOf(skill.name) !== -1) { // && !skill.proficient
+                        if (selectedExpertise.getIndexBy('id', skill.id) !== -1) { // && !skill.proficient
                             if (!skill.proficient) {    // level 1: +0 to +4
                                 skill.proficient = true;    // in case expertise skill is not proficient
-                                that.classObj.selectedSkills.push(skill.name);
-                                that.classObj.selectedSkills.sort();
+                                that.classObj.selectedSkills.push({id: skill.id, name: skill.name});
+                                //that.classObj.selectedSkills.sort();
                             } else if (skillName === skill.name && !skill.disabled &&
                                     that.classObj.expertise.type === 'selected_expertise') {   // level 1: +2 to +4
                                 //selectedExpertise[selectedExpertise.length-1]
@@ -244,19 +244,19 @@ angular.module('myApp')
                                 skill.disabled = true;
                             }
                         } else if (that.classObj.expertise.type === 'selected_expertise' && // removing expertise skill
-                                selectedExpertise.indexOf(skill.name) === -1 &&
-                                    that.classObj.expertise.list.indexOf(skill.name) !== -1 && skill.proficient) {
+                                selectedExpertise.getIndexBy('id', skill.id) === -1 &&
+                                    that.classObj.expertise.list.getIndexBy('id', skill.id) !== -1 && skill.proficient) {
                             skill.proficient = false;
                             if (that.numSkillsLeft > 0 && that.classObj.avail_skills.indexOf(skill.name) !== -1) {
                                 skill.disabled = false; // only enable skill if it belongs on the class skill list and numSkillsLeft > 0
                             }
-                            _.pull(that.classObj.selectedSkills, skill.name);
+                            _.remove(that.classObj.selectedSkills, {'id': skill.id});
                             //that.enableSkills(enabledSkills);
                         }
                     }
                     profBonus = skill.proficient ? that.profBonus : 0;
                     that.skills[i].val = profBonus + that.ability[abilityMapper[skill.ability]].mod;
-                    if (selectedExpertise && selectedExpertise.indexOf(skill.name) !== -1) {
+                    if (selectedExpertise && selectedExpertise.getIndexBy('id', skill.id) !== -1) {
                         that.skills[i].val += profBonus;
                         //that.enableSkills(enabledSkills);
                     }
@@ -502,18 +502,23 @@ angular.module('myApp')
                             that.raceObj.spellcasting = null;
                         }*/
                         that.handleSpellcasting();
-                    } else if (prop === 'expertise') {
+                    } else if (prop === 'expertise') {  // TODO: TEST THIS
                         expertiseArr = that.classObj.selectedSkills; //angular.copy(that.selectedSkills);
-                        bonusArray = featureBonus[prop].split(', ');    // ex: "2, Thieves' Tools"
-                        if (expertiseArr.indexOf(bonusArray[1]) === -1) {
+                        bonusArray = featureBonus[prop].split(', ');    // ex: [2, Thieves' Tools]
+                        /*if (expertiseArr.getIndexBy('name', bonusArray[1]) === -1) {
                             expertiseArr.push(bonusArray[1]);
-                        }
+                        }*/
                         that.classObj.expertise.type = prop;
                         that.classObj.expertise.numExpertise = bonusArray[0]; // ex: ['Acrobatics', ... , 'Thieves' Tools']
                         that.classObj.expertise.list = expertiseArr;
-                    } else if (prop === 'selected_expertise') {
-                        bonusArray = featureBonus[prop].split(', ');    // ex: [2, Arcana, History, Nature, Religion]
-                        expertiseArr = bonusArray.slice(1); // ex: [Arcana, History, Nature, Religion]
+                    } else if (prop === 'selected_expertise') { // TODO: TEST THIS
+                        bonusArray = featureBonus[prop].split(', ');
+                        expertiseArr = _.map(_.rest(bonusArray), function(item) { return parseInt(item); });    // ex: [12, 11, 16, 19]
+                        angular.forEach(that.skills, function(skillObj, idx) {
+                            if (expertiseArr.indexOf(skillObj.id) !== -1) {
+                                expertiseArr[expertiseArr.indexOf(skillObj.id)] = {id: skillObj.id, name: skillObj.name};
+                            }
+                        });
                         that.classObj.expertise.type = prop;
                         that.classObj.expertise.numExpertise = bonusArray[0];
                         that.classObj.expertise.list = expertiseArr;
@@ -657,7 +662,7 @@ angular.module('myApp')
                 classTools = this.classObj.tools.split(', ');
                 this.tools = this.tools.concat(classTools);
             }
-            if (this.background && this.background.tools && !this.background.num_tool_choices) { // background tools can be blank in the database
+            if (this.background && this.background.tools && this.background.num_tool_choices < 1) { // background tools can be blank in the database
                 backgroundTools = this.background.tools.split(', ');
                 this.tools = this.tools.concat(backgroundTools);
             } else if (angular.isArray(selectedTools)) {

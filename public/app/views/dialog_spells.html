@@ -5,10 +5,11 @@
 
     <p>{{spellsLeft - tempSpells.length}} Spells Left:</p>
     <div class="row">
-        <div class="col-md-5">
+        <div class="col-md-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
             <div ng-if="cantrips" class="list-group">
-                <a ng-repeat="spell in cantrips | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item" ng-class="{'active': spell.active}" href="">
+                <a ng-repeat="spell in cantrips | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
+                        ng-class="{'active': spell.active}" href="" ng-swipe-left="showInfo(this)">
                     {{spell.name}}
                 </a>
             </div>
@@ -21,14 +22,15 @@
                 </div>
                 <div id="{{$index}}" class="panel-body collapse in" style="padding:0;">
                     <div class="list-group" style="margin-bottom:0;">
-                        <a ng-repeat="spell in spells | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item" ng-class="{'active': spell.active}" href="">
+                        <a ng-repeat="spell in spells | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
+                                ng-class="{'active': spell.active}" href="" ng-swipe-left="showInfo(this)">
                             {{spell.name}}
                         </a>
                     </div>
                 </div>
             </div>
         </div>	<!-- end span -->
-        <div class="col-md-7 desc-col">
+        <div class="col-md-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
             <div ng-show="selectedSpell">
                 <h4>{{selectedSpell.name}}</h4>
                 <i>{{typeDescription}}</i>

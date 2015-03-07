@@ -1,0 +1,14 @@
+<dl ng-hide="!infoObj">
+    <!--<dt>Ability Score Increase</dt>
+    <dd>{{race_aba}} {{subrace_aba}}</dd>-->
+    <dt>Size</dt>
+    <dd>{{size}}</dd>
+    <dt>Speed</dt>
+    <dd>{{speed}}</dd>
+    <!--<dt>Languages</dt>
+    <dd>{{languages}}</dd>-->
+    <div ng-repeat="trait in traits">
+        <dt>{{trait.name}}</dt>
+        <dd ng-bind-html="trait.benefit"></dd>
+    </div>
+</dl>

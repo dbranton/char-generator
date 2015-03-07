@@ -1,28 +1,25 @@
+<!--<div ng-app="generator" ng-controller="CharGen">-->
 <div class="modal-header">
     <h4 class="modal-title">{{title}}</h4>
 </div>
 <div class="modal-body">
-    <p ng-show="!isInfoExpanded">{{max - tempItems.length}} {{featureType}} Left:</p>
     <div class="row">
         <div class="col-md-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
             <div class="list-group">
                 <a ng-repeat="item in items | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
-                    ng-class="{'active': item.active}" href="" ng-swipe-left="showInfo(this)">
+                        ng-class="{true:'active', false:''}[$index==selectedIndex]" href="" ng-swipe-left="showInfo(this)">
                     {{item.name}}
                 </a>
             </div>
         </div>	<!-- end span -->
         <div class="col-md-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
             <h4>{{featureType}}</h4>
-            <dl>
-                <dt>{{selectedItem.name}}</dt>
-                <dd ng-bind-html="selectedItem.description"></dd>
-            </dl>
+            <ng-include src="feature.url"></ng-include>
         </div> <!-- end span -->
     </div>
 </div>
 <div class="modal-footer">
-    <button ng-click="done()" ng-disabled="disabled" class="btn btn-primary">Done</button>
+    <button ng-click="done()" ng-disabled="!tempItem" class="btn btn-primary">Done</button>
     <button ng-click="close()" class="btn btn-default">Cancel</button>
 </div>

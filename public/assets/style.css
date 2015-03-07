@@ -1,4 +1,9 @@
 @media (min-width: 992px) {
+
+    .modal .desc-col {
+        display: block !important;
+    }
+
     .modal-body {
         max-height: 400px;
         overflow: hidden;
@@ -20,10 +25,6 @@
 
 .popover-lg {
     min-width: 400px;
-}
-
-.modal-overlay .desc-col {
-    display: none;
 }
 
 input.ng-invalid, .ng-dirty input.ng-invalid {

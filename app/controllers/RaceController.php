@@ -43,6 +43,7 @@ class RaceController extends \BaseController {
                     ->orderBy('name')
                     ->get()
                     ->toArray();
+                $raceObj['subrace_id'] = $raceObj['id'];
                 $raceObj['traits'] = $features;
                 $this->raceList[] = $raceObj;
             }

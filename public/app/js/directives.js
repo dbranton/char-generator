@@ -11,7 +11,7 @@ angular.module('myApp')
                     $scope.$select.limit = (angular.isDefined(value)) ? parseInt(value, 10) : undefined;
                 });
                 $scope.$watch('$select.selected', function(newValue, oldValue) {
-                    if (newValue && oldValue && newValue.length === 0 && (oldValue.length > newValue.length)) {    // on reset of selections, call removeChoice
+                    if (newValue && oldValue && (oldValue.length > newValue.length)) {    // on reset of selections, call removeChoice
                         showHideMaxMsg();
                     }
                 });
@@ -220,27 +220,67 @@ angular.module('myApp')
             }
         };
     })
-    .directive('expertise', function() {
+    .directive('expertise', function(General, $modal) {
         return {
             restrict: 'A',
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 scope.$watch(attrs.ngModel, function(newVal, oldVal) {
-                    var item, isAdded;
+                    var items, isAdded, pluckedNewVal, pluckedOldVal;
                     if (angular.isArray(newVal)) {
+                        pluckedNewVal = _.pluck(newVal, 'name');
+                        pluckedOldVal = oldVal ? _.pluck(oldVal, 'name')  : [];
                         if (scope.character.classObj.expertise) {
                             scope.character.classObj.expertise.selectedExpertise = newVal;
                         }
                         if (newVal.length > oldVal.length) {
                             isAdded = true;
-                            item = _.difference(newVal, oldVal)[0];
+                            items = _.difference(pluckedNewVal, pluckedOldVal);
                         } else if (newVal.length < oldVal.length) {
                             isAdded = false;    // remove
-                            item = _.difference(oldVal, newVal)[0];
+                            items = _.difference(pluckedOldVal, pluckedNewVal);
                         }
-                        scope.character.updateSkillScore(item, isAdded);
+                        angular.forEach(items, function(item) {
+                            scope.character.updateSkillScore(item, isAdded);
+                        });
                     }
                 });
+                // synchronize with the ngModel
+                scope.$watch('character.classObj.expertise.selectedExpertise', function(newVal, oldVal) {
+                    if (newVal) {
+                        scope.selectedExpertise = newVal;
+                    }
+                });
+
+                function DialogExpertiseController($scope, $modalInstance, expertiseData, max, expertiseIds, title, featureType) {
+                    General.DialogItemsController.apply(undefined, arguments);
+                }
+                scope.openExpertiseDialog = function() {
+                    var opts = {
+                        backdrop: true,
+                        keyboard: true,
+                        backdropClick: true,
+                        templateUrl: path + '/app/views/dialog_items.html',
+                        controller: DialogExpertiseController,
+                        resolve: {
+                            expertiseData: function() {
+                                return _.sortBy(scope.character.classObj.expertise.list, 'name')
+                            },
+                            max: function() { return parseInt(attrs.max) || 1; },
+                            expertiseIds: function() {
+                                return scope.selectedExpertise ? _.pluck(scope.selectedExpertise, 'id') : null;
+                            },
+                            title: function() { return 'Select Proficiencies'; },
+                            featureType: function() { return 'Proficiencies'; }
+                        }
+                    };
+                    if (deviceType === 'phone') {
+                        opts.windowClass = 'modal-overlay';
+                    }
+                    $modal.open(opts).result.then(function(selectedTools) {
+                        ngModel.$setViewValue(selectedTools);
+                    });
+                };
             }
         }
     })
@@ -320,12 +360,12 @@ angular.module('myApp')
                     });
                 }
             };
-            if (list[0].level === 0) {
-                $scope.cantrips = angular.copy(list);
-                preselectSpells($scope.cantrips);
-            } else {
+            if (list[0].level > 0) {
                 $scope.spells = _.groupBy(angular.copy(list), 'level_desc');
                 preselectSpells($scope.spells);
+            } else {
+                $scope.cantrips = angular.copy(list);
+                preselectSpells($scope.cantrips);
             }
             $scope.searchText = '';
             $scope.description = 'Click a list item to view more information';
@@ -334,20 +374,32 @@ angular.module('myApp')
             $scope.disabled = !angular.isArray(spellIds);
             $scope.spellsLeft = angular.copy(numSpells);
 
-            $scope.showDescription = function(selectobj) {
+            $scope.showDescription = function(selectobj, dontSelect) {
                 $scope.selectedIndex = selectobj.$index;
                 $scope.selectedSpell = angular.copy(selectobj.spell);
                 $scope.typeDescription = $scope.selectedSpell.level === 0 ? $scope.selectedSpell.type + ' Cantrip' :
                     'Level ' + $scope.selectedSpell.level + ' ' + $scope.selectedSpell.type;    // consider adding new property on server-side
-                if (!$scope.selectedSpell.active && $scope.spellsLeft - $scope.tempSpells.length > 0) {
-                    $scope.tempSpells.push($scope.selectedSpell); //.name
-                    selectobj.spell.active = true;
-                } else if ($scope.selectedSpell.active) {
-                    $scope.tempSpells.splice($scope.tempSpells.indexOf($scope.selectedSpell.name), 1); // remove cantrip
-                    selectobj.spell.active = false;
+                if (!dontSelect) {
+                    if (!$scope.selectedSpell.active && $scope.spellsLeft - $scope.tempSpells.length > 0) {
+                        $scope.tempSpells.push($scope.selectedSpell); //.name
+                        selectobj.spell.active = true;
+                    } else if ($scope.selectedSpell.active) {
+                        $scope.tempSpells.splice($scope.tempSpells.indexOf($scope.selectedSpell.name), 1); // remove cantrip
+                        selectobj.spell.active = false;
+                    }
+                    $scope.disabled = $scope.spellsLeft - $scope.tempSpells.length !== 0; // disabled is true if there are still cantrips left to choose
                 }
-                $scope.disabled = $scope.spellsLeft - $scope.tempSpells.length !== 0; // disabled is true if there are still cantrips left to choose
             };
+
+            $scope.showInfo = function(selectobj) {
+                if (selectobj) {
+                    $scope.showDescription(selectobj, true);
+                    $scope.isInfoExpanded = true;
+                } else {
+                    $scope.isInfoExpanded = false;
+                }
+            };
+
             $scope.done = function() {
                 if (angular.isArray($scope.tempSpells)) {
                     $modalInstance.close($scope.tempSpells);
@@ -364,7 +416,7 @@ angular.module('myApp')
             var placeholder = attrs.placeholder || 'spell(s)';
             if (deviceType === 'phone' || deviceType === 'tablet') {
                 return '<div>' +
-                    '<a href="" class="btn btn-default btn-block" ng-click="openSpellDialog()">' +
+                    '<a href="" class="btn btn-block" ng-click="openSpellDialog()" ng-class="selectedCantrips ? \'btn-primary\' : \'btn-default\'">' +
                         '<span ng-if="!selectedCantrips">Select your ' + placeholder + '</span>' +
                         '<span ng-if="selectedCantrips.length > 1">{{selectedCantrips.length}} ' + placeholder + ' selected</span>' +
                         '<span ng-if="selectedCantrips.length == 1">{{selectedCantrips[0].name}}</span>' +

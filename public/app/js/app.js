@@ -1,5 +1,5 @@
 var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.router', 'ui.select',
-        'ngTable', 'angular-loading-bar', 'mobile-angular-ui.core.fastclick'])
+        'ngTable', 'angular-loading-bar', 'mobile-angular-ui.core.fastclick', 'mobile-angular-ui.gestures.swipe'])
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
 

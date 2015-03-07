@@ -68,6 +68,7 @@ module.exports = function(grunt) {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/src/less', src: ['mobile-angular-ui.less'], dest: '<%= assetsDir %>/tmp/mobile-angular-ui' },
 					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/dist/js', src: ['mobile-angular-ui.js'], dest: '<%= assetsDir %>/js' },
+					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/dist/js', src: ['mobile-angular-ui.gestures.js'], dest: '<%= assetsDir %>/js' },
 					{ expand: true, cwd: '<%= bowerDir %>/mobile-angular-ui/dist/fonts', src: ['*'], dest: '<%= assetsDir %>/fonts' }
 				]
 			},
@@ -231,7 +232,8 @@ module.exports = function(grunt) {
 					'<%= assetsDir %>/js/ng-table.js',
 					'<%= assetsDir %>/js/jquery.js',
 					'<%= assetsDir %>/js/bootstrap.js',
-					'<%= assetsDir %>/js/mobile-angular-ui.js'
+					'<%= assetsDir %>/js/mobile-angular-ui.js',
+					'<%= assetsDir %>/js/mobile-angular-ui.gestures.js'
 				],
 				dest: '<%= assetsDir %>/tmp/concat.js'
 			}

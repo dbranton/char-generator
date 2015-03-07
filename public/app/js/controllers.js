@@ -72,18 +72,18 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     $scope.openRaceDialog = function() {
         var opts = {};
-        opts.templateUrl = path + '/app/views/dialog_race.html';
+        opts.templateUrl = path + '/app/views/dialog_item.html';
         opts.controller = DialogRaceController;
         opts.resolve = {
             raceData: function() { return angular.copy($scope.raceData); },
-            raceId: function() { return $scope.character.raceObj.id; }
+            raceId: function() { return $scope.character.raceObj.subrace_id; }
         };
         General.openDialog(opts);
     };
 
     $scope.openBackgroundDialog = function() {
         var opts = {};
-        opts.templateUrl = path + '/app/views/dialog_background.html';
+        opts.templateUrl = path + '/app/views/dialog_item.html';
         opts.controller = DialogBackgroundController;
         opts.resolve = {
             backgroundData: function() { return angular.copy($scope.backgroundData); },
@@ -94,7 +94,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     $scope.openClassDialog = function() {
         var opts = {};
-        opts.templateUrl = path + '/app/views/dialog_class.html';
+        opts.templateUrl = path + '/app/views/dialog_item.html';
         opts.controller = DialogClassController;
         opts.resolve = {
             classData: function() { return angular.copy($scope.classData); },
@@ -105,7 +105,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     $scope.openSubclassDialog = function() {
         var opts = {};
-        opts.templateUrl = path + '/app/views/dialog_class.html';
+        opts.templateUrl = path + '/app/views/dialog_item.html';
         opts.controller = DialogSubclassController;
         opts.resolve = {
             subclasses: function() { return angular.copy($scope.character.classObj.subclasses); },
@@ -116,7 +116,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     $scope.openFeatureDialog = function(selectedFeature, type) {
         var opts = {};
-        opts.templateUrl = path + '/app/views/dialog_features.html';
+        opts.templateUrl = path + '/app/views/dialog_items.html';
         opts.controller = DialogFeatureController;
         opts.resolve = {
             features: function() { return angular.copy(selectedFeature.choices); },    //$scope.character.classObj.featureChoices
@@ -588,39 +588,56 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     function DialogRaceController($scope, $modalInstance, raceData, raceId) {
         $scope.title = 'Select Race';
-        $scope.races = raceData;
+        $scope.items = raceData;
         $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
-        $scope.selectedIndex = angular.isNumber(raceId) ? $scope.races.getIndexBy('id', raceId) : null;
-        $scope.tempRace = angular.isNumber($scope.selectedIndex) ? $scope.races[$scope.selectedIndex] : '';
-        $scope.disabled = !angular.isNumber(raceId);
+        $scope.selectedIndex = angular.isNumber(raceId) ? $scope.items.getIndexBy('subrace_id', raceId) : null;
+        $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
         $scope.featureType = '';
+        $scope.feature = {
+            url: path + "/app/views/partials/dialog_race.html"
+        };
 
-        $scope.showDescription = function(selectobj) {
-            $scope.featureType = 'Race Traits';
-            $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
-            $scope.tempRace = selectobj.race;
+        $scope.showDescription = function(selectobj, dontSelect) {
+            $scope.infoObj = selectobj.item;
+            if (!dontSelect) {
+                $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
+                $scope.tempItem = $scope.infoObj;
+            }
+            $scope.featureType = $scope.infoObj.name + ' Traits';
             $scope.size = '';
             $scope.speed = '';
             $scope.traits = [];
-            $scope.disabled = false;
-            $scope.description = $scope.tempRace.description;
+            $scope.description = $scope.infoObj.description;
             //$scope.race_aba = raceObj.ability_score_adjustment;   // was for dialog UI
             //$scope.subrace_aba = subrace.ability_score_adjustment;
-            $scope.size = $scope.tempRace.size;
-            $scope.speed = $scope.tempRace.speed;
+            $scope.size = $scope.infoObj.size;
+            $scope.speed = $scope.infoObj.speed + ' ft.';
             //$scope.languages = raceObj.languages;
             $scope.racialTraitIds = [];
-            angular.forEach($scope.tempRace.traits, function(raceTrait) {
+            angular.forEach($scope.infoObj.traits, function(raceTrait) {
                 $scope.traits.push(new KeyValue(raceTrait.id, raceTrait.name, raceTrait.description));
                 //$scope.racialTraitIds.push(raceTrait.id);
             });
         };
 
+        $scope.showInfo = function(selectobj) {
+            if (selectobj) {
+                $scope.showDescription(selectobj, true);
+                $scope.isInfoExpanded = true;
+            } else {
+                $scope.isInfoExpanded = false;
+            }
+        };
+
+        if ($scope.tempItem) {
+            $scope.showDescription({item: $scope.tempItem, $index: $scope.selectedIndex});
+        }
+
         $scope.done = function() {
-            if ($scope.tempRace) {  // the subrace name
-                $scope.$emit('handleEmit', {race: $scope.tempRace, checked: true}); // racialTraits: $scope.traits, racialTraitIds: $scope.racialTraitIds,
+            if ($scope.tempItem) {  // the subrace name
+                $scope.$emit('handleEmit', {race: $scope.tempItem, checked: true}); // racialTraits: $scope.traits, racialTraitIds: $scope.racialTraitIds,
                 $modalInstance.close();
             } else {
                 alert("Please select a race");
@@ -634,36 +651,53 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     function DialogBackgroundController($scope, $modalInstance, backgroundData, backgroundId) {
         $scope.title = 'Select Background';
-        $scope.backgrounds = backgroundData;
+        $scope.items = backgroundData;
         $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
-        $scope.selectedIndex = angular.isNumber(backgroundId) ? $scope.backgrounds.getIndexBy('id', backgroundId) : null;
-        $scope.tempBackground = angular.isNumber($scope.selectedIndex) ? $scope.backgrounds[$scope.selectedIndex] : '';
-        $scope.disabled = !angular.isNumber(backgroundId);
+        $scope.selectedIndex = angular.isNumber(backgroundId) ? $scope.items.getIndexBy('id', backgroundId) : null;
+        $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
         $scope.featureType = '';
+        $scope.feature = {
+            url: path + "/app/views/partials/dialog_background.html"
+        };
         //$scope.tempBackground = '';
 
-        $scope.showDescription = function(selectobj) {
-            $scope.featureType = 'Background Trait';
-            $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
-            $scope.tempBackground = selectobj.background;
+        $scope.showDescription = function(selectobj, dontSelect) {
+            $scope.infoObj = selectobj.item;
+            if (!dontSelect) {
+                $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
+                $scope.tempItem = $scope.infoObj;
+            }
+            $scope.featureType = $scope.infoObj.name + ' Features';
             $scope.traitName = '';
             $scope.traitDesc = '';
             //$scope.skills = [];
             $scope.skills = '';
-            $scope.disabled = false;
-            $scope.description = $scope.tempBackground.desc;
-            $scope.traitName = $scope.tempBackground.trait_name;
-            $scope.traitDesc = $scope.tempBackground.trait_desc;
-            $scope.skills = $scope.tempBackground.skills;
-            $scope.tools = $scope.tempBackground.tools;
-            $scope.languages = $scope.tempBackground.language_desc;
+            $scope.description = $scope.infoObj.desc;
+            $scope.traitName = $scope.infoObj.trait_name;
+            $scope.traitDesc = $scope.infoObj.trait_desc;
+            $scope.skills = $scope.infoObj.skills;
+            $scope.tools = $scope.infoObj.tools;
+            $scope.languages = $scope.infoObj.language_desc;
         };
 
+        $scope.showInfo = function(selectobj) {
+            if (selectobj) {
+                $scope.showDescription(selectobj, true);
+                $scope.isInfoExpanded = true;
+            } else {
+                $scope.isInfoExpanded = false;
+            }
+        };
+
+        if ($scope.tempItem) {
+            $scope.showDescription({item: $scope.tempItem, $index: $scope.selectedIndex});
+        }
+
         $scope.done = function() {
-            if ($scope.tempBackground) {
-                $scope.$emit('handleEmit', {background: $scope.tempBackground, checked: true});
+            if ($scope.tempItem) {
+                $scope.$emit('handleEmit', {background: $scope.tempItem, checked: true});
                 $modalInstance.close();
             } else {
                 alert("Please select a background");
@@ -677,45 +711,62 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     // the dialog is injected in the specified controller
     function DialogClassController($scope, $modalInstance, classData, classId){
-        $scope.classes = classData;
+        $scope.items = classData;
         $scope.searchText = '';
         $scope.title = 'Select Class';
         $scope.description = 'Click a list item to view more information';
         $scope.featureType = '';
         $scope.features = [];
         $scope.tempClass = '';
-        $scope.selectedIndex = angular.isNumber(classId) ? $scope.classes.getIndexBy('id', classId) : null;
-        $scope.tempClass = angular.isNumber($scope.selectedIndex) ? $scope.classes[$scope.selectedIndex] : '';
-        $scope.disabled = !angular.isNumber(classId);
+        $scope.selectedIndex = angular.isNumber(classId) ? $scope.items.getIndexBy('id', classId) : null;
+        $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
+        $scope.feature = {
+            url: path + "/app/views/partials/dialog_class.html"
+        };
 
-        $scope.showDescription = function(selectobj) {
-            $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
-            $scope.tempClass = selectobj.class;
-            $scope.featureType = 'Class Features';
+        $scope.showDescription = function(selectobj, dontSelect) {
+            $scope.infoObj = selectobj.item;
+            if (!dontSelect) {
+                $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
+                $scope.tempItem = $scope.infoObj;
+            }
+            $scope.featureType = $scope.infoObj.name + ' Features';
             $scope.traits = [];
             $scope.traits2 = [];
             $scope.features = [];
-            $scope.disabled = false;
-            $scope.description = $scope.tempClass.desc;
+            $scope.description = $scope.infoObj.desc;
             $scope.traitsTitle = "Hit Points";
-            $scope.traits.push(new NameDesc("Hit Dice", "1d" + $scope.tempClass.hit_dice + " per " + $scope.tempClass.name + " level"),
-                new NameDesc("Hit Points at 1st Level", $scope.tempClass.hit_dice + " + your Constitution modifier"),
-                new NameDesc("Hit Points at Higher Levels", "1d" + $scope.tempClass.hit_dice + " + your Constitution modifier per " +
-                    $scope.tempClass.name + " level after 1st"));
+            $scope.traits.push(new NameDesc("Hit Dice", "1d" + $scope.infoObj.hit_dice + " per " + $scope.infoObj.name + " level"),
+                new NameDesc("Hit Points at 1st Level", $scope.infoObj.hit_dice + " + your Constitution modifier"),
+                new NameDesc("Hit Points at Higher Levels", "1d" + $scope.infoObj.hit_dice + " + your Constitution modifier per " +
+                    $scope.infoObj.name + " level after 1st"));
             $scope.traits2Title = "Proficiencies";
-            $scope.traits2.push(new NameDesc("Armor", $scope.tempClass.armor_shield_prof || "None"), new NameDesc("Weapons", $scope.tempClass.weapon_prof || "None"),
-                new NameDesc("Tools", $scope.tempClass.tools || "None"), new NameDesc("Saving Throws", $scope.tempClass.saving_throw_desc),
-                new NameDesc("Skills", $scope.tempClass.avail_skills_desc));
-            if (angular.isArray($scope.tempClass.features)) {
-                angular.forEach($scope.tempClass.features, function(obj) {
+            $scope.traits2.push(new NameDesc("Armor", $scope.infoObj.armor_shield_prof || "None"), new NameDesc("Weapons", $scope.infoObj.weapon_prof || "None"),
+                new NameDesc("Tools", $scope.infoObj.tools || "None"), new NameDesc("Saving Throws", $scope.infoObj.saving_throw_desc),
+                new NameDesc("Skills", $scope.infoObj.avail_skills_desc));
+            if (angular.isArray($scope.infoObj.features)) {
+                angular.forEach($scope.infoObj.features, function(obj) {
                     $scope.features.push(new NameDesc(obj.name, obj.description));
                 });
             }
         };
 
+        $scope.showInfo = function(selectobj) {
+            if (selectobj) {
+                $scope.showDescription(selectobj, true);
+                $scope.isInfoExpanded = true;
+            } else {
+                $scope.isInfoExpanded = false;
+            }
+        };
+
+        if ($scope.tempItem) {
+            $scope.showDescription({item: $scope.tempItem, $index: $scope.selectedIndex});
+        }
+
         $scope.done = function() {
-            if ($scope.tempClass) {
-                $scope.$emit('handleEmit', {clazz: $scope.tempClass, checked: true});
+            if ($scope.infoObj) {
+                $scope.$emit('handleEmit', {clazz: $scope.infoObj, checked: true});
                 $modalInstance.close();
             } else {
                 alert("Please select a class");
@@ -729,35 +780,52 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
     function DialogSubclassController($scope, $modalInstance, subclasses, subclassId){
         //$scope.class = character.classObj.name;
-        $scope.title = 'Select Subclass';   // change later
-        $scope.classes = subclasses;
+        var subclassType = angular.isArray(subclasses) ? subclasses[0].feature_name : 'Subclass';
+        $scope.title = 'Select ' + subclassType;
+        $scope.items = subclasses;
         $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.featureType = '';
         $scope.features = [];
-        $scope.tempSubclass = '';
-        $scope.selectedIndex = angular.isNumber(subclassId) ? $scope.classes.getIndexBy('id', subclassId) : null;
-        $scope.tempSubclass = angular.isNumber($scope.selectedIndex) ? $scope.classes[$scope.selectedIndex] : '';
-        $scope.disabled = !angular.isNumber(subclassId);
+        $scope.selectedIndex = angular.isNumber(subclassId) ? $scope.items.getIndexBy('id', subclassId) : null;
+        $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
+        $scope.feature = {
+            url: path + "/app/views/partials/dialog_class.html"
+        };
 
-        $scope.showDescription = function(selectobj) {
-            $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
-            $scope.tempSubclass = selectobj.class;
-            $scope.featureType = 'Subclass Features';
+        $scope.showDescription = function(selectobj, dontSelect) {
+            $scope.infoObj = selectobj.item;
+            if (!dontSelect) {
+                $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
+                $scope.tempItem = $scope.infoObj;
+            }
+            $scope.featureType = $scope.infoObj.name + ' Features';
             $scope.traits = [];
             $scope.features = [];
-            $scope.disabled = false;
-            $scope.description = $scope.tempSubclass.desc;
-            if (angular.isArray($scope.tempSubclass.features)) {
-                angular.forEach($scope.tempSubclass.features, function(obj) {
+            $scope.description = $scope.infoObj.desc;
+            if (angular.isArray($scope.infoObj.features)) {
+                angular.forEach($scope.infoObj.features, function(obj) {
                     $scope.features.push(new NameDesc(obj.name, obj.description));
                 });
             }
         };
 
+        $scope.showInfo = function(selectobj) {
+            if (selectobj) {
+                $scope.showDescription(selectobj, true);
+                $scope.isInfoExpanded = true;
+            } else {
+                $scope.isInfoExpanded = false;
+            }
+        };
+
+        if ($scope.tempItem) {
+            $scope.showDescription({item: $scope.tempItem, $index: $scope.selectedIndex});
+        }
+
         $scope.done = function() {
-            if ($scope.tempSubclass) {
-                $scope.$emit('handleEmit', {subclass: $scope.tempSubclass, checked: true});
+            if ($scope.tempItem) {
+                $scope.$emit('handleEmit', {subclass: $scope.tempItem, checked: true});
                 $modalInstance.close();
             } else {
                 alert("Please select a subclass");
@@ -768,47 +836,57 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
             $modalInstance.dismiss('cancel');
         };
     }
-    // TODO: support multiple selections
+
     function DialogFeatureController($scope, $modalInstance, features, index, type, max, featureIds) {    // selectedFeatures
-        $scope.title = 'Select Feature';
-        $scope.values = features;   // needed for UI
+        var parentFeature = angular.isArray(features) ? features[0].parent_name : 'Feature';
+        $scope.title = 'Select ' + parentFeature;
+        $scope.items = features;   // needed for UI
         $scope.searchText = '';
-        $scope.tempFeatures = [];
-        _.each($scope.values, function(obj, index, list) {
+        $scope.tempItems = [];
+        _.each($scope.items, function(obj, index, list) {
             if (obj.locked || (angular.isArray(featureIds) && featureIds.indexOf(obj.id) !== -1)) {
                 obj.active = true;
-                $scope.tempFeatures.push(obj);
+                $scope.tempItems.push(obj);
             }
             //obj.active = obj.locked ? true : false;
         });
 
         $scope.description = 'Click a list item to view more information';
         $scope.max = parseInt(max);
-        $scope.disabled = $scope.max - $scope.tempFeatures.length !== 0;
+        $scope.disabled = $scope.max - $scope.tempItems.length !== 0;
         $scope.featureType = '';
 
-        $scope.showDescription = function(selectobj) {
-            $scope.featureType = 'Features';
-            $scope.selectedFeature = angular.copy(selectobj.value); // used in UI
-            if (!$scope.selectedFeature.locked) {
-                if (!$scope.selectedFeature.active && $scope.max - $scope.tempFeatures.length > 0) {
-                    $scope.tempFeatures.push($scope.selectedFeature);
-                    selectobj.value.active = true;
-                } else if ($scope.selectedFeature.active) {
-                    $scope.tempFeatures = _.reject($scope.tempFeatures, {'name': $scope.selectedFeature.name});
-                    selectobj.value.active = false;
+        $scope.showDescription = function(selectobj, dontSelect) {
+            $scope.featureType = parentFeature;
+            $scope.selectedItem = angular.copy(selectobj.item); // used in UI
+            if (!$scope.selectedItem.locked && !dontSelect) {
+                if (!$scope.selectedItem.active && $scope.max - $scope.tempItems.length > 0) {
+                    $scope.tempItems.push($scope.selectedItem);
+                    selectobj.item.active = true;
+                } else if ($scope.selectedItem.active) {
+                    $scope.tempItems = _.reject($scope.tempItems, {'name': $scope.selectedItem.name});
+                    selectobj.item.active = false;
                 }
-                $scope.disabled = $scope.max - $scope.tempFeatures.length !== 0; // disabled is true if there are still features left to choose
+                $scope.disabled = $scope.max - $scope.tempItems.length !== 0; // disabled is true if there are still features left to choose
+            }
+        };
+
+        $scope.showInfo = function(selectobj) {
+            if (selectobj) {
+                $scope.showDescription(selectobj, true);
+                $scope.isInfoExpanded = true;
+            } else {
+                $scope.isInfoExpanded = false;
             }
         };
 
         $scope.done = function() {
             var tempFeatures = '';
-            if (angular.isArray($scope.tempFeatures)) {
+            if (angular.isArray($scope.tempItems)) {
                 // convert tempFeatures to sorted string
-                $scope.tempFeatures.sort();
+                $scope.tempItems.sort();
                 //tempFeatures = $scope.tempFeatures.join(', ');
-                $scope.$emit('handleEmit', {selectedFeatures: $scope.tempFeatures, featureIndex: index, type: type, checked: true});
+                $scope.$emit('handleEmit', {selectedFeatures: $scope.tempItems, featureIndex: index, type: type, checked: true});
                 $modalInstance.close();
             } else {
                 alert("Please select your features");
