@@ -23,7 +23,7 @@ class RaceController extends \BaseController {
                 ->orderBy('name')->get()->toArray();
             if (!empty($subraces)) {
                 foreach ($subraces as $subrace) {
-                    $raceObj['subrace_id'] = $subrace['id'];
+                    $raceObj['subrace_id'] = (int) $subrace['id'];
                     $raceObj['name'] = $subrace['subrace'];
                     $features = FeaturesTable::join('race_features', 'features_table.id', '=', 'race_features.feature_id')
                         ->where('race_features.race_id', '=', $raceObj['readable_id'])

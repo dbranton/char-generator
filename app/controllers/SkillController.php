@@ -2,6 +2,8 @@
 
 class SkillController extends \BaseController {
 
+    public $skillsList = array();
+
     public function __construct() {
         //$this->beforeFilter('serviceAuth');
         $this->beforeFilter('serviceCSRF');
@@ -14,9 +16,12 @@ class SkillController extends \BaseController {
      */
     public function index() {
         $skills = SkillTable::orderBy('name')->get()->toArray();
-
+        foreach ($skills as $skill) {
+            $skill['id'] = (int) $skill['id'];
+            $this->skillsList[] = $skill;
+        }
         return Response::json([
-            'skills' => $skills
+            'skills' => $this->skillsList
         ]);
     }
 }

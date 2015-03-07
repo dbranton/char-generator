@@ -1,6 +1,6 @@
 //var app = angular.module('myApp.controllers', ['ui.router'])
 
-app.controller('homeController', function($scope, $sanitize, $location, $state, Authenticate, Flash, General, CharGenFactory){
+app.controller('homeController', function($scope, $sanitize, $state, Authenticate, Flash, General, CharGenFactory){
     /********
      * Alerts
      ********/
@@ -40,15 +40,13 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         if ($scope.charGenForm.$valid) {
             CharGenFactory.Character().save({character: $scope.character},  // called at least 3 times!!!!
                 function(data, status, headers, config) {
-                    $location.path(locationName + '/dashboard');
+                    $state.go('dashboard');
                     Flash.show("You have successfully saved your character");
                     //$scope.errorMessage = null;
                 },
                 function(data, status, headers, config) {
                     $scope.successMessage = null;
                     $scope.errorMessage = data; // html string
-                    //$location.hash('wrap');
-                    //$anchorScroll();
                 }
             );
         }
@@ -76,7 +74,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         opts.controller = DialogRaceController;
         opts.resolve = {
             raceData: function() { return angular.copy($scope.raceData); },
-            raceId: function() { return $scope.character.raceObj.subrace_id; }
+            raceId: function() { return parseInt($scope.character.raceObj.subrace_id) || undefined; }
         };
         General.openDialog(opts);
     };
@@ -87,7 +85,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         opts.controller = DialogBackgroundController;
         opts.resolve = {
             backgroundData: function() { return angular.copy($scope.backgroundData); },
-            backgroundId: function() { return $scope.character.background.id; }
+            backgroundId: function() { return parseInt($scope.character.background.id) || undefined; }
         };
         General.openDialog(opts);
     };
@@ -98,7 +96,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         opts.controller = DialogClassController;
         opts.resolve = {
             classData: function() { return angular.copy($scope.classData); },
-            classId: function() { return $scope.character.classObj.id; }
+            classId: function() { return parseInt($scope.character.classObj.id) || undefined; }
         };
         General.openDialog(opts);
     };
@@ -109,7 +107,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         opts.controller = DialogSubclassController;
         opts.resolve = {
             subclasses: function() { return angular.copy($scope.character.classObj.subclasses); },
-            subclassId: function() { return $scope.character.classObj.subclassObj ? $scope.character.classObj.subclassObj.id : null; }
+            subclassId: function() { return $scope.character.classObj.subclassObj ? parseInt($scope.character.classObj.subclassObj.id) : undefined; }
         };
         General.openDialog(opts);
     };
@@ -592,7 +590,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         $scope.searchText = '';
         $scope.description = 'Click a list item to view more information';
         $scope.features = [];
-        $scope.selectedIndex = angular.isNumber(raceId) ? $scope.items.getIndexBy('subrace_id', raceId) : null;
+        $scope.selectedIndex = angular.isNumber(parseInt(raceId)) ? $scope.items.getIndexBy('subrace_id', raceId) : null;
         $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
         $scope.featureType = '';
         $scope.feature = {
@@ -933,7 +931,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
     }
 })
 
-.controller('loginController',function($scope, $sanitize, $location, Authenticate, Flash, General, $state){
+.controller('loginController',function($scope, $sanitize, Authenticate, Flash, General, $state){
 
     /********
      * Alerts
@@ -967,7 +965,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
 })
 
-.controller('registerController',function($scope,$sanitize,$location,Authenticate,Flash){
+.controller('registerController',function($scope, $sanitize, $state, Authenticate, Flash){
 
     /********
      * Alerts
@@ -989,7 +987,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
                 'password_confirmation': $sanitize($scope.password_confirmation),
                 'username': $sanitize($scope.username)
             }, function(response) {
-                $location.path(locationName + '/login');
+                $state.go('login');
                 //$scope.alerts = [{type: "success", msg: response.message}];
                 Flash.show(response.data.message);
                 //Flash.clear();
@@ -1007,7 +1005,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
 
 })
 
-.controller('dashboardController', function($scope, $location, $modal, CharGenFactory, ngTableParams, Flash){
+.controller('dashboardController', function($scope, $modal, CharGenFactory, ngTableParams, Flash){
     if ($scope.$parent.flash) {
         $scope.flash = $scope.$parent.flash;
         Flash.clear();  // clear $rootScope.flash
@@ -1057,7 +1055,7 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
         });
     };
 })
-.controller('characterController', function($scope, $stateParams, $location, CharGenFactory, General) {
+.controller('characterController', function($scope, $stateParams, $state, CharGenFactory, General) {
     $scope.openSpellInfoDialog = function(spellObj) {
         var opts = {};
         opts.templateUrl = path + '/app/views/dialog_spell_info.html';
@@ -1090,6 +1088,6 @@ app.controller('homeController', function($scope, $sanitize, $location, $state, 
             $scope.character.spells = _.groupBy($scope.character.spells, 'level');
         }
     }, function(response) {
-        $location.path(locationName + '/dashboard');    // redirect if character does not exist
+        $state.go('dashboard');    // redirect if character does not exist
     });
 });

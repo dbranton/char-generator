@@ -502,16 +502,13 @@ angular.module('myApp')
                             that.raceObj.spellcasting = null;
                         }*/
                         that.handleSpellcasting();
-                    } else if (prop === 'expertise') {  // TODO: TEST THIS
+                    } else if (prop === 'expertise') {
                         expertiseArr = that.classObj.selectedSkills; //angular.copy(that.selectedSkills);
-                        bonusArray = featureBonus[prop].split(', ');    // ex: [2, Thieves' Tools]
-                        /*if (expertiseArr.getIndexBy('name', bonusArray[1]) === -1) {
-                            expertiseArr.push(bonusArray[1]);
-                        }*/
+                        bonusArray = featureBonus[prop].split(', ');    // ex: [2]
                         that.classObj.expertise.type = prop;
-                        that.classObj.expertise.numExpertise = bonusArray[0]; // ex: ['Acrobatics', ... , 'Thieves' Tools']
+                        that.classObj.expertise.numExpertise = bonusArray[0]; // ex: 2
                         that.classObj.expertise.list = expertiseArr;
-                    } else if (prop === 'selected_expertise') { // TODO: TEST THIS
+                    } else if (prop === 'selected_expertise') {
                         bonusArray = featureBonus[prop].split(', ');
                         expertiseArr = _.map(_.rest(bonusArray), function(item) { return parseInt(item); });    // ex: [12, 11, 16, 19]
                         angular.forEach(that.skills, function(skillObj, idx) {
