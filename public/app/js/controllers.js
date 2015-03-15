@@ -21,6 +21,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
     $scope.searchText = ''; // necessary?
     $scope.subclasses = [];
     $scope.selectedExpertise = [];
+    $scope.selectedBonusAbilities = [];
     $scope.levels = CharGenFactory.getLevels(20);
     $scope.storedCharacter = null;
     //$scope.selectedSpells = [];
@@ -166,7 +167,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
         CharGenFactory.Classes().get({}, function(data) {
             $scope.classData = data.classes;
         });
-        //$scope.character = CharGenFactory.getPreparedCharacter();   // TODO: REMOVE LATER
+        //$scope.character = CharGenFactory.getPreparedCharacter();
     };
 
     $scope.broadcastObj = function(arr, name, prop) {
@@ -233,7 +234,9 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
                 $scope.background = null;
                 $scope.validating = false;  // reset validation
             }
-            //if (args.race && $scope.race) { // only true if user selected a different race
+            if (args.race && $scope.race) { // only true if user selected a different race
+                $scope.character.raceObj.selectedBonusAbilities = [];   // reset bonus abilities, if any
+            }
             $scope.character.resetRacialBonuses();
             //}
             if (args.race || args.background) {
@@ -504,9 +507,12 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
             // needs to be at the very end to alter existing properties
             if (!args.level && !args.selectedFeatures && !args.selectedCantrips && !args.selectedBonusCantrip) {
                 $scope.character.resetSkills();
-                $scope.character.handleSkills();
             }
             $scope.character.handleFeatureBonuses(features);
+            // needs to come after handleFeatureBonuses to account for racial bonus skills
+            if (!args.level && !args.selectedFeatures && !args.selectedCantrips && !args.selectedBonusCantrip) {
+                $scope.character.handleSkills();
+            }
             $scope.character.handleTools();
             args.checked = false;
         }

@@ -58,6 +58,21 @@
                     </div>
                 </div>
             </div>
+            <div class="form-group" ng-if="character.raceObj.bonusAbilities">
+                <label class="col-sm-4 control-label">Bonus Abilities:</label>
+                <div class="col-sm-8">
+                    <div>
+                        <a href="" class="btn btn-block" ng-click="openBonusAbilityDialog()"
+                            ng-class="selectedBonusAbilities.length ? 'btn-primary' : 'btn-default'"
+                            bonus-ability
+                            ng-model="selectedBonusAbilities"
+                            max="2">
+                            <span ng-if="selectedBonusAbilities.length == 0">Select your bonus abilities</span>
+                            <span ng-if="selectedBonusAbilities.length > 0">{{selectedBonusAbilities.length}} bonus abilities selected</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
             <div class="form-group" ng-show="character.raceObj.spellcasting.classId">
                 <label class="col-sm-4 control-label">Bonus Cantrip:</label>
                 <div class="col-sm-8">
@@ -125,7 +140,7 @@
                         <a href="" class="btn btn-block" ng-click="openFeatureDialog(selectedFeature, 'subclassArr')"
                                 ng-class="selectedFeature.name.length ? 'btn-primary' : 'btn-default'">
                             <span ng-if="!selectedFeature.name.length">Select {{selectedFeature.label}}</span>
-                            <span ng-if="selectedFeature.name.length == 1">{{selectedFeature.name[0]}}</span>
+                            <span ng-if="selectedFeature.name.length == 1">{{selectedFeature.name[0].name}}</span>
                             <span ng-if="selectedFeature.name.length > 1">{{selectedFeature.name.length}} features selected</span>
                         </a>
                     </div>
@@ -294,7 +309,7 @@
                     <div class="col-sm-8">
                         <!--character.classObj.expertise.selectedExpertise-->
 
-                        <div ng-show="character.classObj.expertise.numExpertise > 0">
+                        <div ng-if="character.classObj.expertise.numExpertise > 0">
                             <a href="" class="btn btn-block" ng-click="openExpertiseDialog()"
                                ng-class="selectedExpertise.length ? 'btn-primary' : 'btn-default'"
                                expertise

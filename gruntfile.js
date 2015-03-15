@@ -45,8 +45,9 @@ module.exports = function(grunt) {
 			},
 			fontawesome: {
 				files: [
-					{ expand: true, cwd: '<%= bowerDir %>/font-awesome/less', src: ['font-awesome.less'], dest: '<%= assetsDir %>/tmp/font-awesome' },
-					{ expand: true, cwd: '<%= bowerDir %>/font-awesome/font', src: ['*'], dest: '<%= assetsDir %>/fonts' }
+					{ expand: true, cwd: '<%= bowerDir %>/font-awesome', src: ['font-awesome'], dest: '<%= assetsDir %>' }
+					//{ expand: true, cwd: '<%= bowerDir %>/font-awesome/less', src: ['font-awesome.less'], dest: '<%= assetsDir %>/tmp/font-awesome' },
+					//{ expand: true, cwd: '<%= bowerDir %>/font-awesome/font', src: ['*'], dest: '<%= assetsDir %>/fonts' }
 				]
 			},
 			iehtml5: {
@@ -169,7 +170,7 @@ module.exports = function(grunt) {
 				files: {
 					'<%= assetsDir %>/tmp/bootstrap.css': '<%= assetsDir %>/less/bootstrap/main.less'
 				}
-			},
+			}/*,
 			fontawesome: {
 				options: {
 					ieCompat: true,
@@ -179,7 +180,7 @@ module.exports = function(grunt) {
 				files: {
 					'<%= assetsDir %>/tmp/font-awesome.css': '<%= assetsDir %>/less/font-awesome/main.less'
 				}
-			},
+			},*/
 			/*mobileangularui: {
 				options: {
 					ieCompat: true,
@@ -205,7 +206,7 @@ module.exports = function(grunt) {
 					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-base.css',
 					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-desktop.css',
 					'<%= assetsDir %>/tmp/bootstrap.css'
-					//'<%= assetsDir %>/tmp/font-awesome.css'
+					//'<%= assetsDir %>/font-awesome/css/font-awesome.css'
 				],
 				dest: '<%= assetsDir %>/tmp/concat.css'
 			},

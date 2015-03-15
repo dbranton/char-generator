@@ -11,7 +11,8 @@
 	<meta name="description" content="">
 	<meta name="Daniel Branton" content="">
 	<title>Character Generator</title>
-	<link href="//netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+	<!--<link href="//netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">-->
+    <link href="<?php echo $path; ?>/assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 	<link href="<?php echo $path; ?>/assets/style.min.css" rel="stylesheet">
     <link href="<?php echo $path; ?>/assets/style.css" rel="stylesheet">
     <base href="/">

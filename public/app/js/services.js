@@ -91,7 +91,14 @@ angular.module('myApp')
         var ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
         var MIN_ABILITY = 8;
         var MAX_ABILITY = 15;
-        //var ABILITY_MAPPER = {'str':'Strength', 'dex':'Dexterity', 'con':'Constitution', 'int':'Intelligence', 'wis':'Wisdom', 'cha':'Charisma'};
+        var ABILITY_MAPPER = [
+            {id:'str', name:'Strength'},
+            {id:'dex', name:'Dexterity'},
+            {id:'con', name:'Constitution'},
+            {id:'int', name:'Intelligence'},
+            {id:'wis', name:'Wisdom'},
+            {id:'cha', name:'Charisma'}
+        ];
 
         Array.prototype.getIndexBy = function (name, value) {
             for (var i = 0; i < this.length; i++) {
@@ -126,32 +133,35 @@ angular.module('myApp')
             this.profBonus = 0;
             this.passivePerception = 10;
         }
-        var enabledSkills;
         Character.prototype.updateSkillProficiency = function(skillName, isAdded, disabled) {   // if isAdded is false, then remove skill
             var that = this;
             if (angular.isArray(this.skills)) {
                 if (skillName) {
                     angular.forEach(this.skills, function(skill, i) {
-                        if (skillName.indexOf(skill.name) !== -1) {
+                        if (skillName.indexOf(skill.readable_id) !== -1) {
                             if (disabled) {    // skills[i].proficient will already be updated when user checks/unchecks a skill
                                 that.skills[i].proficient = isAdded;
                                 that.skills[i].disabled = true;
                             }
-                            that.updateSkillScore(skill.name);
+                            that.updateSkillScore(skill.readable_id);
                             if (isAdded) {  // add skill
                                 if (that.classObj.selectedSkills && that.classObj.selectedSkills.getIndexBy('id', skill.id) === -1) {
-                                    that.classObj.selectedSkills.push({id: skill.id, name: skill.name});
-                                    //that.classObj.selectedSkills.sort(); // no need to sort a spliced array
-                                    that.numSkillsLeft--;
-                                }
-                                if (that.numSkillsLeft === 0) {
-                                    enabledSkills = [];
-                                    that.skills.forEach(function(skill) {
-                                        if (skill.disabled === false) {
-                                            enabledSkills.push(skill.name);   // save currently enabled skills for later
+                                    that.classObj.selectedSkills.push({id: skill.id, readable_id: skill.readable_id, name: skill.name});
+                                    if (!disabled) {    // disabled is true if skill comes from background, so dont change skillsLeft if so
+                                        if (!that.bonusSkills || (that.bonusSkills && (that.raceObj.numSkillChoices - that.bonusSkills.length === 0))) {
+                                            that.numSkillsLeft--;
+                                        } else {
+                                            that.bonusSkills.push(skill.readable_id);
+                                            if (that.bonusSkills.length === that.raceObj.numSkillChoices) {
+                                                that.enableSkills(false);   // first disable all skills
+                                                that.enableSkills(true); // then enable class-only skills
+                                            }
                                         }
-                                    });
-                                    that.enableSkills(false);  // then disable all skills except the checked ones
+                                    }
+                                }
+                                if (that.numSkillsLeft === 0 ||
+                                        (that.bonusSkills && (that.numSkillsLeft + that.raceObj.numSkillChoices - that.bonusSkills.length === 0))) {
+                                    that.enableSkills(false);  // disable all skills except the checked ones
                                 }
                             } else {    // remove skill
                                 _.remove(that.classObj.selectedSkills, {'id': skill.id});
@@ -163,10 +173,17 @@ angular.module('myApp')
                                         that.numSkillsLeft++; // +4 to +0: 'expertise' only
                                     }
                                 } else {
-                                    that.numSkillsLeft++;
+                                    if (!that.bonusSkills || that.bonusSkills.indexOf(skill.readable_id) === -1) {
+                                        that.numSkillsLeft++;
+                                    } else {
+                                        that.bonusSkills.splice(that.bonusSkills.indexOf(skillName), 1);
+                                        if (that.raceObj.numSkillChoices - that.bonusSkills.length === 1) { // re-enable all skills
+                                            that.enableSkills(true);
+                                        }
+                                    }
                                 }
                                 if (that.numSkillsLeft === 1) {
-                                    that.enableSkills(enabledSkills);    // reenable proficient skills that were disabled
+                                    that.enableSkills(true); // reenable proficient skills that were disabled
                                 }
                             }
                         }
@@ -174,33 +191,34 @@ angular.module('myApp')
                 } else {    // wipe proficiencies for all skills
                     this.skills.forEach(function(skill, i) {
                         that.skills[i].proficient = false;
-                        that.updateSkillScore(skill.name);
+                        that.updateSkillScore(skill.readable_id);
                     });
                 }
             }
-            if (this.classObj.num_skills && disabled) { // disable is true if background was selected, or selected High Elf (perception)
-                this.numSkillsLeft = parseInt(this.classObj.num_skills);    // resets numSkills since some skills will be automatically selected
-            }
             this.getProficientSkills();
         };
-        Character.prototype.enableSkills = function(classSkills, backgroundSkills) {   // skills is an array, exceptions is comma separated string
-            var that = this;
-            if (angular.isArray(classSkills) && this.numSkillsLeft > 0) {
-                enabledSkills = [];
-                angular.forEach(classSkills, function(skill, i) {
-                    for (var index=0; index<that.skills.length; index++) {
-                        if (that.skills[index].name === skill) {
-                            break;
-                        }
+        Character.prototype.enableSkills = function(enableSkills) {   // skills is an array, exceptions is comma separated string
+            var that = this, currentSkill = '';
+            var backgroundSkills = that.background.skills;
+            var raceBonusSkill = that.raceObj.bonusSkill;   // ex: 'perception'
+            var classSkills = [];
+            if (enableSkills === true) {
+                if (that.classObj.avail_skills && (!that.raceObj.numSkillChoices ||
+                        (that.raceObj.numSkillChoices - that.bonusSkills.length === 0))) {
+                    classSkills = that.classObj.avail_skills.split(', ');
+                } else if (that.bonusSkills && (that.raceObj.numSkillChoices - that.bonusSkills.length > 0)) {
+                    classSkills = _.pluck(that.skills, 'readable_id');
+                }
+                angular.forEach(that.skills, function(skill, idx) {
+                    currentSkill = skill.readable_id;
+                    // only enable skill if it is a class skill, not a race bonus skill, and is not a background skill
+                    if (classSkills.indexOf(currentSkill) !== -1
+                            && (raceBonusSkill !== currentSkill)
+                            && (!backgroundSkills || backgroundSkills.indexOf(currentSkill) === -1)) {
+                        that.skills[idx].disabled = false;
                     }
-                    if (!backgroundSkills || backgroundSkills.indexOf(classSkills[i]) === -1) {
-                        that.skills[index].disabled = false;
-                        enabledSkills.push(that.skills[index].name); // ADDED 9/8/2014 in case something broke
-                    } else {    // class skill shares with background skill, so disable it
-                        that.skills[index].disabled = true;
-                    }
-                })
-            } else {    // disable everything that isn't checked
+                });
+            } else if (enableSkills === false) {    // disable everything that isn't checked
                 angular.forEach(that.skills, function(skill, i) {
                     if (that.skills[i].proficient === false) {
                         that.skills[i].disabled = true;
@@ -209,15 +227,18 @@ angular.module('myApp')
             }
         };
         Character.prototype.handleSkills = function() {
-            var classSkills = this.classObj.avail_skills ? this.classObj.avail_skills.split(', ') : [];    // disable everything if empty array
+            if (this.classObj.avail_skills && !this.raceObj.numSkillChoices) {
+                this.bonusSkills = null;
+            } else if (this.raceObj.numSkillChoices) {
+                this.bonusSkills = [];
+            }
             this.updateSkillProficiency(false); // wipe skill proficiencies
             this.enableSkills(false);   // disable all skills
             if (this.background) {
                 this.updateSkillProficiency(this.background.skills, true, true);
-                this.enableSkills(classSkills, this.background.skills);
-            } else {
-                this.enableSkills(classSkills);
+                //this.enableSkills(classSkills, this.background.skills);
             }
+            this.enableSkills(true);
         };
         Character.prototype.updateSkillScore = function(skillName, isAdded) {    // if no parameter, update all skills
             var abilityMapper = {
@@ -227,18 +248,18 @@ angular.module('myApp')
             var that = this;
             var selectedExpertise = this.classObj.expertise ? this.classObj.expertise.selectedExpertise : null;    // array/null
             angular.forEach(this.skills, function(skill, i) {
-                if (!skillName || skill.name === skillName) {   // skillName might be an array of skills
+                if (!skillName || skill.readable_id === skillName) {   // skillName might be an array of skills
                     if (angular.isDefined(isAdded)) {   // means that it is an expertise skill
                         if (selectedExpertise.getIndexBy('id', skill.id) !== -1) { // && !skill.proficient
                             if (!skill.proficient) {    // level 1: +0 to +4
                                 skill.proficient = true;    // in case expertise skill is not proficient
-                                that.classObj.selectedSkills.push({id: skill.id, name: skill.name});
+                                that.classObj.selectedSkills.push({id: skill.id, readable_id: skill.readable_id, name: skill.name});
                                 //that.classObj.selectedSkills.sort();
-                            } else if (skillName === skill.name && !skill.disabled &&
+                            } else if (skillName === skill.readable_id && !skill.disabled &&
                                     that.classObj.expertise.type === 'selected_expertise') {   // level 1: +2 to +4
                                 //selectedExpertise[selectedExpertise.length-1]
                                 that.numSkillsLeft++;
-                                that.enableSkills(enabledSkills);
+                                that.enableSkills(true);
                             }
                             if (that.classObj.expertise.type === 'selected_expertise') {
                                 skill.disabled = true;
@@ -261,7 +282,7 @@ angular.module('myApp')
                         //that.enableSkills(enabledSkills);
                     }
                     if (skill.name === "Perception") {
-                        that.passivePerception = 10 + that.skills[i].val;   // handle passive perception
+                        that.passivePerception = 10 + parseInt(that.skills[i].val);   // handle passive perception
                     }
                 }
             });
@@ -382,11 +403,23 @@ angular.module('myApp')
                     that.ability[ability].min = MIN_ABILITY;
                 }
             });
+            // handle bonus abilities from Half-Elf or Human variant
+            if (angular.isArray(that.raceObj.selectedBonusAbilities)) {
+                angular.forEach(that.raceObj.selectedBonusAbilities, function(obj, idx) {
+                    that.increaseAbilityScore(obj.id, 1);
+                });
+            }
         };
         Character.prototype.handleSpellcasting = function(objType) {    // classObj or raceObj
             var type = objType ? objType : 'classObj';
             this[type].spellcasting.spellSaveDC = 8 + this.profBonus + this.ability[this[type].spellcasting.spellAbility].mod;
             this[type].spellcasting.spellAttkBonus = this.profBonus + this.ability[this[type].spellcasting.spellAbility].mod;
+        };
+        Character.prototype.increaseAbilityScore = function(ability, value) {
+            this.ability[ability].score += value;
+            this.ability[ability].max += value;
+            this.ability[ability].min += value;
+            this.calculateModifiers(ability);
         };
         Character.prototype.handleFeatureBonuses = function(featureBonus) {
             var bonusArray = [], characterArray = [], that = this, expertiseArr;
@@ -406,10 +439,9 @@ angular.module('myApp')
                         that[prop] += (that.level * (parseInt(featureBonus[prop])));    // multiply hitPoint bonus by level
                     } else if (ABILITIES.indexOf(prop) !== -1) {    // ex: 'str', 'dex', etc.
                         //bonusArray = featureBonus[bonusProp].split(', ');   // primarily for human "1, 1, 1, 1, 1, 1" becomes an array
-                        that.ability[prop].score += parseInt(featureBonus[prop]);
-                        that.ability[prop].max += parseInt(featureBonus[prop]);
-                        that.ability[prop].min += parseInt(featureBonus[prop]);
-                        that.calculateModifiers(prop);
+                        that.increaseAbilityScore(prop, parseInt(featureBonus[prop]));
+                    } else if (prop === 'any') {
+                        that.raceObj.bonusAbilities = _.reject(ABILITY_MAPPER, {'id': featureBonus[prop]});
                     } else if (prop === 'armor' || prop === 'weapons') {
                         var allResults = '';
                         if (prop === 'armor') {
@@ -444,6 +476,9 @@ angular.module('myApp')
                         that.armorClass += that.ability[featureBonus[prop]].mod;
                     } else if (prop === 'skills') {
                         that.updateSkillProficiency(featureBonus[prop], true, true);
+                        that.raceObj.bonusSkill = featureBonus[prop];
+                    } else if (prop === 'bonus_skill_choices') { // can only come from raceFeatures for now
+                        that.raceObj.numSkillChoices = parseInt(featureBonus[prop]);  // e.g. 2
                     } else if (prop === 'cantrips') {
                         bonusArray = featureBonus[prop].split(', ');
                         that.classObj.cantrip = {

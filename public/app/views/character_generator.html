@@ -74,11 +74,27 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group" ng-show="character.raceObj.spellcasting.classId">
+            <div class="form-group" ng-if="character.raceObj.bonusAbilities">
+                <label class="col-sm-4 control-label">Bonus Abilities:</label>
+                <div class="col-sm-8">
+                    <ui-select id="bonusRaceAbilities"
+                               multiple
+                               max="2"
+                               ng-model="selectedBonusAbilities"
+                               bonus-ability
+                               theme="select2"
+                               style="width: 100%;">
+                        <ui-select-match placeholder="Pick your bonus abilities">{{$item.name}}</ui-select-match>
+                        <ui-select-choices repeat="ability in character.raceObj.bonusAbilities | filter: {name: $select.search}">
+                            <div ng-bind-html="ability.name | highlight: $select.search"></div>
+                        </ui-select-choices>
+                    </ui-select>
+                </div>
+            </div>
+            <div class="form-group" ng-if="character.raceObj.spellcasting.classId">
                 <label class="col-sm-4 control-label">Bonus Cantrip:</label>
                 <div class="col-sm-8">
                     <!--<div class="text" ng-hide="character.raceObj.cantrips">{{character.raceObj.cantrip}}</div>-->
-                    <!-- still needs work -->
                     <div class="input-group">
                         <!--<label class="input-group-addon btn btn-default" ng-click="openBonusCantripDialog(character.raceObj.spellcasting)">
                             <span class="fa fa-columns"></span>
@@ -330,7 +346,7 @@
     <fieldset>
         <legend>Abilities</legend>
         <div collapse="!character.classObj.name">
-            <table class="table-bordered table-striped table-condensed">
+            <table class="table-bordered table-striped table-condensed pull-right">
                 <thead>
                 <tr>
                     <th>Ability</th>
@@ -419,7 +435,7 @@
             <legend>Skills</legend>
             <div collapse="!character.classObj.name">
                 <label>Passive Perception:</label> {{character.passivePerception}}
-                <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft}} Skills Left</div>
+                <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft + character.raceObj.numSkillChoices - character.bonusSkills.length}} Skills Left</div>
                 <skills></skills>
                 <div class="form-group" ng-if="character.classObj.expertise">
                     <label class="col-sm-4 control-label">{{character.classObj.expertise.label}}:</label>

@@ -69,7 +69,7 @@ angular.module('myApp')
                 return '<div class="list-group">' +
                         '<label class="list-group-item" ng-repeat="skill in character.skills" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
                             '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
-                            '<span ng-show="skill.val >= 0">+</span>{{skill.val}} <span tooltip-placement="right" tooltip-html-unsafe="{{skill.description}}">{{skill.name}} ({{skill.ability}})</span>' +
+                            '<span ng-show="skill.val >= 0">+</span>{{skill.val}} {{skill.name}} ({{skill.ability}}) <i class="fa fa-info-circle pull-right" tooltip-placement="left" tooltip-html-unsafe="{{skill.description}}"></i>' +
                         '</label>' +
                     '</div>';
             }
@@ -79,7 +79,7 @@ angular.module('myApp')
             template: returnTemplate,
             link: function(scope, element, attrs) {
                 scope.selectSkill = function(skill) {
-                    scope.character.updateSkillProficiency(skill.name, skill.proficient);
+                    scope.character.updateSkillProficiency(skill.readable_id, skill.proficient);
                 };
             }
         };
@@ -220,37 +220,89 @@ angular.module('myApp')
             }
         };
     })
+    .directive('bonusAbility', function(General, $modal) {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                var ability, val = 0;
+                scope.character.raceObj.selectedBonusAbilities = [];
+                scope.$watch(attrs.ngModel, function(newVal, oldVal) {
+                    if (angular.isArray(newVal)) {
+                        scope.character.raceObj.selectedBonusAbilities = newVal;
+                        if (!oldVal || (newVal && newVal.length > oldVal.length)) {
+                            ability = _.difference(newVal, oldVal);
+                            val = 1;
+                        } else if (oldVal.length > newVal.length) {
+                            ability = _.difference(oldVal, newVal);
+                            val = -1;
+                        }
+                        if (angular.isArray(ability)) {
+                            angular.forEach(ability, function(obj) {
+                                scope.character.increaseAbilityScore(obj.id, val);
+                            });
+                        }
+                    }
+                });
+
+                function DialogBonusAbilityController($scope, $modalInstance, bonusAbilities, max, bonusAbilityIds, title, featureType) {
+                    General.DialogItemsController.apply(undefined, arguments);
+                }
+                scope.openBonusAbilityDialog = function() {
+                    var opts = {
+                        backdrop: true,
+                        keyboard: true,
+                        backdropClick: true,
+                        templateUrl: path + '/app/views/dialog_items.html',
+                        controller: DialogBonusAbilityController,
+                        resolve: {
+                            bonusAbilities: function() {
+                                return scope.character.raceObj.bonusAbilities;
+                            },
+                            max: function() { return 2; },
+                            bonusAbilityIds: function() {
+                                return scope.selectedBonusAbilities ? _.pluck(scope.selectedBonusAbilities, 'id') : null;
+                            },
+                            title: function() { return 'Select BonusAbilities'; },
+                            featureType: function() { return 'Abilities'; }
+                        }
+                    };
+                    if (deviceType === 'phone') {
+                        opts.windowClass = 'modal-overlay';
+                    }
+                    $modal.open(opts).result.then(function(selectedTools) {
+                        ngModel.$setViewValue(selectedTools);
+                    });
+                };
+            }
+        }
+    })
     .directive('expertise', function(General, $modal) {
         return {
             restrict: 'A',
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 scope.$watch(attrs.ngModel, function(newVal, oldVal) {
-                    var items, isAdded, pluckedNewVal, pluckedOldVal;
                     if (angular.isArray(newVal)) {
-                        pluckedNewVal = _.pluck(newVal, 'name');
-                        pluckedOldVal = oldVal ? _.pluck(oldVal, 'name')  : [];
                         if (scope.character.classObj.expertise) {
                             scope.character.classObj.expertise.selectedExpertise = newVal;
                         }
-                        if (newVal.length > oldVal.length) {
-                            isAdded = true;
-                            items = _.difference(pluckedNewVal, pluckedOldVal);
-                        } else if (newVal.length < oldVal.length) {
-                            isAdded = false;    // remove
-                            items = _.difference(pluckedOldVal, pluckedNewVal);
+                        if (angular.isArray(oldVal)) {
+                            angular.forEach(oldVal, function(item) {
+                                scope.character.updateSkillScore(item.readable_id, false);
+                            });
                         }
-                        angular.forEach(items, function(item) {
-                            scope.character.updateSkillScore(item, isAdded);
+                        angular.forEach(newVal, function(item) {
+                            scope.character.updateSkillScore(item.readable_id, true);
                         });
                     }
                 });
                 // synchronize with the ngModel
-                scope.$watch('character.classObj.expertise.selectedExpertise', function(newVal, oldVal) {
+                /*scope.$watch('character.classObj.expertise.selectedExpertise', function(newVal, oldVal) {
                     if (newVal) {
                         scope.selectedExpertise = newVal;
                     }
-                });
+                });*/
 
                 function DialogExpertiseController($scope, $modalInstance, expertiseData, max, expertiseIds, title, featureType) {
                     General.DialogItemsController.apply(undefined, arguments);
@@ -264,7 +316,7 @@ angular.module('myApp')
                         controller: DialogExpertiseController,
                         resolve: {
                             expertiseData: function() {
-                                return _.sortBy(scope.character.classObj.expertise.list, 'name')
+                                return _.sortBy(scope.character.classObj.expertise.list, 'name');
                             },
                             max: function() { return parseInt(attrs.max) || 1; },
                             expertiseIds: function() {
@@ -352,10 +404,17 @@ angular.module('myApp')
             $scope.tempSpells = [];
             var preselectSpells = function(arr) {
                 if (spellIds) {
-                    angular.forEach(arr, function(obj) {
-                        if (spellIds.indexOf(obj.id) !== -1) {
-                            obj.active = true;
-                            $scope.tempSpells.push(obj);
+                    angular.forEach(arr, function(spell) {
+                        if (angular.isObject(spell) && spellIds.indexOf(spell.id) !== -1) {
+                            spell.active = true;
+                            $scope.tempSpells.push(spell);
+                        } else if (angular.isArray(spell)) {
+                            angular.forEach(spell, function(obj) {
+                                if (spellIds.indexOf(obj.id) !== -1) {
+                                    obj.active = true;
+                                    $scope.tempSpells.push(obj);
+                                }
+                            });
                         }
                     });
                 }
