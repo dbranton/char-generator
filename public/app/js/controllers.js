@@ -1084,7 +1084,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
     CharGenFactory.Character($stateParams.characterId).get({}, function(data) {
         $scope.character = data.character;
         for (var prop in $scope.character) {
-            if ($scope.character.hasOwnProperty(prop) && !isNaN($scope.character[prop])) {
+            if ($scope.character.hasOwnProperty(prop) && angular.isNumber($scope.character[prop])) {
                 $scope.character[prop] = parseInt($scope.character[prop]);
             }
         }
