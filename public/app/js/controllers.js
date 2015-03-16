@@ -1083,11 +1083,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
 
     CharGenFactory.Character($stateParams.characterId).get({}, function(data) {
         $scope.character = data.character;
-        for (var prop in $scope.character) {
-            if ($scope.character.hasOwnProperty(prop) && angular.isNumber($scope.character[prop])) {
-                $scope.character[prop] = parseInt($scope.character[prop]);
-            }
-        }
+        $scope.character.passivePerception = 10 + parseInt($scope.character.perception);
         $scope.character.proficiencies = $scope.character.armor_prof ?
             $scope.character.armor_prof + ', ' + $scope.character.weapon_prof :
             $scope.character.weapon_prof;
