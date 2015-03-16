@@ -1083,7 +1083,13 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
 
     CharGenFactory.Character($stateParams.characterId).get({}, function(data) {
         $scope.character = data.character;
-        $scope.character.proficiencies = $scope.character.armor_prof ? $scope.character.armor_prof + ', ' + $scope.character.weapon_prof :
+        for (var prop in $scope.character) {
+            if ($scope.character.hasOwnProperty(prop) && !isNaN($scope.character[prop])) {
+                $scope.character[prop] = parseInt($scope.character[prop]);
+            }
+        }
+        $scope.character.proficiencies = $scope.character.armor_prof ?
+            $scope.character.armor_prof + ', ' + $scope.character.weapon_prof :
             $scope.character.weapon_prof;
         if ($scope.character.tool_prof) {
             $scope.character.proficiencies += ', ' + $scope.character.tool_prof;
