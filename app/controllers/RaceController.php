@@ -43,6 +43,10 @@ class RaceController extends \BaseController {
                     ->orderBy('name')
                     ->get()
                     ->toArray();
+                for ($i=0; $i<count($features); $i++) {
+                    $features[$i]['benefit_desc'] = str_replace('href', 'spell-info-dialog', $features[$i]['benefit_desc']);
+                }
+
                 $raceObj['subrace_id'] = $raceObj['id'];
                 $raceObj['traits'] = $features;
                 $this->raceList[] = $raceObj;

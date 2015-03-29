@@ -64,7 +64,7 @@ class SpellsController extends \BaseController {
 
     public function getSpell($spellId) {
         return Response::json([
-            'spell' => SpellsTable::where('id', '=', $spellId)->get()->toArray()
+            'spell' => SpellsTable::where('readable_id', '=', $spellId)->get()->toArray()    //was 'id'
         ]);
     }
 

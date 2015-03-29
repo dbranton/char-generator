@@ -177,7 +177,7 @@
                     <dl>
                         <div ng-repeat="racialTrait in character.raceObj.racialTraits">
                             <dt>{{racialTrait.name}}</dt>
-                            <dd ng-bind-html="racialTrait.benefit"></dd>
+                            <dd compile="racialTrait.benefit"></dd>
                         </div>
                     </dl>
                 </div>
@@ -186,7 +186,7 @@
                     <dl>
                         <div ng-repeat="classFeature in character.classObj.classFeatures">
                             <dt>{{classFeature.name}}</dt>
-                            <dd ng-bind-html="classFeature.benefit"></dd>
+                            <dd compile="classFeature.benefit"></dd>
                         </div>
                     </dl>
                 </div>

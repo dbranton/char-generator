@@ -1,6 +1,6 @@
 //var app = angular.module('myApp.controllers', ['ui.router'])
 
-app.controller('homeController', function($scope, $sanitize, $state, Authenticate, Flash, General, CharGenFactory){
+app.controller('homeController', function($scope, $sanitize, $state, $sce, Authenticate, Flash, General, CharGenFactory){
     /********
      * Alerts
      ********/
@@ -160,6 +160,11 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
         //$scope.storedCharacter = CharGenFactory.returnStoredCharacter();
         CharGenFactory.Races().get({}, function(data){
             $scope.raceData = data.races;
+            /*angular.forEach($scope.raceData, function(race) {
+                angular.forEach(race.traits, function(trait) {
+                    trait.benefit_desc = $sce.trustAsHtml(trait.benefit_desc);
+                });
+            });*/
         });
         CharGenFactory.Backgrounds().get({}, function(data) {
             $scope.backgroundData = data.backgrounds;
@@ -167,7 +172,6 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
         CharGenFactory.Classes().get({}, function(data) {
             $scope.classData = data.classes;
         });
-        //$scope.character = CharGenFactory.getPreparedCharacter();
     };
 
     $scope.broadcastObj = function(arr, name, prop) {
@@ -287,13 +291,18 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
             }
             //if ((args.clazz || $scope.clazz) && !args.subclass && !args.selectedFeature) {
             if (args.clazz || $scope.clazz) {
-                $scope.clazz = args.clazz || $scope.clazz;
+                $scope.clazz = angular.copy(args.clazz) || $scope.clazz;    // uses angular.copy to prevent selected subclass from persisting
                 if (args.clazz) {
                     $scope.character.classObj = $scope.clazz;   // used to determine if class contains subclasses
                     $scope.selectedFeature = null;    // reset
                     //$scope.character.selectedFeatures = [];       // reset // for featureChoices
-                    $scope.character.classObj.selectedFeatures = [];    // reset
-                    $scope.selectedChoices = {classArr: [], subclassArr: []}; //[];
+                    $scope.character.classObj.selectedFeatures = [];    // wipe out class feature choices
+                    if ($scope.character.classObj.subclassObj && $scope.character.classObj.subclassObj.selectedFeatures) {
+                        angular.forEach($scope.character.classObj.subclassObj.selectedFeatures, function(selectedFeature) {
+                            selectedFeature.name = [];    // wipe out subclass feature choices
+                        });
+                    }
+                    $scope.selectedChoices = {classArr: [], subclassArr: []};
                     $scope.character.determineClass();
                 }
                 if (args.subclass) {
@@ -385,7 +394,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
             }
             if (args.subclass || $scope.character.classObj.subclassObj) {
                 if (args.subclass) {
-                    $scope.character.classObj.subclassObj = args.subclass;
+                    $scope.character.classObj.subclassObj = angular.copy(args.subclass);
                     $scope.character.classObj.subclassObj.selectedFeatures = [];    // reset
                     $scope.selectedChoices.subclassArr = [];    // reset
                     $scope.character.classObj.spellcasting = null;
@@ -490,16 +499,6 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
                 $scope.character.background = $scope.background;
                 $scope.character.determineBackground();
             }
-            /*if (args.selectedCantrips) {
-                $scope.character.classObj.selectedCantrips = args.selectedCantrips; //.split(', ');
-                $scope.character.classObj.selectedClassCantrips = angular.copy($scope.character.classObj.selectedCantrips);
-            }
-            if (args.selectedSpells) {
-                $scope.character.classObj.selectedSpells = args.selectedSpells;
-            }
-            if (args.selectedBonusRaceCantrip) {
-                $scope.character.raceObj.cantrip = args.selectedBonusRaceCantrip;
-            }*/
 
             $scope.character.numLanguages = $scope.character.background ? parseInt($scope.character.background.languages) : 0;
             $scope.character.calculateModifiers(); // update ability modifiers
@@ -558,6 +557,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
             var selectedFeaturesArray = []; // expected outcome: array of objects
             var featureChoiceName = '';
             var classFeatures;
+            var featureDesc;
             if (type === 'classArr') {
                 classFeatures = $scope.character.classObj.selectedFeatures;
             } else if (type === 'subclassArr') {
@@ -575,8 +575,17 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
                         } else {
                             featureChoiceName = selectedFeature.name;
                         }
+                        if (angular.isArray(selectedFeature.benefits)) {
+                            angular.forEach(selectedFeature.benefits, function(benefit, idx) {
+                                if (benefit.level <= $scope.character.level) {
+                                    featureDesc = selectedFeature.benefits[idx].benefit_desc;
+                                }
+                            });
+                        } else {
+                            featureDesc = selectedFeature.description;
+                        }
                         // assume that feature choices have only one benefit
-                        $scope.character.classObj.classFeatures.push(new KeyValue(selectedFeature.benefits[0].id, featureChoiceName, selectedFeature.description));
+                        $scope.character.classObj.classFeatures.push(new KeyValue(selectedFeature.benefits[0].id, featureChoiceName, featureDesc));
                     }
                 });
             });
@@ -604,6 +613,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
         };
 
         $scope.showDescription = function(selectobj, dontSelect) {
+            var uniqueTraits = [];
             $scope.infoObj = selectobj.item;
             if (!dontSelect) {
                 $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
@@ -620,7 +630,8 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
             $scope.speed = $scope.infoObj.speed + ' ft.';
             //$scope.languages = raceObj.languages;
             $scope.racialTraitIds = [];
-            angular.forEach($scope.infoObj.traits, function(raceTrait) {
+            uniqueTraits = _.uniq($scope.infoObj.traits, 'feature_id');
+            angular.forEach(uniqueTraits, function(raceTrait) {
                 $scope.traits.push(new KeyValue(raceTrait.id, raceTrait.name, raceTrait.description));
                 //$scope.racialTraitIds.push(raceTrait.id);
             });
@@ -681,7 +692,7 @@ app.controller('homeController', function($scope, $sanitize, $state, Authenticat
             $scope.description = $scope.infoObj.desc;
             $scope.traitName = $scope.infoObj.trait_name;
             $scope.traitDesc = $scope.infoObj.trait_desc;
-            $scope.skills = $scope.infoObj.skills;
+            $scope.skills = _.pluck($scope.infoObj.skills, 'name').join(', ');
             $scope.tools = $scope.infoObj.tools;
             $scope.languages = $scope.infoObj.language_desc;
         };

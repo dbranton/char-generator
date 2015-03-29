@@ -51,6 +51,10 @@ class CharacterController extends \BaseController {
                     ->whereIn('rf.id', explode(', ', $character['racial_trait_ids']))
                     ->orderBy('name')
                     ->get();
+                // replace any hrefs in benefit_desc with spell-info-dialog attribute to be used by angular
+                foreach ($character['traits'] as $trait) {
+                    $trait->benefit_desc = str_replace('href', 'spell-info-dialog', $trait->benefit_desc);
+                }
             }
             if (!empty($character['class_feature_ids'])) {
                 $character['features'] = DB::table('class_features as cf')
@@ -65,6 +69,10 @@ class CharacterController extends \BaseController {
                     ->whereIn('cf.id', explode(', ', $character['class_feature_ids']))
                     ->orderBy('name')
                     ->get();
+                // replace any hrefs in benefit_desc with spell-info-dialog attribute to be used by angular
+                foreach ($character['features'] as $feature) {
+                    $feature->benefit_desc = str_replace('href', 'spell-info-dialog', $feature->benefit_desc);
+                }
             }
             if (!empty($character['cantrips'])) {
                 $character['cantrips'] = DB::table('spells_table')

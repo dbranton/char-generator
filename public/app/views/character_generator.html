@@ -38,7 +38,7 @@
                 <label class="col-sm-4 control-label">Race:</label>
                 <div class="col-sm-8">
                     <div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openRaceDialog()">
+                        <label class="input-group-addon btn btn-default" ng-click="openRaceDialog()">
                             <span class="fa fa-columns"></span>
                         </label>
                         <ui-select ng-model="character.raceObj"
@@ -58,7 +58,7 @@
                 <label class="col-sm-4 control-label">Background:</label>
                 <div class="col-sm-8">
                     <div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openBackgroundDialog()">
+                        <label class="input-group-addon btn btn-default" ng-click="openBackgroundDialog()">
                             <span class="fa fa-columns"></span>
                         </label>
                         <ui-select ng-model="character.background"
@@ -145,7 +145,7 @@
                 <label class="col-sm-4 control-label">Class:</label>
                 <div class="col-sm-8">
                     <div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openClassDialog()">
+                        <label class="input-group-addon btn btn-default" ng-click="openClassDialog()">
                             <span class="fa fa-columns"></span>
                         </label>
                         <ui-select ng-model="character.classObj"
@@ -165,7 +165,7 @@
                 <label class="col-sm-4 control-label">{{character.classObj.subclassName}}:</label>
                 <div class="col-sm-8">
                     <div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openSubclassDialog()">
+                        <label class="input-group-addon btn btn-default" ng-click="openSubclassDialog()">
                             <span class="fa fa-columns"></span>
                         </label>
                         <ui-select ng-model="character.classObj.subclassObj"
@@ -186,7 +186,7 @@
                 <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label> <!--Feature:</label>-->
                 <div class="col-sm-8">
                     <div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openFeatureDialog(selectedFeature, 'classArr')">
+                        <label class="input-group-addon btn btn-default" ng-click="openFeatureDialog(selectedFeature, 'classArr')">
                             <span class="fa fa-columns"></span>
                         </label>
                         <ui-select multiple ng-model="selectedFeature.name"
@@ -207,7 +207,7 @@
                 <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label> <!--Feature:</label>-->
                 <div class="col-sm-8">
                     <div class="input-group">
-                        <label class="hide-mobile input-group-addon btn btn-default" ng-click="openFeatureDialog(selectedFeature, 'subclassArr')">
+                        <label class="input-group-addon btn btn-default" ng-click="openFeatureDialog(selectedFeature, 'subclassArr')">
                             <span class="fa fa-columns"></span>
                         </label>
                         <ui-select multiple ng-model="selectedFeature.name"
@@ -239,10 +239,11 @@
                                    multiple
                                    list="classCantrips"
                                    max="{{character.classObj.cantrip.numSpellsKnown}}"
+                                   bonus-cantrip="{{character.classObj.cantrip.bonusCantrip}}"
                                    select2-spellcasting="character.classObj.cantrip"
                                    theme="select2"
                                    style="width: 100%;">
-                            <ui-select-match placeholder="Pick your cantrips">{{$item.name}}</ui-select-match>
+                            <ui-select-match placeholder="Pick your cantrips" ui-lock-choice="$item.disabled">{{$item.name}}</ui-select-match>
                             <ui-select-choices repeat="cantrip in $parent.classCantripsFiltered = (classCantrips | filterSpells: character.raceObj.cantrip)
                                                 | filter: {name: $select.search} | filterSpells: character.raceObj.cantrip"
                                                refresh="refreshSpells($select.search)"
@@ -353,11 +354,12 @@
                     <th>Base</th>
                     <th>Mod</th>
                     <th><abbr title="Saving Throws">ST</abbr></th>
+                    <th>Bonus</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td colspan="4">{{character.ability.pointsLeft + character.ability.bonusPoints - character.ability.bonusPointsLeftArr.length}} Points Left</td>
+                    <td colspan="5">{{character.ability.pointsLeft}} + {{character.ability.bonusPoints - character.ability.bonusPointsLeftArr.length}} Points Left</td>
                 </tr>
                 <tr>
                     <td>Strength</td>
@@ -368,6 +370,7 @@
                     </td>
                     <td><span ng-show="character.ability.str.mod >= 0">+</span>{{character.ability.str.mod}}</td>
                     <td><span ng-show="character.ability.str.savingThrow >= 0">+</span>{{character.ability.str.savingThrow}}</td>
+                    <td>+{{character.ability.str.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Dexterity</td>
@@ -378,6 +381,7 @@
                     </td>
                     <td><span ng-show="character.ability.dex.mod >= 0">+</span>{{character.ability.dex.mod}}</td>
                     <td><span ng-show="character.ability.dex.savingThrow >= 0">+</span>{{character.ability.dex.savingThrow}}</td>
+                    <td>+{{character.ability.dex.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Constitution</td>
@@ -388,6 +392,7 @@
                     </td>
                     <td><span ng-show="character.ability.con.mod >= 0">+</span>{{character.ability.con.mod}}</td>
                     <td><span ng-show="character.ability.con.savingThrow >= 0">+</span>{{character.ability.con.savingThrow}}</td>
+                    <td>+{{character.ability.con.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Intelligence</td>
@@ -398,6 +403,7 @@
                     </td>
                     <td><span ng-show="character.ability.int.mod >= 0">+</span>{{character.ability.int.mod}}</td>
                     <td><span ng-show="character.ability.int.savingThrow >= 0">+</span>{{character.ability.int.savingThrow}}</td>
+                    <td>+{{character.ability.int.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Wisdom</td>
@@ -408,6 +414,7 @@
                     </td>
                     <td><span ng-show="character.ability.wis.mod >= 0">+</span>{{character.ability.wis.mod}}</td>
                     <td><span ng-show="character.ability.wis.savingThrow >= 0">+</span>{{character.ability.wis.savingThrow}}</td>
+                    <td>+{{character.ability.wis.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Charisma</td>
@@ -418,6 +425,7 @@
                     </td>
                     <td><span ng-show="character.ability.cha.mod >= 0">+</span>{{character.ability.cha.mod}}</td>
                     <td><span ng-show="character.ability.cha.savingThrow >= 0">+</span>{{character.ability.cha.savingThrow}}</td>
+                    <td>+{{character.ability.cha.bonusPoints}}</td>
                 </tr>
                 </tbody>
                 <!--<tfoot>

@@ -43,7 +43,7 @@ class ClassController extends \BaseController {
                             foreach ($subclassFeatures as $subclassFeature) {
                                 if ($subclassFeature['parent_id'] == '0' || empty($subclassFeature['parent_id'])) {
                                     $subclassFeature = $this->_handleSubFeatures($subclassFeatures, $subclassFeature);
-                                    $subclassFeature['benefits'] = $this->_getClassBenefits($subclassFeature);;
+                                    $subclassFeature['benefits'] = $this->_getClassBenefits($subclassFeature);
                                     $this->subclassFeatureList[] = $subclassFeature;
                                 }
                             }
@@ -75,10 +75,15 @@ class ClassController extends \BaseController {
     }
 
     private function _getClassBenefits($feature) {
-        return DB::table('class_features')
+        $classBenefits = DB::table('class_features')
             ->where('feature_id', '=', $feature['id'])
             ->orderBy('level')
             ->get();
+        // replace any hrefs in benefit_desc with spell-info-dialog attribute to be used by angular
+        foreach ($classBenefits as $classBenefit) {
+            $classBenefit->benefit_desc = str_replace('href', 'spell-info-dialog', $classBenefit->benefit_desc);
+        }
+        return $classBenefits;
     }
 
     private function _handleSubFeatures($features, $feature) {

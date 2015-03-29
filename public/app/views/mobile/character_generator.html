@@ -220,11 +220,12 @@
                     <th>Base</th>
                     <th>Mod</th>
                     <th><abbr title="Saving Throws">ST</abbr></th>
+                    <th>Bonus</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td colspan="4">{{character.ability.pointsLeft + character.ability.bonusPoints - character.ability.bonusPointsLeftArr.length}} Points Left</td>
+                    <td colspan="5">{{character.ability.pointsLeft}} + {{character.ability.bonusPoints - character.ability.bonusPointsLeftArr.length}} Points Left</td>
                 </tr>
                 <tr>
                     <td>Strength</td>
@@ -235,6 +236,7 @@
                     </td>
                     <td><span ng-show="character.ability.str.mod >= 0">+</span>{{character.ability.str.mod}}</td>
                     <td><span ng-show="character.ability.str.savingThrow >= 0">+</span>{{character.ability.str.savingThrow}}</td>
+                    <td>+{{character.ability.str.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Dexterity</td>
@@ -245,6 +247,7 @@
                     </td>
                     <td><span ng-show="character.ability.dex.mod >= 0">+</span>{{character.ability.dex.mod}}</td>
                     <td><span ng-show="character.ability.dex.savingThrow >= 0">+</span>{{character.ability.dex.savingThrow}}</td>
+                    <td>+{{character.ability.dex.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Constitution</td>
@@ -255,6 +258,7 @@
                     </td>
                     <td><span ng-show="character.ability.con.mod >= 0">+</span>{{character.ability.con.mod}}</td>
                     <td><span ng-show="character.ability.con.savingThrow >= 0">+</span>{{character.ability.con.savingThrow}}</td>
+                    <td>+{{character.ability.con.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Intelligence</td>
@@ -265,6 +269,7 @@
                     </td>
                     <td><span ng-show="character.ability.int.mod >= 0">+</span>{{character.ability.int.mod}}</td>
                     <td><span ng-show="character.ability.int.savingThrow >= 0">+</span>{{character.ability.int.savingThrow}}</td>
+                    <td>+{{character.ability.int.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Wisdom</td>
@@ -275,6 +280,7 @@
                     </td>
                     <td><span ng-show="character.ability.wis.mod >= 0">+</span>{{character.ability.wis.mod}}</td>
                     <td><span ng-show="character.ability.wis.savingThrow >= 0">+</span>{{character.ability.wis.savingThrow}}</td>
+                    <td>+{{character.ability.wis.bonusPoints}}</td>
                 </tr>
                 <tr>
                     <td>Charisma</td>
@@ -285,6 +291,7 @@
                     </td>
                     <td><span ng-show="character.ability.cha.mod >= 0">+</span>{{character.ability.cha.mod}}</td>
                     <td><span ng-show="character.ability.cha.savingThrow >= 0">+</span>{{character.ability.cha.savingThrow}}</td>
+                    <td>+{{character.ability.cha.bonusPoints}}</td>
                 </tr>
                 </tbody>
                 <!--<tfoot>
