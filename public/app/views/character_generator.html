@@ -463,64 +463,38 @@
                 </div>
             </div>
         </fieldset>
-        <fieldset>
+        <fieldset ng-show="character.classObj.name && (character.numToolChoices > 0 || character.numLanguages > 0)">
             <legend>Proficiencies</legend>
-            <div collapse="!character.classObj.name">
-                <div class="form-group">
-                    <div class="col-sm-4 control-label">
-                        <label>Armor:</label>
-                    </div>
-                    <div class="col-sm-8 text">
-                        <span ng-hide="character.armor">None</span>
-                        {{character.armor}}
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-4 control-label">
-                        <label>Weapons:</label>
-                    </div>
-                    <div class="col-sm-8 text">
-                        <span ng-hide="character.weapons">None</span>
-                        {{character.weapons}}
-                    </div>
-                </div>
-                <div class="form-group">
+            <div> <!-- collapse="!character.classObj.name"-->
+                <div class="form-group" ng-show="character.numToolChoices > 0">
                     <label class="col-sm-4 control-label">Tools:</label>
-                    <div class="col-sm-8 text">
-                        <span ng-hide="character.tools">None</span>
-                        {{character.tools}}
-                        <div ng-show="character.numToolChoices > 0">
-                            <ui-select multiple ng-model="character.selectedTools"
-                                       tools
-                                       max="{{character.numToolChoices}}"
-                                       theme="select2"
-                                       style="width: 100%;">
-                                <ui-select-match placeholder="Select your tools(s)">{{$item.name}}</ui-select-match>
-                                <ui-select-choices repeat="tool in availableTools | filter: {name: $select.search} | filterTools: character">
-                                    <div ng-bind-html="tool.name | highlight: $select.search"></div>
-                                </ui-select-choices>
-                            </ui-select>
-                        </div>
+                    <div class="col-sm-8">
+                        <ui-select multiple ng-model="character.selectedTools"
+                                   tools
+                                   max="{{character.numToolChoices}}"
+                                   theme="select2"
+                                   style="width: 100%;">
+                            <ui-select-match placeholder="Select your tools(s)">{{$item.name}}</ui-select-match>
+                            <ui-select-choices repeat="tool in availableTools | filter: {name: $select.search} | filterTools: character">
+                                <div ng-bind-html="tool.name | highlight: $select.search"></div>
+                            </ui-select-choices>
+                        </ui-select>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" ng-show="character.numLanguages > 0">
                     <label class="col-sm-4 control-label">Languages:</label>
-                    <div class="col-sm-8 text">
-                        <span ng-hide="character.languages">None</span>
-                        {{character.languages}}
-                        <div ng-hide="!character.background.name || character.numLanguages == 0">
-                            <ui-select multiple ng-model="character.selectedLanguages"
-                                       languages="character.numLanguages"
-                                       bonus-languages="character.classObj.bonusLanguages"
-                                       max="{{select2Languages}}"
-                                       theme="select2"
-                                       style="width: 100%;">
-                                <ui-select-match placeholder="Select your language(s)">{{$item.name}}</ui-select-match>
-                                <ui-select-choices repeat="language in availableLanguages | filter: {name: $select.search}">
-                                    <div ng-bind-html="language.name | highlight: $select.search"></div>
-                                </ui-select-choices>
-                            </ui-select>
-                        </div>
+                    <div class="col-sm-8">
+                        <ui-select multiple ng-model="character.selectedLanguages"
+                                   languages="character.numLanguages"
+                                   bonus-languages="character.classObj.bonusLanguages"
+                                   max="{{select2Languages}}"
+                                   theme="select2"
+                                   style="width: 100%;">
+                            <ui-select-match placeholder="Select your language(s)">{{$item.name}}</ui-select-match>
+                            <ui-select-choices repeat="language in availableLanguages | filter: {name: $select.search}">
+                                <div ng-bind-html="language.name | highlight: $select.search"></div>
+                            </ui-select-choices>
+                        </ui-select>
                     </div>
                 </div>
             </div>
