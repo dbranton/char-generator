@@ -30,7 +30,8 @@ class ClassController extends \BaseController {
                     $classLevelBenefits = $this->_getClassBenefits($feature);
                     $feature = $this->_handleSubFeatures($features, $feature);
                     if ($feature['type'] == 'subclass') {
-                        $subclasses = ClassTable::join('subclass_features', 'class_table.id', '=', 'subclass_features.class_id')
+                        $subclasses = ClassTable::select('class_table.*')
+                            ->join('subclass_features', 'class_table.readable_id', '=', 'subclass_features.class_id')
                             ->where('active', '=', '1')
                             ->where('subclass_features.feature_id', '=', $feature['id'])
                             ->orderBy('name')

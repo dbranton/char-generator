@@ -31,6 +31,11 @@ module.exports = function(grunt) {
 					{ expand: true, cwd: '<%= bowerDir %>/angular-touch', src: ['angular-touch.js'], dest: '<%= assetsDir %>/js' }
 				]
 			},
+			angularwizard: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/angular-wizard/dist', src: ['angular-wizard.js'], dest: '<%= assetsDir %>/js' }
+				]
+			},
 			bootstrap: {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/bootstrap/less', src: ['bootstrap.less'], dest: '<%= assetsDir %>/tmp/bootstrap' },
@@ -62,7 +67,7 @@ module.exports = function(grunt) {
 			},
 			lodash: {
 				files: [
-					{ expand: true, cwd: '<%= bowerDir %>/lodash/dist', src: ['lodash.js'], dest: '<%= assetsDir %>/js' }
+					{ expand: true, cwd: '<%= bowerDir %>/lodash', src: ['lodash.js'], dest: '<%= assetsDir %>/js' }
 				]
 			},
 			mobileangularui: {
@@ -205,7 +210,8 @@ module.exports = function(grunt) {
 					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-hover.css',
 					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-base.css',
 					'<%= bowerDir %>/mobile-angular-ui/dist/css/mobile-angular-ui-desktop.css',
-					'<%= assetsDir %>/tmp/bootstrap.css'
+					'<%= assetsDir %>/tmp/bootstrap.css',
+					//'<%= bowerDir %>/angular-wizard/dist/angular-wizard.css'
 					//'<%= assetsDir %>/font-awesome/css/font-awesome.css'
 				],
 				dest: '<%= assetsDir %>/tmp/concat.css'
@@ -234,7 +240,8 @@ module.exports = function(grunt) {
 					'<%= assetsDir %>/js/jquery.js',
 					'<%= assetsDir %>/js/bootstrap.js',
 					'<%= assetsDir %>/js/mobile-angular-ui.js',
-					'<%= assetsDir %>/js/mobile-angular-ui.gestures.js'
+					'<%= assetsDir %>/js/mobile-angular-ui.gestures.js',
+					'<%= assetsDir %>/js/angular-wizard.js'
 				],
 				dest: '<%= assetsDir %>/tmp/concat.js'
 			}

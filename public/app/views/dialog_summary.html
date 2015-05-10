@@ -87,37 +87,37 @@
                             <tbody>
                             <tr>
                                 <td>Strength</td>
-                                <td>{{character.ability.str.score}}</td>
+                                <td>{{character.ability.str.adjScore}}</td>
                                 <td>{{character.ability.str.mod | addPlus}}</td>
                                 <td>{{character.ability.str.savingThrow | addPlus}}</td>
                             </tr>
                             <tr>
                                 <td>Dexterity</td>
-                                <td>{{character.ability.dex.score}}</td>
+                                <td>{{character.ability.dex.adjScore}}</td>
                                 <td>{{character.ability.dex.mod | addPlus}}</td>
                                 <td>{{character.ability.dex.savingThrow | addPlus}}</td>
                             </tr>
                             <tr>
                                 <td>Constitution</td>
-                                <td>{{character.ability.con.score}}</td>
+                                <td>{{character.ability.con.adjScore}}</td>
                                 <td>{{character.ability.con.mod | addPlus}}</td>
                                 <td>{{character.ability.con.savingThrow | addPlus}}</td>
                             </tr>
                             <tr>
                                 <td>Intelligence</td>
-                                <td>{{character.ability.int.score}}</td>
+                                <td>{{character.ability.int.adjScore}}</td>
                                 <td>{{character.ability.int.mod | addPlus}}</td>
                                 <td>{{character.ability.int.savingThrow | addPlus}}</td>
                             </tr>
                             <tr>
                                 <td>Wisdom</td>
-                                <td>{{character.ability.wis.score}}</td>
+                                <td>{{character.ability.wis.adjScore}}</td>
                                 <td>{{character.ability.wis.mod | addPlus}}</td>
                                 <td>{{character.ability.wis.savingThrow | addPlus}}</td>
                             </tr>
                             <tr>
                                 <td>Charisma</td>
-                                <td>{{character.ability.cha.score}}</td>
+                                <td>{{character.ability.cha.adjScore}}</td>
                                 <td>{{character.ability.cha.mod | addPlus}}</td>
                                 <td>{{character.ability.cha.savingThrow | addPlus}}</td>
                             </tr>
@@ -172,29 +172,21 @@
         </tab>
         <tab heading="Features">
             <div class="row">
-                <div class="col-md-4"> <!-- racial traits -->
-                    <h4>Racial Traits</h4>
-                    <dl>
-                        <div ng-repeat="racialTrait in character.raceObj.racialTraits">
-                            <dt>{{racialTrait.name}}</dt>
-                            <dd compile="racialTrait.benefit"></dd>
-                        </div>
-                    </dl>
-                </div>
-                <div class="col-md-4"> <!-- class features -->
-                    <h4>Class Features</h4>
+                <div class="col-md-12">
+                    <!--<h4>Features & Traits</h4>-->
                     <dl>
                         <div ng-repeat="classFeature in character.classObj.classFeatures">
                             <dt>{{classFeature.name}}</dt>
                             <dd compile="classFeature.benefit"></dd>
                         </div>
-                    </dl>
-                </div>
-                <div class="col-md-4"> <!-- background feature -->
-                    <h4>Background Feature</h4>
-                    <dl>
-                        <dt>{{character.background.trait_name}}</dt>
-                        <dd>{{character.background.trait_desc}}</dd>
+                        <div ng-repeat="racialTrait in character.raceObj.racialTraits">
+                            <dt>{{racialTrait.name}}</dt>
+                            <dd compile="racialTrait.benefit"></dd>
+                        </div>
+                        <div>
+                            <dt>{{character.background.trait_name}}</dt>
+                            <dd>{{character.background.trait_desc}}</dd>
+                        </div>
                     </dl>
                 </div>
             </div>

@@ -24,6 +24,9 @@ class RaceController extends \BaseController {
             if (!empty($subraces)) {
                 foreach ($subraces as $subrace) {
                     $raceObj['subrace_id'] = (int) $subrace['id'];
+                    unset($raceObj['subrace']);
+                    unset($raceObj['subrace_desc']);
+                    $raceObj['parent'] = $subrace['name'];
                     $raceObj['name'] = $subrace['subrace'];
                     $features = FeaturesTable::join('race_features', 'features_table.id', '=', 'race_features.feature_id')
                         ->where('race_features.race_id', '=', $raceObj['readable_id'])
@@ -48,6 +51,7 @@ class RaceController extends \BaseController {
                 }
 
                 $raceObj['subrace_id'] = $raceObj['id'];
+                $raceObj['parent'] = $raceObj['name'];
                 $raceObj['traits'] = $features;
                 $this->raceList[] = $raceObj;
             }

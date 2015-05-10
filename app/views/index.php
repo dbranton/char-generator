@@ -18,7 +18,7 @@
     <base href="/">
 </head>
 
-<body ng-app="myApp">
+<body ng-app="app">
 <div class="scrollable" style="padding-top:40px;">
 <!-- HEADER -->
 <div class="scrollable-header">
@@ -31,7 +31,7 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<a class="navbar-brand" ui-sref="home">Character Generator</a>
+			<a class="navbar-brand" ui-sref="generator">Character Generator</a>
 		</div>
 
 		<!-- Collect the nav links, forms, and other content for toggling -->
@@ -72,22 +72,42 @@
 <div ui-yield-to="modals"></div>
 
 <script src="<?php echo $path; ?>/assets/script.min.js"></script>
-
 <script src="<?php echo $path; ?>/app/js/app.js"></script>
-<script src="<?php echo $path; ?>/app/js/controllers.js"></script>
+<script src="<?php echo $path; ?>/app/js/controllers/loginController.js"></script>
+<script src="<?php echo $path; ?>/app/js/controllers/registerController.js"></script>
+<script src="<?php echo $path; ?>/app/js/controllers/generatorController.js"></script>
+<script src="<?php echo $path; ?>/app/js/controllers/dashboardController.js"></script>
+<script src="<?php echo $path; ?>/app/js/controllers/characterController.js"></script>
 <script src="<?php echo $path; ?>/app/js/directives.js"></script>
 <script src="<?php echo $path; ?>/app/js/filters.js"></script>
-<script src="<?php echo $path; ?>/app/js/services.js"></script>
+<script src="<?php echo $path; ?>/app/js/services/generalServices.js"></script>
+<script src="<?php echo $path; ?>/app/js/services/charGenServices.js"></script>
 <script>
-	angular.module("myApp").constant("CSRF_TOKEN", '<?php echo csrf_token(); ?>');
-    var hostname = '<?php echo gethostname(); ?>';
-    var locationName = '/', location2Name = '', path = '';
-    var deviceType = '<?php echo $deviceType ?>';
-    if (hostname === 'gator3222.hostgator.com') {
-        locationName = '/char-generator/';
-        location2Name = 'public';
-        path = '/char-generator/public';
-    }
+    (function() {
+        'use strict';
+        angular.module("app").constant("CSRF_TOKEN", '<?php echo csrf_token(); ?>');
+
+        angular.module('appConfig', [])
+            .provider('configObj', function() {
+                configObj.$get = function() {
+                    return this;
+                }
+                return configObj;
+            });
+
+        var configObj = {
+            hostname: '<?php echo gethostname(); ?>',
+            locationName: '/',
+            location2Name: '',
+            path: '',
+            deviceType: '<?php echo $deviceType ?>'
+        };
+        if (configObj.hostname === 'gator3222.hostgator.com') {
+            configObj.locationName = '/char-generator/';
+            configObj.location2Name = 'public';
+            configObj.path = '/char-generator/public';
+        }
+    })();
 </script>
 
 </body>

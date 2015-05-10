@@ -1,93 +1,7 @@
-angular.module('myApp')
-    .factory('Authenticate', function($resource){
-        return {
-            register: function() {
-                return $resource(locationName + "service/register/")
-            },
-            login: function() {
-                return $resource(locationName + "service/authenticate/");
-            }
-        };
-    })
-    .factory('Flash', function($rootScope){
-        return {
-            show: function(message){
-                $rootScope.flash = message;
-            },
-            clear: function(){
-                $rootScope.flash = "";
-            }
-        }
-    })
-    .factory('General', function($modal) {
-        return {
-            setSessionStorageProp: function(prop, val) {
-                try {
-                    sessionStorage[prop] = val;
-                    return true;
-                } catch (err) {
-                    return false;
-                }
-            },
-            openDialog: function openDialog(opts) {
-                var localOpts = {
-                    backdrop: true,
-                    keyboard: true,
-                    backdropClick: true
-                };
-                $.extend(localOpts, opts)
-                if (deviceType === 'phone') {
-                    localOpts.windowClass = 'modal-overlay';
-                }
-                $modal.open(localOpts);
-            },
-            DialogItemsController: function($scope, $modalInstance, items, max, itemIds, title, featureType) {
-                $scope.title = title;
-                $scope.items = items;
-                $scope.searchText = '';
-                $scope.description = 'Click a list item to view more information';
-                $scope.tempItems = [];
-                _.each($scope.items, function(obj, index, list) {
-                    if (obj.locked || (angular.isArray(itemIds) && itemIds.indexOf(obj.id) !== -1)) {
-                        obj.active = true;
-                        $scope.tempItems.push(obj);
-                    } else {
-                        obj.active = false;
-                    }
-                });
-
-                $scope.description = 'Click a list item to view more information';
-                $scope.max = parseInt(max);
-                $scope.disabled = $scope.max  - $scope.tempItems.length > 0;
-                $scope.featureType = featureType;
-
-                $scope.showDescription = function(selectobj) {
-                    $scope.selectedItem = angular.copy(selectobj.item); // used in UI
-                    if (!$scope.selectedItem.locked) {
-                        if (!$scope.selectedItem.active && $scope.max - $scope.tempItems.length > 0) {
-                            $scope.tempItems.push($scope.selectedItem);
-                            selectobj.item.active = true;
-                        } else if ($scope.selectedItem.active) {
-                            $scope.tempItems = _.reject($scope.tempItems, {'name': $scope.selectedItem.name});
-                            selectobj.item.active = false;
-                        }
-                        $scope.disabled = $scope.max - $scope.tempItems.length > 0; // disabled is true if there are still features left to choose
-                    }
-                };
-
-                $scope.done = function() {
-                    if (angular.isArray($scope.tempItems)) {
-                        $modalInstance.close($scope.tempItems);
-                    }
-                };
-
-                $scope.close = function(){
-                    $modalInstance.dismiss('cancel');
-                };
-            }
-        };
-    })
-    .factory('CharGenFactory', function($http, $timeout, $resource) {
+angular.module('app')
+    .factory('charGenFactory', function($http, $timeout, $resource, configObj) {
+        var locationName = configObj.locationName;
+        var deviceType = configObj.deviceType;
         var ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
         var MIN_ABILITY = 8;
         var MAX_ABILITY = 15;
@@ -132,6 +46,7 @@ angular.module('myApp')
             this.size = null;
             this.profBonus = 0;
             this.passivePerception = 10;
+            this.selectedFeats = [];
         }
         Character.prototype.updateSkillProficiency = function(skillName, isAdded, disabled) {   // if isAdded is false, then remove skill
             var that = this;
@@ -305,7 +220,7 @@ angular.module('myApp')
         };
         Character.prototype.calculateModifiers = function(ability) {
             if (ability) {
-                this.ability[ability].mod = Math.floor((this.ability[ability].score - 10) / 2);
+                this.ability[ability].mod = Math.floor((this.ability[ability].adjScore - 10) / 2);
                 this.ability[ability].savingThrow = this.calculateSavingThrows(ability);
             } else {    // apply to all abilities
                 this.ability.str.mod = returnModifier(this.ability.str.score);
@@ -343,29 +258,34 @@ angular.module('myApp')
                 return Math.floor((score - 10) / 2);
             }
         };
-        Character.prototype.modifyAbilityScore = function(ability, value) {
+        Character.prototype.modifyAbilityScore = function(ability, value, min, max, pointsLeft, isBonus) {
             var diff = this.ability[ability].max - MAX_ABILITY,
-                currValue = this.ability[ability].score, abilityCost,
-                pointsLeft = this.ability.pointsLeft,
+                currValue = this.ability[ability].adjScore, abilityCost,
+                //pointsLeft = this.ability.pointsLeft,
                 currValueMinusDiff = currValue - diff;
-            if (pointsLeft > 0 && (value > 0 && currValue < this.ability[ability].max) || (value < 0 && currValue > this.ability[ability].min)) {
-                if ((value > 0 && currValueMinusDiff >= 13 && pointsLeft <= 1) ||
-                    (value > 0 && currValueMinusDiff >= 15 && pointsLeft <= 2)) {
+            if (pointsLeft > 0 && (value > 0 && currValue < max) || (value < 0 && currValue > min)) {
+                if (!isBonus && ((value > 0 && currValueMinusDiff >= 13 && pointsLeft <= 1) ||
+                    (value > 0 && currValueMinusDiff >= 15 && pointsLeft <= 2))) {
                     // do nothing
                 } else {
                     if (value > 0) {    // value == 1
-                        if (currValueMinusDiff >= 15) {
-                            abilityCost = 3;
-                        } else if (currValueMinusDiff >= 13) {
-                            abilityCost = 2;
-                        } else if (currValueMinusDiff < 13) {
-                            abilityCost = 1;
+                        if (isBonus) {
+                            this.ability[ability].bonusPoints += 1;
+                            this.ability.bonusPoints -= 1;
+                        } else {
+                            if (currValueMinusDiff >= 15) {
+                                abilityCost = 3;
+                            } else if (currValueMinusDiff >= 13) {
+                                abilityCost = 2;
+                            } else if (currValueMinusDiff < 13) {
+                                abilityCost = 1;
+                            }
+                            this.ability.pointsLeft -= abilityCost;
                         }
-                        this.ability.pointsLeft -= abilityCost;
                     } else {    // value == -1
-                        if (pointsLeft === 0 && this.ability.bonusPointsLeftArr.indexOf(ability) !== -1) {
-                            this.ability.bonusPointsLeftArr.splice(this.ability.bonusPointsLeftArr.indexOf(ability), 1);    // remove from array
+                        if (isBonus) {
                             this.ability[ability].bonusPoints -= 1;
+                            this.ability.bonusPoints += 1;
                         } else {
                             if (currValueMinusDiff > 15) {
                                 abilityCost = 3;
@@ -377,18 +297,16 @@ angular.module('myApp')
                             this.ability.pointsLeft += abilityCost;
                         }
                     }
-                    updateScore(this, ability, value);
-                }
-            } else if (pointsLeft === 0) {
-                if (this.ability[ability].score < 20 && this.ability.bonusPoints - this.ability.bonusPointsLeftArr.length > 0) {
-                    updateScore(this, ability, value); // increment ability and push to array to store where the bonus point went
-                    //this.ability.bonusPointsLeftArr.push({"ability": ability, "score": this.ability[ability].score});
-                    this.ability.bonusPointsLeftArr.push(ability);  // ex: ['str', 'str']
-                    this.ability[ability].bonusPoints += 1;
+                    updateScore(this, ability, value, isBonus);
                 }
             }
-            function updateScore(character, ability, value) {
-                character.ability[ability].score += value;
+            function updateScore(character, ability, value, isBonus) {
+                if (isBonus) {
+                    character.ability[ability].adjScore += value;
+                } else {
+                    character.ability[ability].score += value;
+                    character.ability[ability].adjScore = character.ability[ability].score;
+                }
                 character.ability[ability].mod = Math.floor((character.ability[ability].score-10)/2);
                 character.calculateModifiers(ability);
             }
@@ -400,6 +318,7 @@ angular.module('myApp')
                 diff = that.ability[ability].max - MAX_ABILITY; // ex: 0, 1, or 2
                 if (diff > 0) {
                     that.ability[ability].score -= diff;
+                    that.ability[ability].adjScore = that.ability[ability].score;
                     that.calculateModifiers(ability);
                     that.ability[ability].max = MAX_ABILITY;
                     that.ability[ability].min = MIN_ABILITY;
@@ -421,6 +340,7 @@ angular.module('myApp')
             this.ability[ability].score += value;
             this.ability[ability].max += value;
             this.ability[ability].min += value;
+            this.ability[ability].adjScore = this.ability[ability].score;
             this.calculateModifiers(ability);
         };
         Character.prototype.handleFeatureBonuses = function(featureBonus) {
@@ -615,9 +535,11 @@ angular.module('myApp')
         Character.prototype.determineLevelBonus = function(level) {
             var index = level - 1,
                 PROFICIENCY_ARRAY = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
-                ABILITY_BONUS_ARRAY = [0, 0, 0, 2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6, 8, 8, 8, 10, 10];
+                ABILITY_BONUS_ARRAY = [0, 0, 0, 2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6, 8, 8, 8, 10, 10],
+                FEATS_ARRAY = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5];
             this.profBonus = PROFICIENCY_ARRAY[index];
             this.ability.bonusPoints = ABILITY_BONUS_ARRAY[index];
+            this.numFeats = FEATS_ARRAY[index];
         };
         Character.prototype.determineRace = function() {    // change abilityObj name
             this.speed = parseInt(this.raceObj.speed);
@@ -684,6 +606,8 @@ angular.module('myApp')
             this.armorClass = 10 + this.ability.dex.mod;
             this.numSkillsLeft = parseInt(this.classObj.num_skills);
             this.classObj.selectedSkills = [];
+            this.handleArmor();
+            this.handleWeapons();
         };
         Character.prototype.determineBackground = function() {
             this.numToolChoices = 0;  // reset
@@ -691,6 +615,13 @@ angular.module('myApp')
                 this.numToolChoices++;
                 this.selectedTools = [];    // reset
             }
+        };
+        Character.prototype.handleArmor = function() {
+
+        };
+        Character.prototype.handleWeapons = function() {
+            this.classObj.weapons = angular.isString(this.classObj.weapons) ? this.classObj.weapons.split(', ') : [];
+
         };
         Character.prototype.handleTools = function(selectedTools) {
             var raceTools, classTools, backgroundTools;
@@ -738,9 +669,6 @@ angular.module('myApp')
             storeCharacter: function() {
                 localStorageService.set('character', JSON.stringify(character));
             },*/
-            getLevels: function(max) {
-                return _.range(1, 21);
-            },
             getLanguages: function() {
                 return $http.get(locationName + 'service/language_table');
             },
@@ -758,6 +686,12 @@ angular.module('myApp')
             },
             Skills: function() {
                 return $resource(locationName + 'service/skills_table');
+            },
+            Feats: function() {
+                return $resource(locationName + 'service/feats_table');
+            },
+            Weapons: function() {
+                return $resource(locationName + 'service/weapons_table');
             },
             Spells: function(classId, maxSpellLevel, school, term) {
                 var path = locationName + 'service/';
@@ -787,6 +721,7 @@ angular.module('myApp')
         character.ability = {
             str: {
                 score: 10,
+                adjScore: 10,
                 mod: 0,
                 bonus: false,
                 bonusPoints: 0,
@@ -797,6 +732,7 @@ angular.module('myApp')
             },
             dex: {
                 score: 10,
+                adjScore: 10,
                 mod: 0,
                 bonus: false,
                 bonusPoints: 0,
@@ -807,6 +743,7 @@ angular.module('myApp')
             },
             con: {
                 score: 10,
+                adjScore: 10,
                 mod: 0,
                 bonus: false,
                 bonusPoints: 0,
@@ -817,6 +754,7 @@ angular.module('myApp')
             },
             int: {
                 score: 10,
+                adjScore: 10,
                 mod: 0,
                 bonus: false,
                 bonusPoints: 0,
@@ -827,6 +765,7 @@ angular.module('myApp')
             },
             wis: {
                 score: 10,
+                adjScore: 10,
                 mod: 0,
                 bonus: false,
                 bonusPoints: 0,
@@ -837,6 +776,7 @@ angular.module('myApp')
             },
             cha: {
                 score: 10,
+                adjScore: 10,
                 mod: 0,
                 bonus: false,
                 bonusPoints: 0,
@@ -846,7 +786,6 @@ angular.module('myApp')
                 max: 15
             },
             bonusPoints: 0, // for Ability Score Improvement
-            bonusPointsLeftArr: [],
             pointsLeft: 15  // 27 points to spend with all 8s
         };
         var newCharacter = angular.copy(character); // for creating new character

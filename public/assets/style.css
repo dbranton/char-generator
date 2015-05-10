@@ -35,6 +35,16 @@ input.ng-invalid, .ng-dirty input.ng-invalid {
     margin-bottom: 0;
 }
 
+.list-group.two-col .list-group-item {
+    width: 50%;
+    float: left;
+}
+
+/* overwrites bootstrap style */
+.pagination li.disabled {
+    pointer-events: none;
+}
+
 @media (max-width: 767px) {
     /*** custom checkboxes ***/
 

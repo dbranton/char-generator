@@ -1,55 +1,59 @@
-var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.router', 'ui.select',
-        'ngTable', 'angular-loading-bar', 'mobile-angular-ui.core.fastclick', 'mobile-angular-ui.gestures.swipe'])
+angular.module("app",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.router', 'ui.select',
+        'ngTable', 'angular-loading-bar', 'mobile-angular-ui.core.fastclick', 'mobile-angular-ui.gestures.swipe',
+        'mgo-angular-wizard', 'appConfig'])
 
-	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider',function($stateProvider, $urlRouterProvider, $locationProvider){
+	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', 'configObjProvider',
+            function($stateProvider, $urlRouterProvider, $locationProvider, configObjProvider){
 
 		$locationProvider.html5Mode(true);
 
-		$urlRouterProvider.otherwise(locationName);
-
-        var mobilePath = '';
+        var mobilePath = '', deviceType = configObjProvider.deviceType,
+            locationName = configObjProvider.locationName,
+            path = configObjProvider.path;
         if (deviceType === 'phone' || deviceType === 'tablet') {
             mobilePath = '/mobile';
         }
 
 		// Now set up the states
 		$stateProvider
-			.state('home', {
+			.state('generator', {
 				url: locationName,
-				templateUrl: path + "/app/views" + mobilePath + "/character_generator.html",
-				controller: 'homeController'
+				templateUrl: path + "/app/views" + mobilePath + "/generator.html",
+				controller: 'GeneratorController'
 			})
 			.state('dashboard', {
 				url: locationName + "dashboard",
 				templateUrl: path + "/app/views/dashboard.html",
-				controller: 'dashboardController'
+				controller: 'DashboardController'
 			})
             .state('character', {
                 url: locationName + "character/:characterId",
                 templateUrl: path + "/app/views/dashboard.character.html",
-                controller: 'characterController'
+                controller: 'CharacterController'
             })
 			.state('login', {
 				url: locationName + "login",
 				templateUrl: path + "/app/views/login.html",
-				controller: 'loginController'
+				controller: 'LoginController'
 			})
 			.state('register', {
 				url: locationName + "register",
 				templateUrl: path + "/app/views/register.html",
-				controller: 'registerController'
+				controller: 'RegisterController'
 			});
 
+        $urlRouterProvider.otherwise(locationName);
 	}])
 
 	.config(function($httpProvider){
 
-		var interceptor = function($rootScope, $location, $q, Flash){
+		var interceptor = function($rootScope, $location, $q, configObj){
             var success = function(response){
                 return response;
             };
 
             var error = function(response){
+                var locationName = configObj.locationName;
                 if (response.status === 401){
                     delete sessionStorage.authenticated;
                     if ($location.path() !== locationName + 'register') {
@@ -67,7 +71,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
 	})
 
-	.run(function($rootScope, $http, $state, CSRF_TOKEN, Flash){
+	.run(function($rootScope, $http, $state, CSRF_TOKEN, general){
 
 		$http.defaults.headers.common['csrf_token'] = CSRF_TOKEN;
         /*
@@ -80,11 +84,11 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
         $rootScope.$on('handleAuthentication', function(event, args) {
             $rootScope.userId = args.userId;
         });
-
-        $rootScope.$on('$stateChangeSuccess', function (evt, toState) {
-            if ((toState.name === 'home' || toState.name === 'dashboard' || toState.name === 'character') &&
-                    !$rootScope.userId) {
+        $rootScope.$on('$stateChangeStart', function(evt, toState) {
+            if ((toState.name === 'generator' || toState.name === 'dashboard' || toState.name === 'character') &&
+                !$rootScope.userId) {
                 $state.go('login');
+                evt.preventDefault();
             }
         });
         $rootScope.userId = sessionStorage.userId || null;
@@ -93,7 +97,7 @@ var app = angular.module("myApp",['ngResource','ngSanitize', 'ngRoute', 'ui.boot
 
         $rootScope.logout = function() {
             delete sessionStorage.userId;
-            Flash.show("Successfully logged out");
+            general.showMsg("Successfully logged out");
             $rootScope.userId = null;
         }
 	});

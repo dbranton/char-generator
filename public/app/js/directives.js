@@ -1,18 +1,29 @@
-angular.module('myApp')
+angular
+    .module('app')
     .directive('uiSelect', function (){
         return {
             restrict: 'EA',
             require: 'uiSelect',
             link: function($scope, $element, $attributes, ctrl) {
                 var superSelect = ctrl.select,
-                    superRemoveChoice = ctrl.removeChoice;
+                    superRemoveChoice = ctrl.removeChoice,
+                    superSizeSearchInput = ctrl.sizeSearchInput;
+
+                ctrl.sizeSearchInput = function() {
+                    superSizeSearchInput.apply(ctrl, arguments);
+                    ctrl.searchInput.css('width', '200px');
+                };
 
                 $attributes.$observe('max', function(value) {
                     $scope.$select.limit = (angular.isDefined(value)) ? parseInt(value, 10) : undefined;
                 });
-                $scope.$watch('$select.selected', function(newValue, oldValue) {
-                    if (newValue && oldValue && (oldValue.length > newValue.length)) {    // on reset of selections, call removeChoice
-                        showHideMaxMsg();
+                $scope.$watch('$select.selected', function(newValue) {
+                    if (ctrl.limit && newValue) {
+                        if (newValue && (ctrl.limit > newValue.length)) {    // on reset of selections, call removeChoice
+                            hideMaxMsg();
+                        } else if (ctrl.limit === newValue.length) {
+                            showMaxMsg()
+                        }
                     }
                 });
                 ctrl.select = function() {
@@ -23,21 +34,26 @@ angular.module('myApp')
                     }
                     superSelect.apply(ctrl, arguments);
                     if(ctrl.multiple && ctrl.limit !== undefined && ctrl.selected.length >= ctrl.limit) {
-                        $($element).find('.ui-select-choices').hide();  // show list
+                        showMaxMsg();
+                    }
+                };
+                function showMaxMsg() {
+                    if (!$($element).find('.select2-drop').find('.max-msg')[0]) {
+                        $($element).find('.ui-select-choices').hide();  // hide list
                         $($element).find('.select2-drop').append(   // show max capacity message
                             '<div class="max-msg bg-warning">You can only select ' + ctrl.limit + ' item(s)</div>'
                         );
                     }
-                };
-                function showHideMaxMsg() {
+                }
+                function hideMaxMsg() {
                     if(ctrl.multiple && ctrl.limit !== undefined && ctrl.selected.length < ctrl.limit) {
-                        $($element).find('.ui-select-choices').show();   // show list and show max capacity message
+                        $($element).find('.ui-select-choices').show();   // show list
                         $($element).find('.max-msg').remove();  // remove message
                     }
                 }
                 ctrl.removeChoice = function() {
                     superRemoveChoice.apply(ctrl, arguments);
-                    showHideMaxMsg();
+                    hideMaxMsg();
                 };
             }
         }
@@ -56,9 +72,9 @@ angular.module('myApp')
 			}
 		}
 	}])
-    .directive('skills', function() {
+    .directive('skills', function(configObj) {
         function returnTemplate(element, attrs) {
-            if (deviceType === 'phone' || deviceType === 'tablet') {
+            if (configObj.deviceType === 'phone' || configObj.deviceType === 'tablet') {
                 return '<div class="list-group">' +
                     '<label class="list-group-item" ng-repeat="skill in character.skills" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
                     '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
@@ -75,7 +91,7 @@ angular.module('myApp')
             }
         }
         return {
-            restrict: 'E',
+            restrict: 'EA',
             template: returnTemplate,
             link: function(scope, element, attrs) {
                 scope.selectSkill = function(skill) {
@@ -84,16 +100,16 @@ angular.module('myApp')
             }
         };
     })
-    .directive('languages', function(CharGenFactory, General, $modal) {
+    .directive('languages', function(charGenFactory, general, $modal) {
         return {
             restrict: 'A',
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 function DialogLanguageController($scope, $modalInstance, languageData, max, languageIds, title, featureType) {
-                    General.DialogItemsController.apply(undefined, arguments);
+                    general.DialogItemsController.apply(undefined, arguments);
                 }
                 var LANGUAGE_LIST = [];
-                CharGenFactory.getLanguages().success(function(data) {
+                charGenFactory.getLanguages().success(function(data) {
                     LANGUAGE_LIST = data.languages;
                     scope.availableLanguages = angular.copy(LANGUAGE_LIST);
                 });
@@ -169,20 +185,20 @@ angular.module('myApp')
             }
         }
     })
-    .directive('tools', function(CharGenFactory, General, $modal) {
+    .directive('tools', function(charGenFactory, general, $modal) {
         return {
             restrict: 'EA',
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 scope.availableTools = [];
                 var TOOLS_LIST = [];
-                CharGenFactory.getTools().success(function(data) {
+                charGenFactory.getTools().success(function(data) {
                     TOOLS_LIST = data.tools;
                     scope.availableTools = angular.copy(TOOLS_LIST);
                 });
 
                 function DialogToolController($scope, $modalInstance, toolData, max, toolIds, title, featureType) {
-                    General.DialogItemsController.apply(undefined, arguments);
+                    general.DialogItemsController.apply(undefined, arguments);
                 }
                 scope.openToolDialog = function() {
                     var opts = {
@@ -220,7 +236,7 @@ angular.module('myApp')
             }
         };
     })
-    .directive('bonusAbility', function(General, $modal) {
+    .directive('bonusAbility', function(general, $modal) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -246,7 +262,7 @@ angular.module('myApp')
                 });
 
                 function DialogBonusAbilityController($scope, $modalInstance, bonusAbilities, max, bonusAbilityIds, title, featureType) {
-                    General.DialogItemsController.apply(undefined, arguments);
+                    general.DialogItemsController.apply(undefined, arguments);
                 }
                 scope.openBonusAbilityDialog = function() {
                     var opts = {
@@ -277,7 +293,7 @@ angular.module('myApp')
             }
         }
     })
-    .directive('expertise', function(General, $modal) {
+    .directive('expertise', function(general, $modal) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -305,7 +321,7 @@ angular.module('myApp')
                 });*/
 
                 function DialogExpertiseController($scope, $modalInstance, expertiseData, max, expertiseIds, title, featureType) {
-                    General.DialogItemsController.apply(undefined, arguments);
+                    general.DialogItemsController.apply(undefined, arguments);
                 }
                 scope.openExpertiseDialog = function() {
                     var opts = {
@@ -336,7 +352,31 @@ angular.module('myApp')
             }
         }
     })
-    .directive('select2Spellcasting', function(CharGenFactory) {
+    .directive('abilityTable', function(charGenFactory, configObj) {
+        return {
+            restrict: 'EA',
+            templateUrl: configObj.path + '/app/views/partials/ability_score_table.html',
+            scope: {
+                character: '=',
+                pointsleft: '@',
+                bonus: '@'
+            },
+            link: function(scope, element, attrs, ngModel) {
+
+                // determines points left
+                scope.incrementAbility = function(ability, value) {    // value can only be 1 or -1
+                    var min = scope.character.ability[ability].min,
+                        max = scope.character.ability[ability].max;
+                    if (scope.bonus) {
+                        min = scope.character.ability[ability].score;
+                        max = 20;
+                    }
+                    scope.character.modifyAbilityScore(ability, value, min, max, scope.pointsleft, scope.bonus);
+                };
+            }
+        };
+    })
+    .directive('select2Spellcasting', function(charGenFactory) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -345,14 +385,14 @@ angular.module('myApp')
             },*/
             link: function(scope, element, attrs, ngModel) {
                 var list = attrs.list;
-                scope.$parent[list] = [];
+                scope[list] = [];
                 scope.refreshSpells = function(term) {
                     var spellcastingObj = scope.$eval(attrs.select2Spellcasting) || {};
                     if (spellcastingObj.class_id) {
                         var classId = spellcastingObj.classId,
                             maxSpellLevel = spellcastingObj.maxSpellLevel,
                             schools = spellcastingObj.restrictedSchools;
-                        CharGenFactory.Spells(classId, maxSpellLevel, schools).get({}, function(response) {
+                        charGenFactory.Spells(classId, maxSpellLevel, schools).get({}, function(response) {
                             scope.spells = response.spells;
                         });
                     }
@@ -362,18 +402,20 @@ angular.module('myApp')
                     if (newVal && newVal.classId && (!angular.equals(newVal, oldVal) || newVal === oldVal)) {
                         var classId = newVal.classId, maxSpellLevel = newVal.maxSpellLevel,
                             school = newVal.restrictedSchools;
-                        CharGenFactory.Spells(classId, maxSpellLevel, school).get({}, function(response) {
-                            scope.$parent[list] = response.spells;
+                        charGenFactory.Spells(classId, maxSpellLevel, school).get({}, function(response) {
+                            scope[list] = response.spells;
                             if (scope.$select) {
                                 scope.$select.selected = [];
                             }
                             if (newVal.bonusCantrip) {
-                                angular.forEach(scope.$parent[list], function(spellObj, idx) {
+                                angular.forEach(scope[list], function(spellObj, idx) {
                                     if (spellObj.readable_id === newVal.bonusCantrip) {
                                         //spellObj.disabled = true;
-                                        scope.$parent[list][idx].disabled = true;
-                                        if (scope.$select) {
+                                        scope[list][idx].disabled = true;
+                                        if (scope.$select) {    // only applies to non-mobile
                                             scope.$select.select(spellObj);
+                                        } else {    // for mobile only
+                                            ngModel.$setViewValue([spellObj]);
                                         }
                                         //scope.$select.selected = [spellObj];
                                     }
@@ -409,7 +451,7 @@ angular.module('myApp')
             }
         }
     })
-    .directive('spellDialog', function(CharGenFactory, $modal) {
+    .directive('spellDialog', function(charGenFactory, $modal, $compile, configObj) {
         function DialogSpellController($scope, $modalInstance, list, numSpells, selectedSpells) { // spellIds is an array of objects
             $scope.title = 'Select Spells';
             $scope.tempSpells = [];
@@ -427,6 +469,7 @@ angular.module('myApp')
                             $scope.tempSpells.push(spell);
                         } else if (angular.isArray(spell)) {
                             angular.forEach(spell, function(obj) {
+                                var test = _.findIndex(selectedSpells, 'readable_id', obj.readable_id);
                                 if (_.findIndex(selectedSpells, 'readable_id', obj.readable_id) !== -1) {
                                     obj.active = true;
                                     $scope.tempSpells.push(obj);
@@ -488,7 +531,7 @@ angular.module('myApp')
                 $modalInstance.dismiss('cancel');
             };
         }
-        function returnTemplate(element, attrs) {
+        function returnTemplate(element, attrs, deviceType) {
             var placeholder = attrs.placeholder || 'spell(s)';
             if (deviceType === 'phone' || deviceType === 'tablet') {
                 return '<div>' +
@@ -509,13 +552,17 @@ angular.module('myApp')
             restrict: 'EA',
             replace: true,
             require: "?ngModel",
-            template: returnTemplate,
+            //template: returnTemplate,
             scope: {
                 select2Spellcasting: '=',
                 list: '=',
                 otherSpell: '='
             },
             link: function(scope, element, attrs, ngModel) {
+                var deviceType = configObj.deviceType,
+                    path = configObj.path,
+                    template = returnTemplate(element, attrs, deviceType);
+                element.prepend($compile(template)(scope));
                 scope.openSpellDialog = function() {
                     var spellObj = scope.select2Spellcasting;
                     var list = scope.list;
@@ -558,10 +605,10 @@ angular.module('myApp')
             }
         };
     })
-    .directive('spellInfoDialog', function(General, CharGenFactory) {
+    .directive('spellInfoDialog', function(general, charGenFactory) {
         function DialogSpellController($scope, $modalInstance, spellId) {
             $scope.title = 'Select Spells';
-            CharGenFactory.Spell(spellId).get({}, function(response) {
+            charGenFactory.Spell(spellId).get({}, function(response) {
                 $scope.spellObj = response.spell[0];
             });
             $scope.close = function(){
@@ -588,7 +635,7 @@ angular.module('myApp')
                     if (deviceType === 'phone') {
                         opts.windowClass = 'modal-overlay';
                     }
-                    General.openDialog(opts);
+                    general.openDialog(opts);
                 };
             }
         };

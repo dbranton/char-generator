@@ -191,14 +191,12 @@
     </div>
 </div>
 <div class="col-md-6">
+    <h3>Features & Traits</h3>
     <div ng-if="character.traits">
-        <h3>Race Traits</h3>
         <p ng-repeat="trait in character.traits"><b>{{trait.name}}</b>: <span compile="trait.benefit_desc"></span></p>
     </div>
     <div ng-if="character.features">
-        <h3>Class Features</h3>
         <p ng-repeat="feature in character.features"><b>{{feature.name}}</b>: <span compile="feature.benefit_desc"></span></p>
     </div>
-    <h3>Background Feature</h3>
     <p><b>{{character.trait_name}}</b>: {{character.trait_desc}}</p>
 </div>

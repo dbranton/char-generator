@@ -6,10 +6,10 @@
     "component.json"
   ],
   "dependencies": {
-    "lodash": "bestiejs/lodash",
+    "lodash": "~3.8.0", 
     "jquery": "jquery/jquery",
     "font-awesome": "~3",
-    "bootstrap": "twbs/bootstrap#3.2.0",
+    "bootstrap": "twbs/bootstrap",
     "ng": "angular/bower-angular",
     "ng-router": "angular/bower-angular-route",
     "ng-sanitize": "angular/bower-angular-sanitize",

@@ -4,7 +4,9 @@
  * performs a AND between 'name: $select.search' and 'age: $select.search'.
  * We want to perform a OR.
  */
-app.filter('joinBy', function() {
+angular
+    .module('app')
+    .filter('joinBy', function() {
         return function(input, delimiter) {
             var nameArr = _.chain(input).sortBy('name').pluck('name').value();
             return (nameArr || []).join(delimiter || ', ');
@@ -51,6 +53,39 @@ app.filter('joinBy', function() {
                 });
             }
             return items;
+        };
+    })
+    .filter('filterFeats', function() {
+        return function(items, character) {
+            return _.filter(items, function(item) {
+                return !item.prereq_stat || (handlePrereq(item.prereq_stat, character));
+            });
+
+            function handlePrereq(prereqStat, character) {
+                var prereq = prereqStat.split(', '),
+                    stat = prereq[0], val;
+                switch(stat) {
+                    case 'minStat':
+                        val = prereq[1];
+                        return character.ability[val].score >= 13;
+                    case 'profReq':
+
+                        return;
+                    case 'spellReq':
+
+                        return;
+                    default:
+                        return true;
+                }
+            }
+            //return items;
+        };
+    })
+    .filter('filterWeapons', function() {
+        return function(items, style) {
+            return _.filter(items, function(item) {
+                return item.style.indexOf(style) !== -1;
+            });
         };
     })
     .filter('unsafe', ['$sce', function ($sce) {

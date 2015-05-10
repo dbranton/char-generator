@@ -21,8 +21,10 @@ Route::group(array('prefix' => 'service'), function() {
     Route::resource('race_table', 'RaceController');
     Route::resource('background_table', 'BackgroundController');
     Route::resource('class_table', 'ClassController');
+    Route::resource('feats_table', 'FeatsController');
     Route::resource('language_table', 'LanguageController');
     Route::resource('tools_table', 'ToolsController');
+    Route::resource('weapons_table', 'WeaponsController');
     Route::get('spells_table/{class_id}/{max_spell_level}/{term?}', 'SpellsController@getSpellsBySchool'); //->where(array('class_id' => '[0-9]+', 'max_spell_level' => '[0-9]+', 'term' => '[a-z]+'));
     Route::get('cantrips/{class_id}/{term?}', 'SpellsController@getCantrips');
     Route::get('spells/{spell_id}', 'SpellsController@getSpell');
