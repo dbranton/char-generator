@@ -1,0 +1,75 @@
+<table class="table-bordered table-striped table-condensed">
+    <thead>
+    <tr>
+        <th>Ability</th>
+        <th>Base</th>
+        <th>Mod</th>
+        <th><abbr title="Saving Throws">ST</abbr></th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="5">{{pointsleft}} Points Left</td>
+        </tr>
+        <tr>
+            <td>Strength</td>
+            <td class="input-group">
+                <span type="button" class="input-group-addon btn btn-default" ng-click="incrementAbility('str', -1)"><i class="fa fa-minus"></i></span>
+                <input type="text" class="ability form-control text-center" readonly value="{{character.ability.str.adjScore}}" />
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('str', 1)"><i class="fa fa-plus"></i></span>
+            </td>
+            <td><span ng-show="character.ability.str.mod >= 0">+</span>{{character.ability.str.mod}}</td>
+            <td><span ng-show="character.ability.str.savingThrow >= 0">+</span>{{character.ability.str.savingThrow}}</td>
+        </tr>
+        <tr>
+            <td>Dexterity</td>
+            <td class="input-group">
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('dex', -1)"><i class="fa fa-minus"></i></span>
+                <input type="text" class="ability form-control text-center" readonly value="{{character.ability.dex.adjScore}}" />
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('dex', 1)"><i class="fa fa-plus"></i></span>
+            </td>
+            <td><span ng-show="character.ability.dex.mod >= 0">+</span>{{character.ability.dex.mod}}</td>
+            <td><span ng-show="character.ability.dex.savingThrow >= 0">+</span>{{character.ability.dex.savingThrow}}</td>
+        </tr>
+        <tr>
+            <td>Constitution</td>
+            <td class="input-group">
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('con', -1)"><i class="fa fa-minus"></i></span>
+                <input type="text" class="ability form-control text-center" readonly value="{{character.ability.con.adjScore}}" />
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('con', 1)"><i class="fa fa-plus"></i></span>
+            </td>
+            <td><span ng-show="character.ability.con.mod >= 0">+</span>{{character.ability.con.mod}}</td>
+            <td><span ng-show="character.ability.con.savingThrow >= 0">+</span>{{character.ability.con.savingThrow}}</td>
+        </tr>
+        <tr>
+            <td>Intelligence</td>
+            <td class="input-group">
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('int', -1)"><i class="fa fa-minus"></i></span>
+                <input type="text" class="ability form-control text-center" readonly value="{{character.ability.int.adjScore}}" />
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('int', 1)"><i class="fa fa-plus"></i></span>
+            </td>
+            <td><span ng-show="character.ability.int.mod >= 0">+</span>{{character.ability.int.mod}}</td>
+            <td><span ng-show="character.ability.int.savingThrow >= 0">+</span>{{character.ability.int.savingThrow}}</td>
+        </tr>
+        <tr>
+            <td>Wisdom</td>
+            <td class="input-group">
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('wis', -1)"><i class="fa fa-minus"></i></span>
+                <input type="text" class="ability form-control text-center" readonly value="{{character.ability.wis.adjScore}}" />
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('wis', 1)"><i class="fa fa-plus"></i></span>
+            </td>
+            <td><span ng-show="character.ability.wis.mod >= 0">+</span>{{character.ability.wis.mod}}</td>
+            <td><span ng-show="character.ability.wis.savingThrow >= 0">+</span>{{character.ability.wis.savingThrow}}</td>
+        </tr>
+        <tr>
+            <td>Charisma</td>
+            <td class="input-group">
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('cha', -1)"><i class="fa fa-minus"></i></span>
+                <input type="text" class="ability form-control text-center" readonly value="{{character.ability.cha.adjScore}}" />
+                <span class="input-group-addon btn btn-default" ng-click="incrementAbility('cha', 1)"><i class="fa fa-plus"></i></span>
+            </td>
+            <td><span ng-show="character.ability.cha.mod >= 0">+</span>{{character.ability.cha.mod}}</td>
+            <td><span ng-show="character.ability.cha.savingThrow >= 0">+</span>{{character.ability.cha.savingThrow}}</td>
+        </tr>
+    </tbody>
+</table>

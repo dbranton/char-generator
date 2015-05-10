@@ -1,0 +1,11 @@
+<div>
+    <ul class="pagination" ng-if="!hideIndicators">
+        <li ng-class="{
+                active: step.selected,
+                disabled: !step.completed && !step.selected}" ng-repeat="step in steps">
+            <a ng-click="goTo(step)">{{step.title || step.wzTitle}}</a>
+        </li>
+    </ul>
+    <div class="clearfix"></div>
+    <div class="steps" ng-transclude></div>
+</div>

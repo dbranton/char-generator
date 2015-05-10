@@ -1,8 +1,7 @@
 angular.module('app')
     .controller('GeneratorController', GeneratorController);
 
-    function GeneratorController($scope, $state, general,
-                                 charGenFactory, configObj) {
+    function GeneratorController($scope, $state, general, charGenFactory, configObj) {
         var path = configObj.path;
 
         /********
