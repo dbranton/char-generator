@@ -14,18 +14,18 @@
     </div>
     <div class="row panel panel-default">
     <div class="panel-heading">
-        <h1 class="panel-title">Character Generator</h1>
-        <!--<div class="pull-right">
-            <button class="btn btn-primary" ng-click="openNewCharDialog()">Create New Character</button>
+        <h1 class="panel-title pull-left">Character Generator</h1>
+        <div class="pull-right">
+            <button class="btn btn-primary" ng-click="openNewCharDialog()"><i class="fa fa-plus"></i>  New Character</button>
         </div>
-        <div class="pull-right" ng-show="storedCharacter">
+        <!--<div class="pull-right" ng-show="storedCharacter">
             Last Stored Character: <button type="button" class="btn btn-default" ng-click="fillInCharacter()">{{storedCharacter.name}}</button>
         </div>-->
-        <!--<div class="clearfix"></div>-->
+        <div class="clearfix"></div>
     </div>
     <div class="panel-body">
 
-    <wizard template="app/views/partials/wizard.html" on-finish="saveCharacter()"> <!-- on-finish="finishedWizard()"-->
+    <wizard on-finish="saveCharacter()">
         <wz-step title="Race & Class">
             <div class="col-sm-6">
                 <fieldset>
@@ -492,5 +492,18 @@
                 <progressbar class="progress-striped active" animate="false" value="progress"></progressbar>
             </div>
         <!--</div>-->
+    </script>
+    <script type="text/ng-template" id="wizard.html">
+        <div>
+            <ul class="pagination" ng-if="!hideIndicators">
+                <li ng-class="{
+                active: step.selected,
+                disabled: !step.completed && !step.selected}" ng-repeat="step in steps">
+                    <a ng-click="goTo(step)">{{step.title || step.wzTitle}}</a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+            <div class="steps" ng-transclude></div>
+        </div>
     </script>
 </div> <!-- ng-app -->
