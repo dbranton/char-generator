@@ -5,7 +5,7 @@
     <tabset>
         <tab heading="General">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-sm-6">
                     <table class="table table-condensed">
                         <tr>
                             <th>Name: </th>
@@ -73,7 +73,7 @@
                         </tr>
                     </table>
                 </div>
-                <div class="col-md-6">
+                <div class="col-sm-6">
                     <div class="row">
                         <table id="abilitySummary" class="table table-bordered table-striped table-condensed">
                             <thead>
@@ -172,10 +172,10 @@
         </tab>
         <tab heading="Features">
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-sm-12">
                     <!--<h4>Features & Traits</h4>-->
                     <dl>
-                        <div ng-repeat="classFeature in character.classObj.classFeatures">
+                        <div ng-repeat="classFeature in character.classObj.charFeatures">
                             <dt>{{classFeature.name}}</dt>
                             <dd compile="classFeature.benefit"></dd>
                         </div>

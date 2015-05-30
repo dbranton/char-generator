@@ -1,0 +1,42 @@
+@media (max-width: 767px) {
+    .modal .desc-col.ng-hide {
+        display: none !important;
+    }
+
+    /* problem, needs margins for descriptions */
+    /*.modal-overlay .modal-dialog {
+        margin: 0;
+    }*/
+
+    .modal-overlay .modal-body {
+        padding: 0;
+    }
+
+    .modal-body .list-group, .modal-body .desc-col {
+        overflow-y: auto;
+    }
+
+    .modal-body .list-group {
+        max-height: 450px;
+    }
+    .modal-body .desc-col {
+        max-height: 486px; /* +36px from height of filter search-bar */
+    }
+
+    /*** custom checkboxes ***/
+
+    input[type=checkbox] { display:none; } /* to hide the checkbox itself */
+    .list-group label.list-group-item:before {
+        font-family: FontAwesome;
+        display: inline-block;
+        font-size: 1.5em;
+    }
+
+    .list-group label.list-group-item:before { content: "\f10c"; } /* unchecked icon */
+    .list-group label.list-group-item:before { letter-spacing: 10px; } /* space between checkbox and label */
+
+    .list-group label.list-group-item.active:before { content: "\f058"; } /* checked icon */
+    .list-group label.list-group-item.active:before { letter-spacing: 7px; } /* allow space for check mark */
+
+    .list-group label.list-group-item.active.disabled { opacity: 0.65; }
+}

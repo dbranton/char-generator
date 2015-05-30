@@ -1,7 +1,8 @@
 angular.module('app')
     .factory('general', function($rootScope, $modal, $resource, configObj) {
         var deviceType = configObj.deviceType,
-            locationName = configObj.locationName;
+            locationName = configObj.locationName,
+            path = configObj.path;
         return {
             register: function() {
                 return $resource(locationName + "service/register/")
@@ -29,8 +30,11 @@ angular.module('app')
                     keyboard: true,
                     backdropClick: true
                 };
-                $.extend(localOpts, opts)
-                if (deviceType === 'phone') {
+                $.extend(localOpts, opts);
+                if (localOpts.templateUrl) {
+                    localOpts.templateUrl = path + localOpts.templateUrl;
+                }
+                if (deviceType === 'phone' && !localOpts.noOverlay) {
                     localOpts.windowClass = 'modal-overlay';
                 }
                 return $modal.open(localOpts);

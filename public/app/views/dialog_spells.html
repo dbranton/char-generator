@@ -5,7 +5,7 @@
 
     <p>{{spellsLeft - tempSpells.length}} Spells Left:</p>
     <div class="row">
-        <div class="col-md-5" ng-show="!isInfoExpanded">
+        <div class="col-sm-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
             <div ng-if="cantrips" class="list-group">
                 <a ng-repeat="spell in cantrips | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
@@ -30,7 +30,7 @@
                 </div>
             </div>
         </div>	<!-- end span -->
-        <div class="col-md-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
+        <div class="col-sm-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
             <div ng-show="selectedSpell">
                 <h4>{{selectedSpell.name}}</h4>
                 <i>{{typeDescription}}</i>

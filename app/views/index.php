@@ -15,6 +15,11 @@
     <link href="<?php echo $path; ?>/assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 	<link href="<?php echo $path; ?>/assets/style.min.css" rel="stylesheet">
     <link href="<?php echo $path; ?>/assets/style.css" rel="stylesheet">
+    <?php
+        if ($deviceType == 'phone') {
+            echo '<link href="' . $path . '/assets/mobile-style.css" rel="stylesheet">';
+        }
+    ?>
     <base href="/">
 </head>
 
@@ -72,16 +77,12 @@
 <div ui-yield-to="modals"></div>
 
 <script src="<?php echo $path; ?>/assets/script.min.js"></script>
-<script src="<?php echo $path; ?>/app/js/app.js"></script>
-<script src="<?php echo $path; ?>/app/js/controllers/loginController.js"></script>
-<script src="<?php echo $path; ?>/app/js/controllers/registerController.js"></script>
-<script src="<?php echo $path; ?>/app/js/controllers/generatorController.js"></script>
-<script src="<?php echo $path; ?>/app/js/controllers/dashboardController.js"></script>
-<script src="<?php echo $path; ?>/app/js/controllers/characterController.js"></script>
-<script src="<?php echo $path; ?>/app/js/directives.js"></script>
-<script src="<?php echo $path; ?>/app/js/filters.js"></script>
-<script src="<?php echo $path; ?>/app/js/services/generalServices.js"></script>
-<script src="<?php echo $path; ?>/app/js/services/charGenServices.js"></script>
+<script src="<?php echo $path; ?>/app/app.js"></script>
+
+<script src="<?php echo $path; ?>/app/directives.js"></script>
+<script src="<?php echo $path; ?>/app/filters.js"></script>
+<script src="<?php echo $path; ?>/app/services/generalServices.js"></script>
+<script src="<?php echo $path; ?>/app/services/charGenServices.js"></script>
 <script>
     (function() {
         'use strict';

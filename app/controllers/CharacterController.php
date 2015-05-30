@@ -170,10 +170,10 @@ class CharacterController extends \BaseController {
             }, $character['raceObj']['racialTraits']);
             $data['racial_trait_ids'] = implode(', ', $racialTraitIds);
         }
-        if (isset($character['classObj']['classFeatures'])) {
+        if (isset($character['classObj']['charFeatures'])) {
             $classFeatureIds = array_map(function($val) {
                 return $val['id'];
-            }, $character['classObj']['classFeatures']);
+            }, $character['classObj']['charFeatures']);
             $data['class_feature_ids'] = implode(', ', $classFeatureIds);
         }
         if (isset($character['classObj']['subclassObj']['name'])) {

@@ -4,16 +4,20 @@
 </div>
 <div class="modal-body">
     <div class="row">
-        <div class="col-md-5" ng-show="!isInfoExpanded">
+        <div class="col-sm-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
             <div class="list-group">
-                <a ng-repeat="item in items | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
-                        ng-class="{true:'active', false:''}[$index==selectedIndex]" href="" ng-swipe-left="showInfo(this)">
-                    {{item.name}}
-                </a>
+                <div ng-repeat="item in items | filter: {name: searchText}" class="relative">
+                    <a ng-click="showDescription(this)" class="list-group-item relative"
+                            ng-class="{true:'active', false:''}[$index==selectedIndex]" href=""
+                            drag-to-reveal> <!--ng-swipe-left="showInfo(this)" -->
+                        <span>{{item.name}}</span>
+                    </a>
+                    <a class="list-group-item list-group-item-info item-options invisible" ng-click="showInfo(this)">View</a>
+                </div>
             </div>
         </div>	<!-- end span -->
-        <div class="col-md-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
+        <div class="col-sm-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
             <h4>{{featureType}}</h4>
             <ng-include src="feature.url"></ng-include>
         </div> <!-- end span -->

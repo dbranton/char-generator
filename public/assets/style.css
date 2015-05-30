@@ -1,8 +1,4 @@
-@media (min-width: 992px) {
-
-    .modal .desc-col {
-        display: block !important;
-    }
+@media (min-width: 768px) {
 
     .modal-body {
         max-height: 400px;
@@ -13,14 +9,26 @@
         height: auto;
     }
 
-    .modal-body [class*=col-md] {
+    .modal-body [class*=col-sm] {
         max-height: 340px;
         overflow-y: auto;
     }
+}
 
-    /*.modal-body .nav.nav-tabs + .tab-content [class*=col-md] {
-        max-height: 340px;
-    }*/
+.modal .desc-col {
+    display: block !important;
+}
+
+.relative {
+    position: relative;
+    z-index: 2;
+}
+
+.item-options {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
 }
 
 .popover-lg {
@@ -45,21 +53,3 @@ input.ng-invalid, .ng-dirty input.ng-invalid {
     pointer-events: none;
 }
 
-@media (max-width: 767px) {
-    /*** custom checkboxes ***/
-
-    input[type=checkbox] { display:none; } /* to hide the checkbox itself */
-    .list-group label.list-group-item:before {
-        font-family: FontAwesome;
-        display: inline-block;
-        font-size: 1.5em;
-    }
-
-    .list-group label.list-group-item:before { content: "\f10c"; } /* unchecked icon */
-    .list-group label.list-group-item:before { letter-spacing: 10px; } /* space between checkbox and label */
-
-    .list-group label.list-group-item.active:before { content: "\f058"; } /* checked icon */
-    .list-group label.list-group-item.active:before { letter-spacing: 7px; } /* allow space for check mark */
-
-    .list-group label.list-group-item.active.disabled { opacity: 0.65; }
-}

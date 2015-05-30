@@ -138,6 +138,11 @@ module.exports = function(grunt) {
 					{ expand: true, cwd: '<%= bowerDir %>/ngInfiniteScroll/build', src: ['ng-infinite-scroll.js'], dest: '<%= assetsDir %>/js' }
 				]
 			},
+			oclazyload: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/ocLazyLoad/dist', src: ['ocLazyLoad.js'], dest: '<%= assetsDir %>/js' }
+				]
+			},
 			uibootstrap: {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/ui-bootstrap', src: ['ui-bootstrap-tpls.js'], dest: '<%= assetsDir %>/js' }
@@ -241,7 +246,8 @@ module.exports = function(grunt) {
 					'<%= assetsDir %>/js/bootstrap.js',
 					'<%= assetsDir %>/js/mobile-angular-ui.js',
 					'<%= assetsDir %>/js/mobile-angular-ui.gestures.js',
-					'<%= assetsDir %>/js/angular-wizard.js'
+					'<%= assetsDir %>/js/angular-wizard.js',
+					'<%= assetsDir %>/js/ocLazyLoad.js'
 				],
 				dest: '<%= assetsDir %>/tmp/concat.js'
 			}

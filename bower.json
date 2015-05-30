@@ -28,7 +28,7 @@
     "ie-json": "bestiejs/json3",
     "ie-html5": "aFarkas/html5shiv",
     "ng-table": "esvit/ng-table",
-    "mobile-angular-ui": "~1.2.0-beta.11"
+    "mobile-angular-ui": "mcasimir/mobile-angular-ui"
   },
   "resolutions": {
     "angular": "1.3.4"

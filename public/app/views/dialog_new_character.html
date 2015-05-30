@@ -4,11 +4,13 @@
 </div>
 <div class="modal-body">
     <div class="form-group" name="newCharForm" ng-form>
-        <p class="text-danger" ng-show="showError">The level must be between 1 and 20</p>
-        <label class="col-sm-4 control-label" for="level">Level: </label>
-        <div class="col-sm-8">
-            <input type="number" ng-model="level" id="level" class="form-control" ng-init="level = 1"
-                    min="1" max="20" required>
+        <div class="row">
+            <p class="text-danger" ng-show="showError">The level must be between 1 and 20</p>
+            <label class="col-sm-4 control-label" for="level">Level: </label>
+            <div class="col-sm-8">
+                <input type="number" ng-model="level" id="level" class="form-control" ng-init="level = 1"
+                        min="1" max="20" required>
+            </div>
         </div>
     </div>
 </div>
