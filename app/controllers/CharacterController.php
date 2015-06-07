@@ -190,6 +190,15 @@ class CharacterController extends \BaseController {
                 $data['cantrips'] = implode(', ', $cantripIds);
             }
             if (isset($character['classObj']['selectedSpells'])) {
+                if (isset($character['classObj']['bonusSelectedSpells'])) {
+                    $character['classObj']['selectedSpells'] = array_merge($character['classObj']['selectedSpells'], $character['classObj']['bonusSelectedSpells']);
+                }
+                if (isset($character['classObj']['spellcasting']['bonusSpells'])) {
+                    foreach ($character['classObj']['spellcasting']['bonusSpells'] as $spellObj) {
+                        array_push($character['classObj']['selectedSpells'], $spellObj[0]);
+                    }
+                }
+
                 $spellIds = array_map(function($val) {
                     return $val['id'];
                 }, $character['classObj']['selectedSpells']);

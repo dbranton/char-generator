@@ -13,370 +13,298 @@
         <div ng-bind-html="errorMessage"></div>
     </div>
     <div class="row panel panel-default">
-    <div class="panel-heading">
-        <h1 class="panel-title pull-left">Character Generator</h1>
-        <div class="pull-right">
-            <button class="btn btn-primary" ng-click="openNewCharDialog()"><i class="fa fa-plus"></i>  New Character</button>
-        </div>
-        <!--<div class="pull-right" ng-show="storedCharacter">
-            Last Stored Character: <button type="button" class="btn btn-default" ng-click="fillInCharacter()">{{storedCharacter.name}}</button>
-        </div>-->
-        <div class="clearfix"></div>
-    </div>
-    <div class="panel-body">
 
     <wizard on-finish="saveCharacter()">
-        <wz-step title="Race & Class">
-            <div class="col-sm-6">
-                <fieldset>
-                    <legend>Race & Class</legend>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Race:</label>
-                        <div class="col-sm-8">
-                            <select-modal ng-model="character.raceObj" placeholder="Select a Race" data="raceData"
-                                    click="openRaceDialog()" name="character.raceObj.name"></select-modal>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-show="character.raceObj.bonusAbilities">
-                        <label class="col-sm-4 control-label">Bonus Abilities:</label>
-                        <div class="col-sm-8">
-                            <select-modal bonus-ability ng-model="character.selectedBonusAbilities"
-                                          placeholder="Select your Bonus Abilities" data="character.raceObj.bonusAbilities"
-                                          click="openBonusAbilityDialog()" name="character.selectedBonusAbilities"
-                                          multiple max="2" select></select-modal>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Background:</label>
-                        <div class="col-sm-8">
-                            <select-modal ng-model="character.background" placeholder="Select a Background" data="backgroundData"
-                                          click="openBackgroundDialog()" name="character.background.name"></select-modal>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-4 control-label">Class:</label>
-                        <div class="col-sm-8">
-                            <select-modal ng-model="character.classObj" placeholder="Select a Class" data="classData"
-                                          click="openClassDialog()" name="character.classObj.name"></select-modal>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-show="character.classObj.subclasses.length > 0 || character.classObj.subclassObj">
-                        <label class="col-sm-4 control-label">{{character.classObj.subclassName}}:</label>
-                        <div class="col-sm-8">
-                            <select-modal ng-model="character.classObj.subclassObj" placeholder="Select a Subclass" data="character.classObj.subclasses"
-                                          click="openSubclassDialog()" name="character.classObj.subclassObj.name"></select-modal>
-                        </div>
-                    </div>
-                </fieldset>
-            </div>
-            <div class="col-sm-6">
-                <fieldset>
-                    <legend>Abilities</legend>
-                    <ability-table character="character" pointsleft="{{character.ability.pointsLeft}}"></ability-table>
-                </fieldset>
-            </div>
-            <div class="pagination pull-right">
-                <button type="button" wz-next class="btn btn-primary" ng-disabled="!validateStep1()">Next</button>
-            </div>
-        </wz-step>
-        <wz-step title="Skills & Proficiencies"> <!-- canenter="enterValidation"-->
-            <div class="row">
+        <div class="panel-body">
+            <wz-step title="Race & Class">
                 <div class="col-sm-6">
                     <fieldset>
-                        <legend>Skills</legend>
-                        <label>Passive Perception:</label> {{character.passivePerception}}
-                        <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft + character.raceObj.numSkillChoices - character.bonusSkills.length}} Skills Left</div>
-                        <skills></skills>
-                    </fieldset>
-                </div>
-                <div class="col-sm-6">
-                    <fieldset ng-show="character.classObj.name && (character.numToolChoices > 0 || character.numLanguages > 0)">
-                        <legend>Proficiencies</legend>
-                        <div>
-                            <div class="form-group" ng-show="character.numToolChoices > 0">
-                                <label class="col-sm-4 control-label">Tools:</label>
-                                <div class="col-sm-8">
-                                    <select-modal tools ng-model="character.selectedTools" placeholder="Select your Tool(s)"
-                                                  data="availableTools" click="openToolDialog()" name="character.selectedTools"
-                                                  multiple max="character.numToolChoices" filter="filterTools: character" select></select-modal>
-                                </div>
-                            </div>
-                            <div class="form-group" ng-show="character.numLanguages > 0">
-                                <label class="col-sm-4 control-label">Languages:</label>
-                                <div class="col-sm-8">
-                                    <select-modal languages="character.numLanguages" ng-model="character.selectedLanguages"
-                                                  placeholder="Select your Language(s)" data="availableLanguages"
-                                                  click="openLanguageDialog()" name="character.selectedLanguages"
-                                                  multiple max="select2Languages" select></select-modal>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                </div>
-            </div>
-            <div class="pagination pull-right">
-                <button type="button" wz-previous class="btn btn-default">Back</button>
-                <button type="button" wz-next class="btn btn-primary" ng-disabled="!validateStep2()">Next</button>
-            </div>
-        </wz-step>
-        <wz-step title="Features & Spells">
-            <div class="row">
-                <div class="col-sm-6">
-                    <fieldset>
-                        <legend>Features</legend>
-                        <!--<div class="form-group" ng-show="character.numFeats > 0">
-                            <label class="col-sm-4 control-label">Feats:</label>
-                            <div class="col-sm-8">
-                                <ui-select multiple ng-model="character.selectedFeats"
-                                           feats
-                                           max="{{character.numFeats}}"
-                                           theme="select2"
-                                           style="width: 100%;">
-                                    <ui-select-match placeholder="Select your feat(s)">{{$item.name}}</ui-select-match>
-                                    <ui-select-choices repeat="feat in featsData | filter: {name: $select.search} | filterFeats: character">
-                                        <div ng-bind-html="feat.name | highlight: $select.search"></div>
-                                    </ui-select-choices>
-                                </ui-select>
-                            </div>
-                        </div>-->
-                        <div class="form-group" ng-if="character.classObj.expertise">
-                            <label class="col-sm-4 control-label">{{character.classObj.expertise.label}}:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="character.selectedExpertise" expertise
-                                              placeholder="Select your Expertise" data="character.classObj.expertise.list"
-                                              click="openExpertiseDialog()" name="character.selectedExpertise"
-                                              multiple max="character.classObj.expertise.numExpertise"
-                                              filter="orderBy: 'name'" select></select-modal>
-                            </div>
-                        </div>
-                        <!-- for Class-based feature choices (ex: Fighting Style, Metamagic) -->
-                        <div class="form-group" ng-repeat="selectedFeature in character.classObj.selectedFeatures">
-                            <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="selectedFeature.name"
-                                              placeholder="Select your Feature(s)" data="selectedFeature.choices"
-                                              click="openFeatureDialog(selectedFeature, character.classObj, $index)" name="selectedFeature.name"
-                                              multiple max="selectedFeature.max"></select-modal>
-                            </div>
-                        </div>
-                        <!-- for subclass feature choices (ex: Totem Aspect, Combat Superiority, etc.) -->
-                        <div class="form-group" ng-repeat="selectedFeature in character.classObj.subclassObj.selectedFeatures">
-                            <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="selectedFeature.name"
-                                              placeholder="Select your Feature(s)" data="selectedFeature.choices"
-                                              click="openFeatureDialog(selectedFeature, character.classObj.subclassObj, $index)" name="selectedFeature.name"
-                                              multiple max="selectedFeature.max"></select-modal>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <fieldset>
-                        <div ng-show="character.numFeats > 0">
-                            <legend>Ability Score Improvement</legend>
-                            <ability-table character="character" pointsleft="{{character.ability.bonusPoints}}"
-                                           bonus="true" class="pull-right"></ability-table>
-                        </div>
-                    </fieldset>
-                </div> <!-- .col-sm-6 -->
-                <div class="col-sm-6">
-                    <fieldset>
-                        <legend>Spells</legend>
-                        <div class="form-group" ng-if="character.raceObj.spellcasting.classId">
-                            <label class="col-sm-4 control-label">Bonus Cantrip:</label>
-                            <div class="col-sm-8">
-                                <spell-dialog ng-model="character.raceObj.cantrip" list="bonusRaceCantrips" placeholder="cantrip"
-                                              select2-spellcasting="character.raceObj.spellcasting"
-                                              other-spell="character.classObj.selectedCantrips"></spell-dialog>
-                                <!--<div class="input-group" spell-dialog ng-model="character.raceObj.cantrip" list="bonusRaceCantrips"
-                                     other-spell="character.classObj.selectedCantrips"
-                                     select2-spellcasting="character.raceObj.spellcasting">
-                                    <ui-select id="bonusRaceCantrip"
-                                               multiple
-                                               max="1"
-                                               ng-model="character.raceObj.cantrip"
-                                               theme="select2"
-                                               style="width: 100%;">
-                                        <ui-select-match placeholder="Pick your bonus cantrip">{{$item.name}}</ui-select-match>
-                                        <ui-select-choices repeat="cantrip in $parent.bonusRaceCantripsFiltered = (bonusRaceCantrips | filterSpells: character.classObj.selectedCantrips)
-                                                                | filter: {name: $select.search} | filterSpells: character.classObj.selectedCantrips"
-                                                           refresh="refreshSpells($select.search)"
-                                                           refresh-delay="500">
-                                            <div ng-bind-html="cantrip.name | highlight: $select.search"></div>
-                                        </ui-select-choices>
-                                    </ui-select>
-                                </div>-->
-                            </div>
-                        </div>
-
-                        <div class="form-group" ng-show="character.classObj.cantrip">
-                            <label class="col-sm-4 control-label">Cantrips:</label>
-                            <div class="col-sm-8">
-                                <spell-dialog ng-model="character.classObj.selectedCantrips" list="classCantrips" placeholder="cantrip(s)"
-                                              select2-spellcasting="character.classObj.cantrip"
-                                              other-spell="character.raceObj.cantrip"></spell-dialog>
-                                <!--<div class="input-group" spell-dialog ng-model="character.classObj.selectedCantrips" list="classCantrips"
-                                     other-spell="character.raceObj.cantrip"
-                                     select2-spellcasting="character.classObj.cantrip">
-                                    <ui-select ng-model="character.classObj.selectedCantrips"
-                                               multiple
-                                               max="{{character.classObj.cantrip.numSpellsKnown}}"
-                                               theme="select2"
-                                               style="width: 100%;">
-                                        <ui-select-match placeholder="Select your cantrips" ui-lock-choice="$item.disabled">{{$item.name}}</ui-select-match>
-                                        <ui-select-choices repeat="cantrip in $parent.classCantripsFiltered = (classCantrips | filterSpells: character.raceObj.cantrip)
-                                                            | filter: {name: $select.search} | filterSpells: character.raceObj.cantrip"
-                                                           refresh="refreshSpells($select.search)"
-                                                           refresh-delay="500">
-                                            <div ng-bind-html="cantrip.name | highlight: $select.search"></div>
-                                        </ui-select-choices>
-                                    </ui-select>
-                                </div>-->
-                            </div>
-                        </div>
-                        <!-- subclass cantrips -->
-                        <div class="form-group" ng-show="character.classObj.subclassObj.cantrips">
-                            <label class="col-sm-4 control-label">Cantrips:</label>
-                            <div class="col-sm-8">
-                                <div class="input-group">
-                                    <!--<label class="input-group-addon btn btn-default" ng-click="openSubclassCantripDialog()">
-                                        <span class="fa fa-columns"></span>
-                                    </label>
-                                    <select ui-select2 ng-model="character.classObj.selectedCantrips" id="chosenSubclassCantrips" multiple max="{{character.classObj.numCantrips}}" style="width: 100%" ng-change="broadcastNonObj(character.classObj.selectedCantrips, 'selectedCantrips')">
-                                        <option ng-repeat="cantrip in character.classObj.subclassObj.cantrips">{{cantrip.name}}</option>
-                                    </select>-->
-                                    <!--<spell-dialog spell-obj="character.classObj.spellcasting" ng-model="character.classObj.selectedCantrips"></spell-dialog>
-                                    <ui-select ng-model="character.classObj.selectedCantrips"
-                                               multiple
-                                               list="classSpells"
-                                               max="{{character.classObj.numCantrips}}"
-                                               select2-spellcasting="character.classObj.spellcasting"
-                                               bonus="bonusSelectedSpells"
-                                               theme="select2"
-                                               style="width: 100%;">
-                                        <ui-select-match placeholder="Pick your spells">{{$item.name}}</ui-select-match>
-                                        <ui-select-choices group-by="'level_desc'"
-                                                           repeat="spell in classSpells track by $index"
-                                                           refresh="refreshSpells($select.search)"
-                                                           refresh-delay="500">
-                                            <div ng-bind-html="spell.name | highlight: $select.search"></div>
-                                        </ui-select-choices>
-                                    </ui-select>-->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group" ng-show="character.classObj.spellcasting.numSpellsKnown">
-                            <label class="col-sm-4 control-label">Spells:</label>
-                            <div class="col-sm-8">
-                                <spell-dialog ng-model="character.classObj.selectedSpells" list="classSpells"
-                                              select2-spellcasting="character.classObj.spellcasting"
-                                              other-spell="character.classObj.spellcasting.bonusSelectedSpells"></spell-dialog>
-                                <!--<div class="input-group" spell-dialog ng-model="character.classObj.selectedSpells" list="classSpells"
-                                     select2-spellcasting="character.classObj.spellcasting">
-                                    <ui-select ng-model="character.classObj.selectedSpells"
-                                               multiple
-                                               max="{{character.classObj.spellcasting.numSpellsKnown}}"
-                                               theme="select2"
-                                               style="width: 100%;">
-                                        <ui-select-match placeholder="Select your spells">{{$item.name}}</ui-select-match>
-                                        <ui-select-choices group-by="'level_desc'"
-                                                           repeat="spell in $parent.classSpellsFiltered = (classSpells | filterSpells: character.classObj.spellcasting.bonusSelectedSpells)
-                                                                | filter: {name: $select.search} | filterSpells: character.classObj.spellcasting.bonusSelectedSpells"
-                                                           refresh="refreshSpells($select.search)"
-                                                           refresh-delay="500">
-                                            <div ng-bind-html="spell.name | highlight: $select.search"></div>
-                                        </ui-select-choices>
-                                    </ui-select></spell-dialog>
-                                </div>-->
-                            </div>
-                        </div>
-                        <!-- commented out until i figure out how to deal with it -->
-                        <div class="form-group" ng-show="character.classObj.spellcasting.bonus.numSpellsKnown">
-                            <label class="col-sm-4 control-label">Bonus Spells:</label>
-                            <div class="col-sm-8">
-                                <spell-dialog ng-model="character.classObj.bonusSelectedSpells" list="classBonusSpells"
-                                              select2-spellcasting="character.classObj.spellcasting.bonus"
-                                              other-spell="character.classObj.selectedSpells"></spell-dialog>
-                                <!--<div class="input-group" spell-dialog
-                                        ng-model="character.classObj.bonusSelectedSpells" list="classBonusSpells"
-                                        select2-spellcasting="character.classObj.spellcasting.bonus">
-                                    <ui-select ng-model="character.classObj.bonusSelectedSpells"
-                                               multiple
-                                               max="{{character.classObj.spellcasting.numSpellsKnown}}"
-                                               theme="select2"
-                                               style="width: 100%;">
-                                        <ui-select-match placeholder="Select your spells">{{$item.name}}</ui-select-match>
-                                        <ui-select-choices group-by="'level_desc'"
-                                                           repeat="spell in $parent.classBonusSpellsFiltered = (classBonusSpells | filterSpells: character.classObj.selectedSpells)
-                                                            | filter: {name: $select.search} | filterSpells: character.classObj.selectedSpells"
-                                                           refresh="refreshSpells($select.search)"
-                                                           refresh-delay="500">
-                                            <div ng-bind-html="spell.name | highlight: $select.search"></div>
-                                        </ui-select-choices>
-                                    </ui-select>
-                                </div>-->
-                            </div>
-                        </div>
-                    </fieldset>
-                </div> <!-- .col-sm-6 -->
-            </div>
-            <div class="pagination pull-right">
-                <button type="button" wz-previous class="btn btn-default">Back</button>
-                <button type="button" wz-next class="btn btn-primary">Next</button>
-            </div>
-        </wz-step>
-        <wz-step title="Details">
-            <div class="row">
-                <div class="col-sm-6">
-                    <fieldset>
-                        <legend>Describe Your Character</legend>
+                        <legend>Race & Class</legend>
                         <div class="form-group">
-                            <label class="col-sm-4 control-label">Name:</label>
+                            <label class="col-sm-4 control-label">Race:</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" ng-model="character.name"> <!--placeholder="Pick a Name..."-->
+                                <select-modal ng-model="character.raceObj" placeholder="Select a Race" data="raceData"
+                                        click="openRaceDialog()" name="character.raceObj.name"></select-modal>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-show="character.raceObj.bonusAbilities">
+                            <label class="col-sm-4 control-label">Bonus Abilities:</label>
+                            <div class="col-sm-8">
+                                <select-modal bonus-ability ng-model="character.selectedBonusAbilities"
+                                              placeholder="Select your Bonus Abilities" data="character.raceObj.bonusAbilities"
+                                              click="openBonusAbilityDialog()" name="character.selectedBonusAbilities"
+                                              multiple max="2" select></select-modal>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Background:</label>
+                            <div class="col-sm-8">
+                                <select-modal ng-model="character.background" placeholder="Select a Background" data="backgroundData"
+                                              click="openBackgroundDialog()" name="character.background.name"></select-modal>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Class:</label>
+                            <div class="col-sm-8">
+                                <select-modal ng-model="character.classObj" placeholder="Select a Class" data="classData"
+                                              click="openClassDialog()" name="character.classObj.name"></select-modal>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-show="character.classObj.subclasses.length > 0 || character.classObj.subclassObj">
+                            <label class="col-sm-4 control-label">{{character.classObj.subclassName}}:</label>
+                            <div class="col-sm-8">
+                                <select-modal ng-model="character.classObj.subclassObj" placeholder="Select a Subclass" data="character.classObj.subclasses"
+                                              click="openSubclassDialog()" name="character.classObj.subclassObj.name"></select-modal>
                             </div>
                         </div>
                     </fieldset>
                 </div>
                 <div class="col-sm-6">
-
+                    <fieldset>
+                        <legend>Abilities</legend>
+                        <ability-table character="character" pointsleft="{{character.ability.pointsLeft}}"></ability-table>
+                    </fieldset>
                 </div>
-            </div>
-            <div class="pagination pull-right">
-                <button type="button" wz-previous class="btn btn-default">Back</button>
-                <button type="submit" class="btn btn-primary" ng-disabled="!validateStep4()" wz-finish>Save Character</button> <!--ng-disabled="charGenForm.$invalid"-->
-            </div>
-        </wz-step>
+                <div class="pagination pull-right">
+                    <button type="button" wz-next class="btn btn-primary" ng-disabled="!validateStep1()">Next</button>
+                </div>
+            </wz-step>
+            <wz-step title="Skills & Proficiencies"> <!-- canenter="enterValidation"-->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <fieldset>
+                            <legend>Skills</legend>
+                            <label>Passive Perception:</label> {{character.passivePerception}}
+                            <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft + character.raceObj.numSkillChoices - character.bonusSkills.length}} Skills Left</div>
+                            <skills></skills>
+                        </fieldset>
+                    </div>
+                    <div class="col-sm-6">
+                        <fieldset ng-show="character.classObj.name && (character.numToolChoices > 0 || character.numLanguages > 0)">
+                            <legend>Proficiencies</legend>
+                            <div>
+                                <div class="form-group" ng-show="character.numToolChoices > 0">
+                                    <label class="col-sm-4 control-label">Tools:</label>
+                                    <div class="col-sm-8">
+                                        <select-modal tools ng-model="character.selectedTools" placeholder="Select your Tool(s)"
+                                                      data="availableTools" click="openToolDialog()" name="character.selectedTools"
+                                                      multiple max="character.numToolChoices" filter="filterTools: character" select></select-modal>
+                                    </div>
+                                </div>
+                                <div class="form-group" ng-show="character.numLanguages > 0">
+                                    <label class="col-sm-4 control-label">Languages:</label>
+                                    <div class="col-sm-8">
+                                        <select-modal languages="character.numLanguages" ng-model="character.selectedLanguages"
+                                                      placeholder="Select your Language(s)" data="availableLanguages"
+                                                      click="openLanguageDialog()" name="character.selectedLanguages"
+                                                      filter="filterLanguages: character.raceObj.languages" multiple
+                                                      max="select2Languages" select></select-modal>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="pagination pull-right">
+                    <button type="button" wz-previous class="btn btn-default">Back</button>
+                    <button type="button" wz-next class="btn btn-primary" ng-disabled="!validateStep2()">Next</button>
+                </div>
+            </wz-step>
+            <wz-step title="Features & Spells">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <fieldset>
+                            <legend>Features</legend>
+                            <!--<div class="form-group" ng-show="character.numFeats > 0">
+                                <label class="col-sm-4 control-label">Feats:</label>
+                                <div class="col-sm-8">
+                                    <ui-select multiple ng-model="character.selectedFeats"
+                                               feats
+                                               max="{{character.numFeats}}"
+                                               theme="select2"
+                                               style="width: 100%;">
+                                        <ui-select-match placeholder="Select your feat(s)">{{$item.name}}</ui-select-match>
+                                        <ui-select-choices repeat="feat in featsData | filter: {name: $select.search} | filterFeats: character">
+                                            <div ng-bind-html="feat.name | highlight: $select.search"></div>
+                                        </ui-select-choices>
+                                    </ui-select>
+                                </div>
+                            </div>-->
+                            <div class="form-group" ng-if="character.classObj.expertise">
+                                <label class="col-sm-4 control-label">{{character.classObj.expertise.label}}:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.selectedExpertise" expertise
+                                                  placeholder="Select your Expertise" data="character.classObj.expertise.list"
+                                                  click="openExpertiseDialog()" name="character.selectedExpertise"
+                                                  multiple max="character.classObj.expertise.numExpertise"
+                                                  filter="orderBy: 'name'" select></select-modal>
+                                </div>
+                            </div>
+                            <!-- for Class-based feature choices (ex: Fighting Style, Metamagic) -->
+                            <div class="form-group" ng-repeat="selectedFeature in character.classObj.selectedFeatures">
+                                <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="selectedFeature.name"
+                                                  placeholder="Select your Feature(s)" data="selectedFeature.choices"
+                                                  click="openFeatureDialog(selectedFeature, character.classObj, $index)" name="selectedFeature.name"
+                                                  multiple max="selectedFeature.max"></select-modal>
+                                </div>
+                            </div>
+                            <!-- for subclass feature choices (ex: Totem Aspect, Combat Superiority, etc.) -->
+                            <div class="form-group" ng-repeat="selectedFeature in character.classObj.subclassObj.selectedFeatures">
+                                <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="selectedFeature.name"
+                                                  placeholder="Select your Feature(s)" data="selectedFeature.choices"
+                                                  click="openFeatureDialog(selectedFeature, character.classObj.subclassObj, $index)" name="selectedFeature.name"
+                                                  multiple max="selectedFeature.max"></select-modal>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <div ng-show="character.numFeats > 0">
+                                <legend>Ability Score Improvement</legend>
+                                <ability-table character="character" pointsleft="{{character.ability.bonusPoints}}"
+                                               bonus="true" class="pull-right"></ability-table>
+                            </div>
+                        </fieldset>
+                    </div> <!-- .col-sm-6 -->
+                    <div class="col-sm-6">
+                        <fieldset>
+                            <legend>Spells</legend>
+                            <div class="form-group" ng-if="character.raceObj.spellcasting.classId">
+                                <label class="col-sm-4 control-label">Bonus Cantrip:</label>
+                                <div class="col-sm-8">
+                                    <spell-dialog ng-model="character.raceObj.cantrip" list="bonusRaceCantrips" placeholder="cantrip"
+                                                  select2-spellcasting="character.raceObj.spellcasting"
+                                                  other-spell="character.classObj.selectedCantrips"></spell-dialog>
+                                </div>
+                            </div>
+
+                            <div class="form-group" ng-show="character.classObj.cantrip">
+                                <label class="col-sm-4 control-label">Cantrips:</label>
+                                <div class="col-sm-8">
+                                    <spell-dialog ng-model="character.classObj.selectedCantrips" list="classCantrips" placeholder="cantrip(s)"
+                                                  select2-spellcasting="character.classObj.cantrip"
+                                                  other-spell="character.raceObj.cantrip"></spell-dialog>
+                                </div>
+                            </div>
+                            <!-- subclass cantrips -->
+                            <div class="form-group" ng-show="character.classObj.subclassObj.cantrips">
+                                <label class="col-sm-4 control-label">Cantrips:</label>
+                                <div class="col-sm-8">
+                                    <div class="input-group">
+                                        <!--<label class="input-group-addon btn btn-default" ng-click="openSubclassCantripDialog()">
+                                            <span class="fa fa-columns"></span>
+                                        </label>
+                                        <select ui-select2 ng-model="character.classObj.selectedCantrips" id="chosenSubclassCantrips" multiple max="{{character.classObj.numCantrips}}" style="width: 100%" ng-change="broadcastNonObj(character.classObj.selectedCantrips, 'selectedCantrips')">
+                                            <option ng-repeat="cantrip in character.classObj.subclassObj.cantrips">{{cantrip.name}}</option>
+                                        </select>-->
+                                        <!--<spell-dialog spell-obj="character.classObj.spellcasting" ng-model="character.classObj.selectedCantrips"></spell-dialog>
+                                        <ui-select ng-model="character.classObj.selectedCantrips"
+                                                   multiple
+                                                   list="classSpells"
+                                                   max="{{character.classObj.numCantrips}}"
+                                                   select2-spellcasting="character.classObj.spellcasting"
+                                                   bonus="bonusSelectedSpells"
+                                                   theme="select2"
+                                                   style="width: 100%;">
+                                            <ui-select-match placeholder="Pick your spells">{{$item.name}}</ui-select-match>
+                                            <ui-select-choices group-by="'level_desc'"
+                                                               repeat="spell in classSpells track by $index"
+                                                               refresh="refreshSpells($select.search)"
+                                                               refresh-delay="500">
+                                                <div ng-bind-html="spell.name | highlight: $select.search"></div>
+                                            </ui-select-choices>
+                                        </ui-select>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.classObj.spellcasting.numSpellsKnown">
+                                <label class="col-sm-4 control-label">Spells:</label>
+                                <div class="col-sm-8">
+                                    <spell-dialog ng-model="character.classObj.selectedSpells" list="classSpells"
+                                                  select2-spellcasting="character.classObj.spellcasting"
+                                                  other-spell="character.classObj.spellcasting.bonusSelectedSpells"></spell-dialog>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.classObj.spellcasting.bonus.numSpellsKnown">
+                                <label class="col-sm-4 control-label">Bonus Spells:</label>
+                                <div class="col-sm-8">
+                                    <spell-dialog ng-model="character.classObj.bonusSelectedSpells" list="classBonusSpells"
+                                                  select2-spellcasting="character.classObj.spellcasting.bonus"
+                                                  other-spell="character.classObj.selectedSpells"></spell-dialog>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-repeat="spellObj in character.classObj.spellcasting.bonusSpells">
+                                <label class="col-sm-4 control-label">Level {{spellObj.spellLevel}} Spell:</label>
+                                <div class="col-sm-8">
+                                    <spell-dialog ng-model="spellObj.selectedSpell" list="classBonusSpells"
+                                                  select2-spellcasting="spellObj"
+                                                  other-spell="character.classObj.selectedSpells"></spell-dialog>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div> <!-- .col-sm-6 -->
+                </div>
+                <div class="pagination pull-right">
+                    <button type="button" wz-previous class="btn btn-default">Back</button>
+                    <button type="button" wz-next class="btn btn-primary">Next</button>
+                </div>
+            </wz-step>
+            <wz-step title="Details">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <fieldset>
+                            <legend>Describe Your Character</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Name:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" ng-model="character.name"> <!--placeholder="Pick a Name..."-->
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="col-sm-6">
+
+                    </div>
+                </div>
+                <div class="pagination pull-right">
+                    <button type="button" wz-previous class="btn btn-default">Back</button>
+                    <button type="submit" class="btn btn-primary" ng-disabled="!validateStep4()" wz-finish>Save Character</button> <!--ng-disabled="charGenForm.$invalid"-->
+                </div>
+            </wz-step>
+        </div> <!--panel-body-->
+        <div class="panel-footer">
+            <button type="button" class="btn btn-default" ng-click="openSummary()"><i class="fa fa-list-alt"></i> Open Summary</button>
+            <button type="button" class="btn btn-primary" ng-click="openNewCharDialog()"><i class="fa fa-plus"></i> New Character</button>
+        </div>
     </wizard>
 
-    </div> <!-- panel-body -->
-    <div class="panel-footer">
-        <form name="charGenForm" ng-submit="saveCharacter()" novalidate>
-            <input type="hidden" id="inputName" name="charName" ng-model="character.name" required />
-            <input type="hidden" id="inputRace" name="raceName" ng-model="character.raceObj.name" required />
-            <input type="hidden" id="inputClass" name="className" ng-model="character.classObj.name" required />
-            <input type="hidden" id="inputSubclass" name="subclassName" ng-model="character.classObj.subclassObj.name" ng-required="character.classObj.subclasses.length > 0" />
-            <!--<input type="hidden" id="inputFeature" name="featureName" ng-model="selectedFeature.name" ng-required="featureChoices.length > 0" />-->
-            <input type="hidden" id="inputBackground" name="backgroundName" ng-model="character.background.name" required />
-            <input type="hidden" id="inputLanguage" name="languageName" ng-model="numLanguagesLeft" is-empty />
-            <input type="hidden" id="inputSkills" name="skillsName" ng-model="character.numSkillsLeft" is-empty />
-            <input type="hidden" id="inputAbPts" name="abPtsLeftName" ng-model="character.ability.pointsLeft" is-empty />
-            <!--<input type="text" id="inputAlignment" ng-model="character.alignment" />-->
-            <!--<button class="btn btn-primary" ng-click="saveCharacter()" ng-disabled="charGenForm.$invalid">Save Character</button>-->
-            <button type="button" class="btn btn-default" ng-click="openSummary()" ng-if="!isMobile">Open Summary</button>
-            <div class="error-container" ng-show="validating && charGenForm.$invalid">
-                <div><small class="text-danger" ng-show="charGenForm.charName.$error.required">Please name your character</small></div>
-                <div><small class="text-danger" ng-show="charGenForm.raceName.$error.required">Please choose a race</small></div>
-                <div><small class="text-danger" ng-show="charGenForm.backgroundName.$error.required">Please choose a background</small></div>
-                <div><small class="text-danger" ng-show="charGenForm.languageName.$error.notEmpty">You need to choose your languages</small></div>
-                <div><small class="text-danger" ng-show="charGenForm.className.$error.required">Please choose a class</small></div>
-                <div><small class="text-danger" ng-show="charGenForm.subclassName.$error.required">Please choose a subclass</small></div>
-                <!--<div><small class="text-danger" ng-show="charGenForm.featureName.$error.required">You need to choose a feature for your class</small></div>-->
-                <div><small class="text-danger" ng-show="charGenForm.skillsName.$error.notEmpty">Please select your skills</small></div>
-                <div><small class="text-danger" ng-show="charGenForm.abPtsLeftName.$error.notEmpty">Please assign your ability scores</small></div>
-            </div>
-        </form>
-    </div>
-    </div> <!-- panel -->
+    <form name="charGenForm" ng-submit="saveCharacter()" novalidate class="hide">
+        <input type="hidden" id="inputName" name="charName" ng-model="character.name" required />
+        <input type="hidden" id="inputRace" name="raceName" ng-model="character.raceObj.name" required />
+        <input type="hidden" id="inputClass" name="className" ng-model="character.classObj.name" required />
+        <input type="hidden" id="inputSubclass" name="subclassName" ng-model="character.classObj.subclassObj.name" ng-required="character.classObj.subclasses.length > 0" />
+        <!--<input type="hidden" id="inputFeature" name="featureName" ng-model="selectedFeature.name" ng-required="featureChoices.length > 0" />-->
+        <input type="hidden" id="inputBackground" name="backgroundName" ng-model="character.background.name" required />
+        <input type="hidden" id="inputLanguage" name="languageName" ng-model="numLanguagesLeft" is-empty />
+        <input type="hidden" id="inputSkills" name="skillsName" ng-model="character.numSkillsLeft" is-empty />
+        <input type="hidden" id="inputAbPts" name="abPtsLeftName" ng-model="character.ability.pointsLeft" is-empty />
+        <!--<input type="text" id="inputAlignment" ng-model="character.alignment" />-->
+        <!--<button class="btn btn-primary" ng-click="saveCharacter()" ng-disabled="charGenForm.$invalid">Save Character</button>-->
+
+        <!--<div class="error-container" ng-show="validating && charGenForm.$invalid">
+            <div><small class="text-danger" ng-show="charGenForm.charName.$error.required">Please name your character</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.raceName.$error.required">Please choose a race</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.backgroundName.$error.required">Please choose a background</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.languageName.$error.notEmpty">You need to choose your languages</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.className.$error.required">Please choose a class</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.subclassName.$error.required">Please choose a subclass</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.skillsName.$error.notEmpty">Please select your skills</small></div>
+            <div><small class="text-danger" ng-show="charGenForm.abPtsLeftName.$error.notEmpty">Please assign your ability scores</small></div>
+        </div>-->
+    </form>
     <script type="text/ng-template" id="progressBar.html">
         <!--<div class="modal" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false">-->
             <div class="modal-header">
@@ -388,7 +316,7 @@
         <!--</div>-->
     </script>
     <script type="text/ng-template" id="wizard.html">
-        <div>
+        <div class="wizard">
             <ul class="pagination col-xs-12" ng-if="!hideIndicators">
                 <li ng-class="{
                 active: step.selected,
@@ -396,8 +324,8 @@
                     <a ng-click="goTo(step)" class="col-xs-3">{{step.title || step.wzTitle}}</a>
                 </li>
             </ul>
-            <div class="clearfix"></div>
+            <!--<div class="clearfix"></div>-->
             <div class="steps" ng-transclude></div>
         </div>
     </script>
-</div> <!-- ng-app -->
+</div>

@@ -14,15 +14,6 @@ angular.module('app')
             {id:'cha', name:'Charisma'}
         ];
 
-        Array.prototype.getIndexBy = function (name, value) {
-            for (var i = 0; i < this.length; i++) {
-                if (this[i][name] == value) {
-                    return i;
-                }
-            }
-            return -1;
-        };
-
         function Character() {
             this.name = null,
             this.raceObj = {};
@@ -43,7 +34,7 @@ angular.module('app')
             this.initiative = null;
             this.armor = null;
             this.weapons = null;
-            this.tools = null;
+            this.tools = '';
             this.size = null;
             this.profBonus = 0;
             this.passivePerception = 10;
@@ -64,7 +55,7 @@ angular.module('app')
                             }
                             that.updateSkillScore(skill.readable_id);
                             if (isAdded) {  // add skill
-                                if (that.classObj.selectedSkills && that.classObj.selectedSkills.getIndexBy('id', skill.id) === -1) {
+                                if (that.classObj.selectedSkills && _.findIndex(that.classObj.selectedSkills, 'id', skill.id) === -1) {
                                     that.classObj.selectedSkills.push({id: skill.id, readable_id: skill.readable_id, name: skill.name});
                                     if (!disabled) {    // disabled is true if skill comes from background, so dont change skillsLeft if so
                                         if (!that.bonusSkills || (that.bonusSkills && (that.raceObj.numSkillChoices - that.bonusSkills.length === 0))) {
@@ -86,7 +77,7 @@ angular.module('app')
                                 _.remove(that.classObj.selectedSkills, {'id': skill.id});
                                 // remove skill from expertise if it exists
                                 if (that.classObj.expertise && that.classObj.expertise.selectedExpertise &&
-                                        that.classObj.expertise.selectedExpertise.getIndexBy('id', skill.id) !== -1) {
+                                        _.findIndex(that.classObj.expertise.selectedExpertise, 'id', skill.id) !== -1) {
                                     _.remove(that.classObj.expertise.selectedExpertise, {'id': skill.id});
                                     if (that.classObj.expertise.type === 'expertise') {
                                         that.numSkillsLeft++; // +4 to +0: 'expertise' only
@@ -133,7 +124,7 @@ angular.module('app')
                     // only enable skill if it is a class skill, not a race bonus skill, and is not a background skill
                     if (classSkills.indexOf(currentSkill) !== -1
                             && (raceBonusSkill !== currentSkill)
-                            && (!backgroundSkills || backgroundSkills.indexOf(currentSkill) === -1)) {
+                            && (!backgroundSkills || _.findIndex(backgroundSkills, 'readable_id', currentSkill) === -1)) {
                         that.skills[idx].disabled = false;
                     }
                 });
@@ -169,7 +160,7 @@ angular.module('app')
             angular.forEach(this.skills, function(skill, i) {
                 if (!skillName || skill.readable_id === skillName) {   // skillName might be an array of skills
                     if (angular.isDefined(isAdded)) {   // means that it is an expertise skill
-                        if (selectedExpertise.getIndexBy('id', skill.id) !== -1) { // && !skill.proficient
+                        if (_.findIndex(selectedExpertise, 'id', skill.id) !== -1) { // && !skill.proficient
                             if (!skill.proficient) {    // level 1: +0 to +4
                                 skill.proficient = true;    // in case expertise skill is not proficient
                                 that.classObj.selectedSkills.push({id: skill.id, readable_id: skill.readable_id, name: skill.name});
@@ -184,8 +175,8 @@ angular.module('app')
                                 skill.disabled = true;
                             }
                         } else if (that.classObj.expertise.type === 'selected_expertise' && // removing expertise skill
-                                selectedExpertise.getIndexBy('id', skill.id) === -1 &&
-                                    that.classObj.expertise.list.getIndexBy('id', skill.id) !== -1 && skill.proficient) {
+                                _.findIndex(selectedExpertise, 'id', skill.id) === -1 &&
+                                    _.findIndex(that.classObj.expertise.list, 'id', skill.id) !== -1 && skill.proficient) {
                             skill.proficient = false;
                             if (that.numSkillsLeft > 0 && that.classObj.avail_skills.indexOf(skill.name) !== -1) {
                                 skill.disabled = false; // only enable skill if it belongs on the class skill list and numSkillsLeft > 0
@@ -196,7 +187,7 @@ angular.module('app')
                     }
                     profBonus = skill.proficient ? that.profBonus : 0;
                     that.skills[i].val = profBonus + that.ability[abilityMapper[skill.ability]].mod;
-                    if (selectedExpertise && selectedExpertise.getIndexBy('id', skill.id) !== -1) {
+                    if (selectedExpertise && _.findIndex(selectedExpertise, 'id', skill.id) !== -1) {
                         that.skills[i].val += profBonus;
                         //that.enableSkills(enabledSkills);
                     }
@@ -350,7 +341,7 @@ angular.module('app')
         Character.prototype.handleFeatureBonuses = function() {
             var featureStats = this.featureStats,
                 bonusArray = [], characterArray = [], that = this,
-                featureBonus, expertiseArr;
+                featureBonus, expertiseArr, bonusSpells = [];
             this.numBonusLanguages = 0;
             this.handleLanguages();
             this.resetRacialBonuses();
@@ -422,7 +413,7 @@ angular.module('app')
                                 maxSpellLevel: 0,
                                 numSpellsKnown: parseInt(bonusArray[1])
                             }
-                        } else if (prop === 'spells_known') {   // ex: 28, 1, 2: 28 is class_id, 1 is max spell level and 2 is number of spells known
+                        } else if (prop === 'spells_known') {   // ex: sorcerer, 1, 2: 1 is max spell level and 2 is number of spells known
                             bonusArray = featureBonus[prop].split(', ');
                             that.classObj.spellcasting.classId = bonusArray[0];
                             that.classObj.spellcasting.maxSpellLevel = bonusArray[1];
@@ -430,13 +421,21 @@ angular.module('app')
                             if (bonusArray[3] && bonusArray[4]) {
                                 that.classObj.spellcasting.restrictedSchools = [bonusArray[3], bonusArray[4]];  // ex: Abjuration, Evocation
                             }
-                        } else if (prop === 'bonus_spells_known') {   // ex: 4, 2, 2: 4 is class_id, 2 is max spell level and 2 is number of spells known
+                        } else if (prop === 'bonus_spells_known') {   // ex: wizard, 2, 2: 2 is max spell level and 2 is number of spells known
                             bonusArray = featureBonus[prop].split(', ');
                             that.classObj.spellcasting.bonus = {    // expects spellcasting to exist
                                 classId: bonusArray[0],
                                 maxSpellLevel: bonusArray[1],
                                 numSpellsKnown: parseInt(bonusArray[2])
                             };
+                        } else if (prop.indexOf('bonus_spell') !== -1) {    // ex: warlock mystic arcanum (warlock, 6 - means warlock spell list, spell level)
+                            //bonusArray = featureBonus[prop].split(', ');
+                            bonusSpells.push({
+                                classId: featureBonus[prop],
+                                spellLevel: parseInt((prop.split('-'))[1]),
+                                numSpellsKnown: 1
+                            });
+                            that.classObj.spellcasting.bonusSpells = that.classObj.spellcasting.bonusSpells || bonusSpells;
                         } else if (prop === 'bonus_race_cantrip') {  // assume this always comes before spellcasting if it exists
                             bonusArray = featureBonus[prop].split(', ');    // '6, cha' becomes an ['6', 'cha'] where 6 is spell_id
                             that.raceObj.spellcasting = {};
@@ -521,10 +520,10 @@ angular.module('app')
                              }
                              });*/
                         } else if (prop === 'bonus_language') { // not ready yet
-                            if (that.languages.indexOf(featureBonus[prop]) === -1) {
+                            if (!that.languages || that.languages.indexOf(featureBonus[prop]) === -1) {
                                 that.classObj.bonusLanguages.push(featureBonus[prop]);
 
-                                bonusArray = that.languages.split(', ');
+                                bonusArray = that.languages ? that.languages.split(', ') : [];
                                 bonusArray.push(featureBonus[prop]);
                                 bonusArray.sort();
                                 that.languages = bonusArray.join(', ');
@@ -562,6 +561,7 @@ angular.module('app')
             that.speed = parseInt(this.raceObj.speed);
             that.size = this.raceObj.size_value;
             that.defaultLanguages = this.raceObj.languages || '';
+            that.languages = that.defaultLanguages;
             //this.handleLanguages();
             if (that.raceObj.traits) {
                 that.raceObj.racialTraits = []; // reset
@@ -639,7 +639,7 @@ angular.module('app')
                                 name: featureObj.name,
                                 benefit: tempBenefit.benefit_desc
                             };
-                            if (tempBenefit.benefit_desc !== '') {   // adds benefits that have descriptions to selectedFeatures list
+                            if (tempBenefit.benefit_desc) {   // adds benefits that have descriptions to selectedFeatures list
                                 that.classObj.classFeatures.push(classFeature);
                             }
                             if (tempBenefit.benefit_stat) {
@@ -672,7 +672,7 @@ angular.module('app')
                                             name: subfeature.name,
                                             benefit: tempBenefit.benefit_desc
                                         };
-                                        if (tempBenefit.benefit_desc !== '') {   // adds benefits that have descriptions to classFeatures list
+                                        if (tempBenefit.benefit_desc) {   // adds benefits that have descriptions to classFeatures list
                                             that.classObj.classFeatures.push(classFeature);
                                         }
                                         if (tempBenefit.benefit_stat) {
@@ -726,7 +726,7 @@ angular.module('app')
                                 name: feature.name,
                                 benefit: tempSubclassBenefit.benefit_desc
                             };
-                            if (tempSubclassBenefit.benefit_desc !== '') {
+                            if (tempSubclassBenefit.benefit_desc) {
                                 that.classObj.subclassObj.classFeatures.push(subclassFeature);
                             }
                             /*if (tempSubclassBenefit.benefit_stat) {
@@ -756,14 +756,14 @@ angular.module('app')
                                         name: subfeature.name,
                                         benefit: tempSubclassBenefit.description
                                     };
-                                    if (tempSubclassBenefit.description !== '') {
+                                    if (tempSubclassBenefit.description) {
                                         that.classObj.subclassObj.classFeatures.push(subclassFeature);
                                     }
                                 }
                                 // filter out coinciding cantrips between high elf's bonus cantrip and cantrip list
                                 /*if ($scope.character.raceObj.cantrip &&
-                                 $scope.character.classObj.subclassObj.cantrips.getIndexBy('name', $scope.character.raceObj.cantrip) !== -1) {
-                                 $scope.character.classObj.subclassObj.cantrips.splice($scope.character.classObj.subclassObj.cantrips.getIndexBy('name', $scope.character.raceObj.cantrip), 1);
+                                 _.findIndex($scope.character.classObj.subclassObj.cantrips, 'name', $scope.character.raceObj.cantrip) !== -1) {
+                                 $scope.character.classObj.subclassObj.cantrips.splice(_.findIndex($scope.character.classObj.subclassObj.cantrips, 'name', $scope.character.raceObj.cantrip), 1);
                                  }*/
                             });
                         }
@@ -852,7 +852,7 @@ angular.module('app')
                         // assume that feature choices have only one benefit
                         classObj.classFeatures.push(featureObj);
 
-                        selectedFeaturesArray.push({name: selectedFeature.name});
+                        selectedFeaturesArray.push({id: selectedFeature.id, name: selectedFeature.name});
                     }
                 });
                 // for making it show up on the button
@@ -990,6 +990,12 @@ angular.module('app')
                 var path = locationName + 'service/';
                 path += ((maxSpellLevel === 0) ? 'cantrips/' + classId : 'spells_table/' + classId + '/' + maxSpellLevel);
                 path += ((school) ? '/' + school : '');
+                path += ((term) ? '/' + term : '');
+                return $resource(path);
+            },
+            SpellsByLevel: function(classId, spellLevel, term) {
+                var path = locationName + 'service/';
+                path += 'spells_by_level/' + classId + '/' + spellLevel;
                 path += ((term) ? '/' + term : '');
                 return $resource(path);
             },

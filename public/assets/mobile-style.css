@@ -39,4 +39,8 @@
     .list-group label.list-group-item.active:before { letter-spacing: 7px; } /* allow space for check mark */
 
     .list-group label.list-group-item.active.disabled { opacity: 0.65; }
+
+    .wizard > .pagination {
+        display: none;
+    }
 }

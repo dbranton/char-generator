@@ -1,5 +1,8 @@
 <!--<div ng-app="generator" ng-controller="CharGen">-->
 <div class="modal-header">
+    <button type="button" ng-click="showInfo(false)" ng-show="isInfoExpanded" class="pull-left btn-link">
+        <i class="fa fa-chevron-left"></i> Back
+    </button>
     <h4 class="modal-title">{{title}}</h4>
 </div>
 <div class="modal-body">
@@ -17,7 +20,7 @@
                 </div>
             </div>
         </div>	<!-- end span -->
-        <div class="col-sm-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
+        <div class="col-sm-7 desc-col" ng-show="isInfoExpanded">
             <h4>{{featureType}}</h4>
             <ng-include src="feature.url"></ng-include>
         </div> <!-- end span -->

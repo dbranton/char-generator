@@ -1,9 +1,8 @@
 angular.module('app')
     .controller('GeneratorController', GeneratorController);
 
-    function GeneratorController($scope, $state, general, charGenFactory, configObj) {
+    function GeneratorController($scope, $state, general, charGenFactory, configObj, WizardHandler) {
         var path = configObj.path;
-
         /********
          * Alerts
          ********/
@@ -70,6 +69,7 @@ angular.module('app')
             opts.backdrop = 'static';
             general.openDialog(opts).result.then(function(level) {
                 $scope.character = charGenFactory.getNewCharacter(level);
+                WizardHandler.wizard().goTo(0); // go back to step 1
             });
         };
 
@@ -229,7 +229,7 @@ angular.module('app')
             $scope.searchText = '';
             $scope.description = 'Click a list item to view more information';
             $scope.features = [];
-            $scope.selectedIndex = angular.isNumber(parseInt(raceId)) ? $scope.items.getIndexBy('subrace_id', raceId) : null;
+            $scope.selectedIndex = angular.isNumber(raceId) ? _.findIndex($scope.items, 'subrace_id', raceId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.featureType = '';
             $scope.feature = {
@@ -293,7 +293,7 @@ angular.module('app')
             $scope.searchText = '';
             $scope.description = 'Click a list item to view more information';
             $scope.features = [];
-            $scope.selectedIndex = angular.isNumber(backgroundId) ? $scope.items.getIndexBy('id', backgroundId) : null;
+            $scope.selectedIndex = angular.isNumber(backgroundId) ? _.findIndex($scope.items, 'id', backgroundId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.featureType = '';
             $scope.feature = {
@@ -355,7 +355,7 @@ angular.module('app')
             $scope.featureType = '';
             $scope.features = [];
             $scope.tempClass = '';
-            $scope.selectedIndex = angular.isNumber(classId) ? $scope.items.getIndexBy('id', classId) : null;
+            $scope.selectedIndex = angular.isNumber(classId) ? _.findIndex($scope.items, 'id', classId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.feature = {
                 url: path + "/app/views/partials/dialog_class.html"
@@ -423,7 +423,7 @@ angular.module('app')
             $scope.description = 'Click a list item to view more information';
             $scope.featureType = '';
             $scope.features = [];
-            $scope.selectedIndex = angular.isNumber(subclassId) ? $scope.items.getIndexBy('id', subclassId) : null;
+            $scope.selectedIndex = angular.isNumber(subclassId) ? _.findIndex($scope.items, 'id', subclassId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.feature = {
                 url: path + "/app/views/partials/dialog_class.html"
@@ -475,7 +475,7 @@ angular.module('app')
         function DialogFeatureController($scope, $modalInstance, features, max, featureIds) {    // selectedFeatures
             var parentFeature = angular.isArray(features) ? features[0].parent_name : 'Feature';
             $scope.title = 'Select ' + parentFeature;
-            $scope.items = features;   // needed for UI
+            $scope.items = _.sortBy(features, 'name');   // needed for UI
             $scope.searchText = '';
             $scope.tempItems = [];
             _.each($scope.items, function(obj, index, list) {
@@ -537,6 +537,11 @@ angular.module('app')
                 if (character.classObj.selectedSpells) {
                     if (angular.isArray(character.classObj.bonusSelectedSpells)) {
                         character.classObj.selectedSpells = character.classObj.selectedSpells.concat(character.classObj.bonusSelectedSpells);
+                    }
+                    if (angular.isArray(character.classObj.spellcasting.bonusSpells)) {
+                        angular.forEach(character.classObj.spellcasting.bonusSpells, function(spellObj) {
+                            character.classObj.selectedSpells.push(spellObj.selectedSpell[0]);  // assumes only one bonus spell
+                        });
                     }
                     _.sortBy(character.classObj.selectedSpells, 'level');
                     character.classObj.selectedSpellsByLevel = _.groupBy(character.classObj.selectedSpells, 'level_desc');

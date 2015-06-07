@@ -43,6 +43,16 @@ angular
             return items;
         };
     })
+    .filter('filterLanguages', function() {
+        return function(items, defaultLanguages) {
+            if (defaultLanguages) {
+                return _.filter(items, function(language) {
+                    return defaultLanguages.indexOf(language.name) === -1;
+                });
+            }
+            return items;
+        };
+    })
     .filter('filterTools', function() {
         return function(items, character) {
             var parentTool;

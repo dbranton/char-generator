@@ -140,7 +140,7 @@ angular
                  maxY: 0
                },
                move: function(c) {
-                 if(c.right <= c.width) { //((5 * c.width) / 6)
+                 if(c.right <= c.width && !showOptions) { //((5 * c.width) / 6)
                    showOptions = true;
                    elem.next().removeClass('invisible');
                  } else if (c.left >= -(c.width/6) && showOptions) {
@@ -202,10 +202,8 @@ angular
                 function DialogLanguageController($scope, $modalInstance, languageData, max, languageIds, title, featureType) {
                     general.DialogItemsController.apply(undefined, arguments);
                 }
-                var LANGUAGE_LIST = [];
                 charGenFactory.getLanguages().success(function(data) {
-                    LANGUAGE_LIST = data.languages;
-                    scope.availableLanguages = angular.copy(LANGUAGE_LIST);
+                    scope.availableLanguages = angular.copy(data.languages);
                 });
 
                 scope.openLanguageDialog = function() {
@@ -245,14 +243,6 @@ angular
                         languages.sort();
                         scope.character.languages = languages.join(', ');
                         scope.numLanguagesLeft = scope.character.numLanguages - selectedLanguages.length;
-                    }
-                });
-
-                scope.$watch('character.raceObj.languages', function(newValue) {
-                    if (newValue) {
-                        scope.availableLanguages = _.filter(LANGUAGE_LIST, function(language) {
-                            return newValue.indexOf(language.name) === -1;
-                        });
                     }
                 });
 
@@ -449,72 +439,37 @@ angular
         return {
             restrict: 'A',
             require: 'ngModel',
-            /*scope: {
-                ngModel: '=?'
-            },*/
             link: function(scope, element, attrs, ngModel) {
                 var list = attrs.list;
                 scope[list] = [];
-                scope.refreshSpells = function(term) {
-                    var spellcastingObj = scope.$eval(attrs.select2Spellcasting) || {};
-                    if (spellcastingObj.class_id) {
-                        var classId = spellcastingObj.classId,
-                            maxSpellLevel = spellcastingObj.maxSpellLevel,
-                            schools = spellcastingObj.restrictedSchools;
-                        charGenFactory.Spells(classId, maxSpellLevel, schools).get({}, function(response) {
-                            scope.spells = response.spells;
-                        });
-                    }
-                };
 
                 scope.$watch(attrs.select2Spellcasting, function(newVal, oldVal) {
                     if (newVal && newVal.classId && (!angular.equals(newVal, oldVal) || newVal === oldVal)) {
-                        var classId = newVal.classId, maxSpellLevel = newVal.maxSpellLevel,
+                        var classId = newVal.classId, maxSpellLevel = newVal.maxSpellLevel, spellLevel = newVal.spellLevel,
                             school = newVal.restrictedSchools;
-                        charGenFactory.Spells(classId, maxSpellLevel, school).get({}, function(response) {
-                            scope[list] = response.spells;
-                            if (scope.$select) {
-                                scope.$select.selected = [];
-                            }
-                            if (newVal.bonusCantrip) {
-                                angular.forEach(scope[list], function(spellObj, idx) {
-                                    if (spellObj.readable_id === newVal.bonusCantrip) {
-                                        //spellObj.disabled = true;
-                                        scope[list][idx].disabled = true;
-                                        if (scope.$select) {    // only applies to non-mobile
-                                            scope.$select.select(spellObj);
-                                        } else {    // for mobile only
-                                            ngModel.$setViewValue([spellObj]);
+                        if (angular.isDefined(maxSpellLevel)) {
+                            charGenFactory.Spells(classId, maxSpellLevel, school).get({}, function(response) {
+                                scope[list] = response.spells;
+                                if (newVal.bonusCantrip) {
+                                    angular.forEach(scope[list], function(spellObj, idx) {
+                                        if (spellObj.readable_id === newVal.bonusCantrip) {
+                                            //spellObj.disabled = true;
+                                            scope[list][idx].disabled = true;
+                                            if (scope.$select) {    // only applies to non-mobile
+                                                scope.$select.select(spellObj);
+                                            } else {    // for mobile only
+                                                ngModel.$setViewValue([spellObj]);
+                                            }
+                                            //scope.$select.selected = [spellObj];
                                         }
-                                        //scope.$select.selected = [spellObj];
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-                scope.$watch(attrs.ngModel, function(newVal, oldVal) {
-                    var primarySpells = null, bonusSpells = null;
-                    if (angular.isArray(newVal)) {
-                        /*if (attrs.bonus) {
-                            bonusSpells = scope.$eval(attrs.bonus) || [];
-                            scope.character.classObj.selectedSpells = bonusSpells.concat(newVal);
-                        } else if (attrs.primary) {
-                            primarySpells = scope.$eval(attrs.primary) || [];
-                            scope.character.classObj.selectedSpells = primarySpells.concat(newVal);
-
-                        } else {
-                            throw new Error('this element has no child or parent');
-                        }*/
-                    } else if (angular.isObject(newVal)) {  // single select
-                        // TODO: work on this
-                        if (attrs.bonus) {
-
-                        } else if (attrs.primary) {
-                            primarySpells = scope.$eval(attrs.primary) || [];
+                                    });
+                                }
+                            });
+                        } else if (angular.isDefined(spellLevel)) {
+                            charGenFactory.SpellsByLevel(classId, spellLevel).get({}, function(response) {
+                                scope[list] = response.spells;
+                            });
                         }
-                        //scope.character[attrs.ngModel] = newVal;  // needs to be able to be removed when changing race/class
-
                     }
                 });
             }
@@ -538,7 +493,6 @@ angular
                             $scope.tempSpells.push(spell);
                         } else if (angular.isArray(spell)) {
                             angular.forEach(spell, function(obj) {
-                                var test = _.findIndex(selectedSpells, 'readable_id', obj.readable_id);
                                 if (_.findIndex(selectedSpells, 'readable_id', obj.readable_id) !== -1) {
                                     obj.active = true;
                                     $scope.tempSpells.push(obj);

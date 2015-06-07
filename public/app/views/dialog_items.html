@@ -1,10 +1,13 @@
 <div class="modal-header">
+    <button type="button" ng-click="showInfo(false)" ng-show="isInfoExpanded" class="pull-left btn-link">
+        <i class="fa fa-chevron-left"></i> Back
+    </button>
     <h4 class="modal-title">{{title}}</h4>
 </div>
 <div class="modal-body">
     <p ng-show="!isInfoExpanded">{{max - tempItems.length}} {{featureType}} Left:</p>
     <div class="row">
-        <div class="col-md-5" ng-show="!isInfoExpanded">
+        <div class="col-sm-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
             <div class="list-group">
                 <div ng-repeat="item in items | filter: {name: searchText}" class="relative">
@@ -16,7 +19,7 @@
                 </div>
             </div>
         </div>	<!-- end span -->
-        <div class="col-md-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
+        <div class="col-sm-7 desc-col" ng-show="isInfoExpanded">
             <h4>{{featureType}}</h4>
             <dl>
                 <dt>{{selectedItem.name}}</dt>
