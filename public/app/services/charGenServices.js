@@ -866,7 +866,11 @@ angular.module('app')
             that.featureStats.features = that.addFeatureBenefits(that.featureStats.features, that.classObj.selectedFeatureChoices);
             that.handleFeatureBonuses();
 
-            that.classObj.charFeatures = that.classObj.classFeatures.concat(that.classObj.subclassObj.classFeatures);
+            if (that.classObj.subclassObj) {
+                that.classObj.charFeatures = that.classObj.classFeatures.concat(that.classObj.subclassObj.classFeatures);
+            } else {
+                that.classObj.charFeatures = angular.copy(that.classObj.classFeatures);
+            }
         };
         Character.prototype.handleLanguages = function() {
             this.numLanguages = this.background.languages ? parseInt(this.background.languages) + this.numBonusLanguages : this.numBonusLanguages;

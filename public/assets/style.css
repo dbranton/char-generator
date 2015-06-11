@@ -53,6 +53,18 @@ input.ng-invalid, .ng-dirty input.ng-invalid {
     pointer-events: none;
 }
 
+.section-footer {
+    text-align: right;
+}
+
 .modal-header .btn-link {
     display: inline;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.align-center {
+    text-align: center;
 }

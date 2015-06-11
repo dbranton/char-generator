@@ -609,6 +609,21 @@ angular
                         }));
                         //ngModel.$setViewValue(selectedSpells);
                         scope.selectedCantrips = ngModel.$viewValue;
+
+                        /*if (character.classObj.selectedSpells) {
+                            if (angular.isArray(character.classObj.bonusSelectedSpells)) {
+                                character.classObj.selectedSpells = character.classObj.selectedSpells.concat(character.classObj.bonusSelectedSpells);
+                            }
+                            if (angular.isArray(character.classObj.spellcasting.bonusSpells)) {
+                                angular.forEach(character.classObj.spellcasting.bonusSpells, function(spellObj) {
+                                    character.classObj.selectedSpells.push(spellObj.selectedSpell[0]);  // assumes only one bonus spell
+                                });
+                            }
+                            _.sortBy(character.classObj.selectedSpells, 'level');
+                            character.classObj.selectedSpellsByLevel = _.groupBy(character.classObj.selectedSpells, 'level_desc');
+                        }*/
+
+
                     });
                 };
             }

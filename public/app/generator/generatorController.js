@@ -3,6 +3,7 @@ angular.module('app')
 
     function GeneratorController($scope, $state, general, charGenFactory, configObj, WizardHandler) {
         var path = configObj.path;
+        var numSteps = 5;
         /********
          * Alerts
          ********/
@@ -19,14 +20,11 @@ angular.module('app')
         $scope.character = charGenFactory.getNewCharacter();    // defaults to level 1 character if user chooses not to select a level at first
 
         // Initialize variables
+        var nextTitle = 'Next';
+        $scope.nextTitle = nextTitle;
         $scope.racialBonus = {};
-        $scope.searchText = ''; // necessary?
         $scope.subclasses = [];
-        //$scope.selectedExpertise = [];
-        //$scope.selectedBonusAbilities = [];
         $scope.storedCharacter = null;
-        //$scope.selectedSpells = [];
-        //$scope.bonusSelectedSpells = [];
         $scope.numLanguagesLeft = 0;
 
         $scope.fillInCharacter = function() {
@@ -51,12 +49,6 @@ angular.module('app')
                         $scope.errorMessage = data; // html string
                     }
                 );
-            }
-        };
-
-        $scope.filterByName = function(value) {
-            if (value.name) {
-                return value.name.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1;
             }
         };
 
@@ -144,18 +136,28 @@ angular.module('app')
             });
         };
 
-        $scope.openSummary = function() {
-            var opts = {};
-            opts.templateUrl = '/app/views/dialog_summary.html'; //'dialog/summary';
-            opts.controller = DialogSummaryController;
-            opts.resolve = {
-                character: function() { return angular.copy($scope.character); }
-            };
-            opts.size = 'lg';
-            general.openDialog(opts);
+        $scope.isFirstStep = function() {
+            var stepNumber = WizardHandler.wizard().currentStepNumber();
+            return stepNumber === 1;
         };
 
-        $scope.validateStep1 = function() {
+        $scope.validateStep = function() {
+            var stepNumber = WizardHandler.wizard().currentStepNumber();
+            switch (stepNumber) {
+                case 1:
+                    return validateStep1();
+                case 2:
+                    return validateStep2();
+                case 3:
+                    return true;
+                case 4:
+                    return validateStep4();
+                default:
+                    return true;
+            }
+        };
+
+        function validateStep1() {
             var char = $scope.character;
             if (char.raceObj.name && char.background.name && char.classObj.name && char.ability.pointsLeft === 0 &&
                 (!char.classObj.subclasses.length ||
@@ -164,9 +166,9 @@ angular.module('app')
             } else {
                 return false;
             }
-        };
+        }
 
-        $scope.validateStep2 = function() {
+        function validateStep2() {
             var char = $scope.character;
             if (!char.raceObj.numSkillChoices && char.numSkillsLeft === 0 ||
                 (angular.isArray(char.bonusSkills) && char.numSkillsLeft + char.raceObj.numSkillChoices - char.bonusSkills.length === 0)) {
@@ -174,11 +176,11 @@ angular.module('app')
             } else {
                 return false;
             }
-        };
+        }
 
-        $scope.validateStep4 = function() {
+        function validateStep4() {
             return $scope.character.name ? true : false;
-        };
+        }
 
         $scope.openNewCharDialog(); // execute immediately onload
         $scope.init = function() {
@@ -200,18 +202,36 @@ angular.module('app')
              });*/
         };
 
-        var getFeatureChoices = function(choices, level, type, index) {  // type is 'classArr' or 'subclassArr'
-            var tempArr = [];
-            angular.forEach(choices, function(feature) {
-                if (feature.level <= level && feature.benefit_stat !== 'bonus_feature') {
-                    tempArr.push(feature);
-                } else if (feature.benefit_stat === 'bonus_feature') {   // ex: Elemental Attunement
-                    feature.locked = true;
-                    tempArr.push(feature);
+        $scope.$watch('character.classObj.selectedSpells' , function(newVal, oldVal) {
+            var selectedSpells = [];
+            if (angular.isArray(newVal)) {
+                selectedSpells = angular.copy(newVal);
+                if (angular.isArray($scope.character.classObj.bonusSelectedSpells)) {
+                    selectedSpells = $scope.character.classObj.selectedSpells.concat($scope.character.classObj.bonusSelectedSpells);
                 }
-            });
-            return tempArr;
-        };
+                if (angular.isArray($scope.character.classObj.spellcasting.bonusSpells)) {
+                    angular.forEach($scope.character.classObj.spellcasting.bonusSpells, function(spellObj) {
+                        selectedSpells.push(spellObj.selectedSpell[0]);  // assumes only one bonus spell
+                    });
+                }
+                _.sortBy(selectedSpells, 'level');
+                $scope.character.classObj.selectedSpellsByLevel = _.groupBy(selectedSpells, 'level_desc');
+            }
+        });
+
+        $scope.$watch(function() {
+            return WizardHandler.wizard().currentStepNumber();
+        }, function(newVal, oldVal) {
+            if (angular.isDefined(newVal)) {
+                $scope.nextTitle = nextTitle;
+                if (angular.isNumber(newVal) && newVal > oldVal) {
+
+                    if (newVal === numSteps) {
+                        $scope.nextTitle = 'Submit Character';
+                    }
+                }
+            }
+        });
 
         function DialogNewCharController($scope, $modalInstance) {
             $scope.done = function() {
@@ -415,7 +435,6 @@ angular.module('app')
         }
 
         function DialogSubclassController($scope, $modalInstance, subclasses, subclassId, subclassType){
-            //$scope.class = character.classObj.name;
             var subclassType = subclassType || 'Subclass';
             $scope.title = 'Select ' + subclassType;
             $scope.items = subclasses;
@@ -524,32 +543,6 @@ angular.module('app')
             };
 
             $scope.close = function(){
-                $modalInstance.dismiss('cancel');
-            };
-        }
-
-        function DialogSummaryController($scope, $modalInstance, character) {
-            var bonusHP = character.bonusHP >= 0 ? '+' + character.bonusHP : character.bonusHP;
-            character.hitPointsDesc = character.classObj.hit_dice ? character.hitPoints + ' (' + character.level + 'd' + character.classObj.hit_dice + bonusHP + ')' : '';
-            character.speed = character.speed ? character.speed + ' feet' : '';
-            character.skillsArr = [];
-            if (character.classObj.spellcasting) {
-                if (character.classObj.selectedSpells) {
-                    if (angular.isArray(character.classObj.bonusSelectedSpells)) {
-                        character.classObj.selectedSpells = character.classObj.selectedSpells.concat(character.classObj.bonusSelectedSpells);
-                    }
-                    if (angular.isArray(character.classObj.spellcasting.bonusSpells)) {
-                        angular.forEach(character.classObj.spellcasting.bonusSpells, function(spellObj) {
-                            character.classObj.selectedSpells.push(spellObj.selectedSpell[0]);  // assumes only one bonus spell
-                        });
-                    }
-                    _.sortBy(character.classObj.selectedSpells, 'level');
-                    character.classObj.selectedSpellsByLevel = _.groupBy(character.classObj.selectedSpells, 'level_desc');
-                }
-            }
-
-            $scope.character = character;
-            $scope.close = function() {
                 $modalInstance.dismiss('cancel');
             };
         }

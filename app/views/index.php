@@ -27,33 +27,33 @@
 <div class="scrollable" style="padding-top:40px;">
 <!-- HEADER -->
 <div class="scrollable-header">
-<nav class="navbar-static-top navbar-inverse" role="navigation"> <!--navbar-fixed-top-->
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" ui-sref="generator">Character Generator</a>
-		</div>
+    <nav class="navbar-static-top navbar-inverse" role="navigation"> <!--navbar-fixed-top-->
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" ui-sref="generator">Character Generator</a>
+            </div>
 
-		<!-- Collect the nav links, forms, and other content for toggling -->
-		<div class="collapse navbar-collapse navbar-ex1-collapse">
-			<ul class="nav navbar-nav navbar-right">
-                <li ng-show="userId"><a ui-sref="dashboard">Dashboard</a></li>
-				<li ng-hide="userId"><a ui-sref="login">Login</a></li>
-                <li ng-show="userId"><a ui-sref="login" ng-click="logout()">Logout</a></li>
-				<li><a ui-sref="register">Register</a></li>
-				<li><a ui-sref="about">About</a></li>
-			</ul>
-		</div>
-		<!-- /.navbar-collapse -->
-	</div>
-	<!-- /.container -->
-</nav>
-    </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li ng-show="userId"><a ui-sref="dashboard">Dashboard</a></li>
+                    <li ng-hide="userId"><a ui-sref="login">Login</a></li>
+                    <li ng-show="userId"><a ui-sref="login" ng-click="logout()">Logout</a></li>
+                    <li><a ui-sref="register">Register</a></li>
+                    <li><a ui-sref="about">About</a></li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+</div>
 <div class=" scrollable-content">
     <div class="container">
         <div class="">

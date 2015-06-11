@@ -12,11 +12,13 @@
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <div ng-bind-html="errorMessage"></div>
     </div>
-    <div class="row panel panel-default">
 
     <wizard on-finish="saveCharacter()">
+
+    <div class="panel panel-default">
         <div class="panel-body">
-            <wz-step title="Race & Class">
+            <wz-step wz-title="Race & Class">
+                <div class="row">
                 <div class="col-sm-6">
                     <fieldset>
                         <legend>Race & Class</legend>
@@ -65,11 +67,9 @@
                         <ability-table character="character" pointsleft="{{character.ability.pointsLeft}}"></ability-table>
                     </fieldset>
                 </div>
-                <div class="pagination pull-right">
-                    <button type="button" wz-next class="btn btn-primary" ng-disabled="!validateStep1()">Next</button>
                 </div>
             </wz-step>
-            <wz-step title="Skills & Proficiencies"> <!-- canenter="enterValidation"-->
+            <wz-step wz-title="Skills & Proficiencies"> <!-- canenter="enterValidation"-->
                 <div class="row">
                     <div class="col-sm-6">
                         <fieldset>
@@ -105,12 +105,8 @@
                         </fieldset>
                     </div>
                 </div>
-                <div class="pagination pull-right">
-                    <button type="button" wz-previous class="btn btn-default">Back</button>
-                    <button type="button" wz-next class="btn btn-primary" ng-disabled="!validateStep2()">Next</button>
-                </div>
             </wz-step>
-            <wz-step title="Features & Spells">
+            <wz-step wz-title="Features & Spells">
                 <div class="row">
                     <div class="col-sm-6">
                         <fieldset>
@@ -247,12 +243,8 @@
                         </fieldset>
                     </div> <!-- .col-sm-6 -->
                 </div>
-                <div class="pagination pull-right">
-                    <button type="button" wz-previous class="btn btn-default">Back</button>
-                    <button type="button" wz-next class="btn btn-primary">Next</button>
-                </div>
             </wz-step>
-            <wz-step title="Details">
+            <wz-step wz-title="Details">
                 <div class="row">
                     <div class="col-sm-6">
                         <fieldset>
@@ -269,16 +261,226 @@
 
                     </div>
                 </div>
-                <div class="pagination pull-right">
-                    <button type="button" wz-previous class="btn btn-default">Back</button>
-                    <button type="submit" class="btn btn-primary" ng-disabled="!validateStep4()" wz-finish>Save Character</button> <!--ng-disabled="charGenForm.$invalid"-->
+            </wz-step>
+            <wz-step wz-title="Summary">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <legend>Summary</legend>
+                    </div>
                 </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h3>{{character.name}}</h3>
+                        <table class="table table-condensed">
+                            <thead>
+                            <tr>
+                                <th colspan="2">Level {{character.level}} {{character.raceObj.name}} {{character.classObj.name}}
+                                    <span ng-if="character.pseudo_class">({{character.pseudo_class}})</span>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <th>Background</th>
+                                <td>{{character.background.name}}</td>
+                            </tr>
+                            <tr>
+                                <th>Armor Class</th>
+                                <td>{{character.armorClass}}</td>
+                            </tr>
+                            <tr>
+                                <th>Hit Points</th>
+                                <td>{{character.hitPoints}}</td>
+                            </tr>
+                            <tr>
+                                <th>Initiative</th>
+                                <td>{{character.initiative | addPlus}}</td>
+                            </tr>
+                            <tr>
+                                <th>Speed</th>
+                                <td>{{character.speed}} ft.</td>
+                            </tr>
+                            <tr>
+                                <th>Proficiency Bonus</th>
+                                <td>+{{character.profBonus}}</td>
+                            </tr>
+                            <tr>
+                                <th>Armor Proficiencies: </th>
+                                <td><span ng-if="!character.armor">None</span>{{character.armor}}</td>
+                            </tr>
+                            <tr>
+                                <th>Weapon Proficiencies: </th>
+                                <td><span ng-if="!character.weapons">None</span>{{character.weapons}}</td>
+                            </tr>
+                            <tr>
+                                <th>Tool Proficiencies: </th>
+                                <td><span ng-if="!character.tools">None</span>{{character.tools}}</td>
+                            </tr>
+                            <tr>
+                                <th>Languages</th>
+                                <td>{{character.languages}}</td>
+                            </tr>
+                            <tr>
+                                <th>Passive Perception</th>
+                                <td>{{character.passivePerception}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div>
+                            <h4>Ability Scores</h4>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <th>Ability</th>
+                                    <th>Base</th>
+                                    <th>Mod</th>
+                                    <th><abbr title="Saving Throws">ST</abbr></th>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Strength</td>
+                                        <td>{{character.ability.str.adjScore}}</td>
+                                        <td>{{character.ability.str.mod | addPlus}}</td>
+                                        <td>{{character.ability.str.savingThrow | addPlus}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dexterity</td>
+                                        <td>{{character.ability.dex.adjScore}}</td>
+                                        <td>{{character.ability.dex.mod | addPlus}}</td>
+                                        <td>{{character.ability.dex.savingThrow | addPlus}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Constitution</td>
+                                        <td>{{character.ability.con.adjScore}}</td>
+                                        <td>{{character.ability.con.mod | addPlus}}</td>
+                                        <td>{{character.ability.con.savingThrow | addPlus}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Intelligence</td>
+                                        <td>{{character.ability.int.adjScore}}</td>
+                                        <td>{{character.ability.int.mod | addPlus}}</td>
+                                        <td>{{character.ability.int.savingThrow | addPlus}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Wisdom</td>
+                                        <td>{{character.ability.wis.adjScore}}</td>
+                                        <td>{{character.ability.wis.mod | addPlus}}</td>
+                                        <td>{{character.ability.wis.savingThrow | addPlus}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Charisma</td>
+                                        <td>{{character.ability.cha.adjScore}}</td>
+                                        <td>{{character.ability.cha.mod | addPlus}}</td>
+                                        <td>{{character.ability.cha.savingThrow | addPlus}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <h4>Skills</h4>
+                            <ul class="list-inline">
+                                <li ng-repeat="skill in character.skills">{{skill.name}} {{skill.val | addPlus}}</li>
+                            </ul>
+                        </div>
+                        <div ng-if="character.classObj.spellcasting || character.raceObj.spellcasting">
+                            <h4>Spellcasting</h4>
+                            <table class="table table-condensed">
+                                <tr>
+                                    <th>Spellcasting Ability: </th>
+                                    <td>{{character.classObj.spellcasting.spellAbility | ability}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Spell Save DC: </th>
+                                    <td>{{character.classObj.spellcasting.spellSaveDC}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Spell Attack Bonus: </th>
+                                    <td>{{character.classObj.spellcasting.spellAttkBonus | addPlus}}</td>
+                                </tr>
+                                <tr ng-if="character.classObj.selectedCantrips">
+                                    <th>Cantrips: </th>
+                                    <td>
+                                        <ul class="list-inline">
+                                            <li ng-repeat="cantrip in character.classObj.selectedCantrips">
+                                                <a href="" spell-info-dialog="{{cantrip.readable_id}}">
+                                                    {{cantrip.name}}
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr ng-repeat="(level, spells) in character.classObj.selectedSpellsByLevel track by level">
+                                    <th class="col-sm-4">{{level}} Spells: </th>
+                                    <td>
+                                        <ul class="list-inline">
+                                            <li ng-repeat="spell in spells">
+                                                <a href="" spell-info-dialog="{{spell.readable_id}}">
+                                                    {{spell.name}}
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-if="character.bonus_spell_ability">
+                            <h4>Bonus Spellcasting</h4>
+                            <table class="table table-condensed">
+                                <tr>
+                                    <th>Spellcasting Ability: </th>
+                                    <td>{{character.raceObj.spellcasting.spellAbility | ability}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Spell Save DC: </th>
+                                    <td>{{character.raceObj.spellcasting.spellSaveDC}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Spell Attack Bonus: </th>
+                                    <td>{{character.raceObj.spellcasting.spellAttkBonus | addPlus}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Cantrips: </th>
+                                    <td>
+                                        <ul class="list-inline">
+                                            <li ng-repeat="cantrip in character.raceObj.cantrip">
+                                                <a href="" spell-info-dialog="{{cantrip.readable_id}}">
+                                                    {{cantrip.name}}
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div> <!-- col-sm-6 -->
+                    <div class="col-sm-6">
+                        <h4>Features & Traits</h4>
+                        <dl>
+                            <div ng-repeat="classFeature in character.classObj.charFeatures">
+                                <dt>{{classFeature.name}}</dt>
+                                <dd compile="classFeature.benefit"></dd>
+                            </div>
+                            <div ng-repeat="racialTrait in character.raceObj.racialTraits">
+                                <dt>{{racialTrait.name}}</dt>
+                                <dd compile="racialTrait.benefit"></dd>
+                            </div>
+                            <div>
+                                <dt>{{character.background.trait_name}}</dt>
+                                <dd>{{character.background.trait_desc}}</dd>
+                            </div>
+                        </dl>
+                    </div> <!-- col-sm-6 -->
+                </div> <!-- row -->
             </wz-step>
         </div> <!--panel-body-->
         <div class="panel-footer">
-            <button type="button" class="btn btn-default" ng-click="openSummary()"><i class="fa fa-list-alt"></i> Open Summary</button>
-            <button type="button" class="btn btn-primary" ng-click="openNewCharDialog()"><i class="fa fa-plus"></i> New Character</button>
+            <ul class="pager no-margin">
+                <li class="previous"><button type="button" wz-previous ng-hide="isFirstStep()" class="pull-left btn btn-default">← Prev</button></li>
+                <li class="next"><button type="button" wz-next ng-disabled="!validateStep()" class="pull-right btn btn-primary">{{nextTitle}} →</button></li>
+            </ul>
+            <!--<button type="button" class="btn btn-default hide-icon" ng-click="openSummary()"><i class="fa fa-list-alt"></i> Open Summary</button>
+            <button type="button" class="btn btn-default hide-icon" ng-click="openNewCharDialog()"><i class="fa fa-plus"></i> New Character</button>-->
         </div>
+    </div> <!-- panel -->
     </wizard>
 
     <form name="charGenForm" ng-submit="saveCharacter()" novalidate class="hide">
@@ -291,7 +493,6 @@
         <input type="hidden" id="inputLanguage" name="languageName" ng-model="numLanguagesLeft" is-empty />
         <input type="hidden" id="inputSkills" name="skillsName" ng-model="character.numSkillsLeft" is-empty />
         <input type="hidden" id="inputAbPts" name="abPtsLeftName" ng-model="character.ability.pointsLeft" is-empty />
-        <!--<input type="text" id="inputAlignment" ng-model="character.alignment" />-->
         <!--<button class="btn btn-primary" ng-click="saveCharacter()" ng-disabled="charGenForm.$invalid">Save Character</button>-->
 
         <!--<div class="error-container" ng-show="validating && charGenForm.$invalid">
@@ -317,15 +518,17 @@
     </script>
     <script type="text/ng-template" id="wizard.html">
         <div class="wizard">
-            <ul class="pagination col-xs-12" ng-if="!hideIndicators">
-                <li ng-class="{
-                active: step.selected,
-                disabled: !step.completed && !step.selected}" ng-repeat="step in steps">
-                    <a ng-click="goTo(step)" class="col-xs-3">{{step.title || step.wzTitle}}</a>
-                </li>
-            </ul>
+            <div class="align-center row">
+                <ul class="pagination" ng-if="!hideIndicators" style="width:100%;">
+                    <li ng-class="{
+                    active: step.selected,
+                    disabled: !step.completed && !step.selected}" ng-repeat="step in steps">
+                        <a ng-click="goTo(step)" ng-style="{'width':100*(1/steps.length) + '%'}">{{step.title || step.wzTitle}}</a>
+                    </li>
+                </ul>
+            </div>
             <!--<div class="clearfix"></div>-->
-            <div class="steps" ng-transclude></div>
+            <div class="steps row" ng-transclude></div>
         </div>
     </script>
 </div>

@@ -2,26 +2,6 @@ angular.module("app")
     .controller('CharacterController', CharacterController);
 
 function CharacterController ($scope, $stateParams, $state, charGenFactory, general, configObj) {
-    var path = configObj.path;
-    $scope.openSpellInfoDialog = function(spellObj) {
-        var opts = {};
-        opts.templateUrl = path + '/app/views/dialog_spell_info.html';
-        opts.controller = DialogSpellInfoController;
-        opts.resolve = {
-            spellObj: function() { return spellObj; }
-        };
-        //opts.size = 'sm';
-        general.openDialog(opts);
-    };
-
-    function DialogSpellInfoController($scope, $modalInstance, spellObj) {
-        $scope.spellObj = spellObj;
-
-        $scope.close = function() {
-            $modalInstance.dismiss('cancel');
-        };
-    }
-
     charGenFactory.Character($stateParams.characterId).get({}, function(data) {
         $scope.character = data.character;
         $scope.character.passivePerception = 10 + parseInt($scope.character.perception);
