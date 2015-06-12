@@ -1,36 +1,47 @@
 <div class="modal-header">
+    <button type="button" ng-click="showInfo(false)" ng-show="isInfoExpanded" class="pull-left btn-link">
+        <i class="fa fa-chevron-left"></i> Back
+    </button>
     <h4 class="modal-title">{{title}}</h4>
 </div>
 <div class="modal-body">
 
-    <p>{{spellsLeft - tempSpells.length}} Spells Left:</p>
+    <p class="col-xs-12 help-block">{{spellsLeft - tempSpells.length}} Spells Left:</p>
     <div class="row">
         <div class="col-sm-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
-            <div ng-if="cantrips" class="list-group">
-                <a ng-repeat="spell in cantrips | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
-                        ng-class="{'active': spell.active}" href="" ng-swipe-left="showInfo(this)">
-                    {{spell.name}}
-                </a>
-            </div>
-
-            <div ng-if="spells" class="panel panel-default" ng-repeat="(level, spells) in spells track by level" style="margin-bottom:0;">
-                <div class="panel-heading" data-target="#{{$index}}" data-toggle="collapse">
-                    <h3 class="panel-title">
-                        {{level}} <i class="fa fa-caret-down"></i>
-                    </h3>
-                </div>
-                <div id="{{$index}}" class="panel-body collapse in" style="padding:0;">
-                    <div class="list-group" style="margin-bottom:0;">
-                        <a ng-repeat="spell in spells | filter: {name: searchText}" ng-click="showDescription(this)" class="list-group-item"
-                                ng-class="{'active': spell.active}" href="" ng-swipe-left="showInfo(this)">
+            <div>
+                <div ng-if="cantrips" class="list-group">
+                    <div ng-repeat="spell in cantrips | filter: {name: searchText}" class="relative">
+                        <a ng-click="showDescription(this)" class="list-group-item relative"
+                                ng-class="{'active': spell.active}" href="" drag-to-reveal>
                             {{spell.name}}
                         </a>
+                        <a class="list-group-item list-group-item-info item-options invisible" ng-click="showInfo(this)">View</a>
+                    </div>
+                </div>
+
+                <div ng-if="spells" class="panel panel-default" ng-repeat="(level, spells) in spells track by level" style="margin-bottom:0;">
+                    <div class="panel-heading" data-target="#{{$index}}" data-toggle="collapse">
+                        <h3 class="panel-title">
+                            {{level}} <i class="fa fa-caret-down"></i>
+                        </h3>
+                    </div>
+                    <div id="{{$index}}" class="panel-body collapse in" style="padding:0;">
+                        <div class="list-group" style="margin-bottom:0;">
+                            <div ng-repeat="spell in spells | filter: {name: searchText}" class="relative">
+                                <a ng-click="showDescription(this)" class="list-group-item relative"
+                                        ng-class="{'active': spell.active}" href=""  drag-to-reveal>
+                                    {{spell.name}}
+                                </a>
+                                <a class="list-group-item list-group-item-info item-options invisible" ng-click="showInfo(this)">View</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>	<!-- end span -->
-        <div class="col-sm-7 desc-col" ng-swipe-right="showInfo(false)" ng-show="isInfoExpanded">
+        <div class="col-sm-7 desc-col" ng-show="isInfoExpanded">
             <div ng-show="selectedSpell">
                 <h4>{{selectedSpell.name}}</h4>
                 <i>{{typeDescription}}</i>

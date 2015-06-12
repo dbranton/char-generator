@@ -202,17 +202,24 @@ angular
                 function DialogLanguageController($scope, $modalInstance, languageData, max, languageIds, title, featureType) {
                     general.DialogItemsController.apply(undefined, arguments);
                 }
+                var LANGUAGE_LIST = [];
                 charGenFactory.getLanguages().success(function(data) {
+                    LANGUAGE_LIST = data.languages;
                     scope.availableLanguages = angular.copy(data.languages);
                 });
 
                 scope.openLanguageDialog = function() {
+                    scope.availableLanguages = _.filter(LANGUAGE_LIST, function(language) {
+                        var defaultLanguages = scope.$eval(attrs.filter.split(' ')[1]); // ex: "filter: character.raceObj.languages"
+                        return defaultLanguages.indexOf(language.name) === -1;
+                    });
                     var opts = {
+                        noOverlay: true,
                         templateUrl: '/app/views/dialog_items.html',
                         controller: DialogLanguageController,
                         resolve: {
                             languageData: function() { return scope.availableLanguages; },
-                            max: function() { return parseInt(attrs.max) || 1; },
+                            max: function() { return parseInt(scope.$eval(attrs.max)) || 1; },
                             languageIds: function() { return scope.character.selectedLanguages ?
                                 _.pluck(scope.character.selectedLanguages, 'id') : null; },
                             title: function() { return 'Select Language(s)'; },
@@ -390,6 +397,7 @@ angular
                 }
                 scope.openExpertiseDialog = function() {
                     var opts = {
+                        noOverlay: true,
                         templateUrl: '/app/views/dialog_items.html',
                         controller: DialogExpertiseController,
                         resolve: {

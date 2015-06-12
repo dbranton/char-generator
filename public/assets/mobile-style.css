@@ -1,6 +1,6 @@
 @media (max-width: 767px) {
 
-    input[type=text], input[type=number] {
+    input[type=text], input[type=number], input[type=email], input[type=password] {
         font-size: 16px;
     }
 
@@ -8,24 +8,26 @@
         display: none !important;
     }
 
-    /* problem, needs margins for descriptions */
-    /*.modal-overlay .modal-dialog {
+    /* problem, needs margins for # of items left text */
+    .modal-overlay .modal-dialog {
         margin: 0;
-    }*/
+    }
 
     .modal-overlay .modal-body {
         padding: 0;
     }
 
-    .modal-body .list-group, .modal-body .desc-col {
+    .modal-body input[type=text] + div, .modal-body .desc-col {
         overflow-y: auto;
     }
 
-    .modal-body .list-group {
+    .modal-body input[type=text] + div {
         max-height: 360px;
     }
     .modal-body .desc-col {
         max-height: 396px; /* +36px from height of filter search-bar */
+        padding-left: 30px; /* 30 - 15 (row has -15 margin left/right) */
+        padding-right: 30px;
     }
 
     /*** custom checkboxes ***/
@@ -47,9 +49,5 @@
 
     .wizard div > .pagination {
         display: none;
-    }
-
-    .hide-icon i.fa {
-        display: none !important;
     }
 }

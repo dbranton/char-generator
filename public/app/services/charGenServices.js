@@ -562,6 +562,7 @@ angular.module('app')
             that.size = this.raceObj.size_value;
             that.defaultLanguages = this.raceObj.languages || '';
             that.languages = that.defaultLanguages;
+            that.selectedLanguages = [];    // reset
             //this.handleLanguages();
             if (that.raceObj.traits) {
                 that.raceObj.racialTraits = []; // reset
@@ -596,6 +597,7 @@ angular.module('app')
         };
         Character.prototype.determineBackground = function(backgroundObj) {
             this.background = backgroundObj;
+            this.selectedLanguages = [];    // reset
             this.numToolChoices = 0;  // reset
             if (this.background.num_tool_choices > 0) {
                 this.numToolChoices++;

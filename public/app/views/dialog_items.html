@@ -5,7 +5,7 @@
     <h4 class="modal-title">{{title}}</h4>
 </div>
 <div class="modal-body">
-    <p ng-show="!isInfoExpanded">{{max - tempItems.length}} {{featureType}} Left:</p>
+    <p ng-show="!isInfoExpanded" class="col-xs-12 help-block">{{max - tempItems.length}} {{featureType}} Left:</p>
     <div class="row">
         <div class="col-sm-5" ng-show="!isInfoExpanded">
             <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." />
