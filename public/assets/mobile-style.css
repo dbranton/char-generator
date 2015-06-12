@@ -8,9 +8,12 @@
         display: none !important;
     }
 
-    /* problem, needs margins for # of items left text */
     .modal-overlay .modal-dialog {
         margin: 0;
+    }
+
+    .modal-body {
+        padding: 10px;  /* overwrites bootstrap's 20px */
     }
 
     .modal-overlay .modal-body {
@@ -22,10 +25,15 @@
     }
 
     .modal-body input[type=text] + div {
-        max-height: 360px;
+        max-height: 285px;
     }
+
+    .modal-overlay .modal-body input[type=text] + div {
+        max-height: 345px;
+    }
+
     .modal-body .desc-col {
-        max-height: 396px; /* +36px from height of filter search-bar */
+        max-height: 381px; /* +36px from height of filter search-bar */
         padding-left: 30px; /* 30 - 15 (row has -15 margin left/right) */
         padding-right: 30px;
     }
