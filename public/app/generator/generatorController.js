@@ -399,7 +399,7 @@ angular.module('app')
                         $scope.infoObj.name + " level after 1st"));
                 $scope.traits2Title = "Proficiencies";
                 $scope.traits2.push(new NameDesc("Armor", $scope.infoObj.armor_shield_prof || "None"), new NameDesc("Weapons", $scope.infoObj.weapon_prof || "None"),
-                    new NameDesc("Tools", $scope.infoObj.tools || "None"), new NameDesc("Saving Throws", $scope.infoObj.saving_throw_desc),
+                    new NameDesc("Tools", $scope.infoObj.tool_desc || "None"), new NameDesc("Saving Throws", $scope.infoObj.saving_throw_desc),
                     new NameDesc("Skills", $scope.infoObj.avail_skills_desc));
                 if (angular.isArray($scope.infoObj.features)) {
                     angular.forEach($scope.infoObj.features, function(obj) {
