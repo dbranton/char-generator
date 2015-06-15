@@ -1,6 +1,6 @@
 <alert ng-if="flash" type="success" close="closeAlert($index)">{{flash}}</alert>
 <h3>Your Characters</h3>
-<div class="table-responsive">
+<!--<div class="table-responsive">-->
     <table ng-table="tableParams" class="table">
         <tr ng-repeat="character in $data">
             <td data-title="'Name'"><a ui-sref="character({characterId: character.id})">{{character.name}}</a></td>
@@ -13,5 +13,5 @@
             </td>
         </tr>
     </table>
-</div>
+<!--</div>-->
 <a class="btn btn-primary" ui-sref="generator"><i class="fa fa-plus"></i> New Character</a>

@@ -309,7 +309,7 @@ angular
                 };
                 scope.$watch(attrs.ngModel, function(newValue, oldValue) {
                     if (angular.isArray(newValue)) {
-                        scope.character.handleTools(newValue);
+                        scope.character.handleTools();
                     }
                 });
             }
@@ -404,7 +404,7 @@ angular
                             expertiseData: function() {
                                 return _.sortBy(scope.character.classObj.expertise.list, 'name');
                             },
-                            max: function() { return parseInt(attrs.max) || 1; },
+                            max: function() { return parseInt(scope.$eval(attrs.max)) || 1; },
                             expertiseIds: function() {
                                 return scope.selectedExpertise ? _.pluck(scope.selectedExpertise, 'id') : null;
                             },

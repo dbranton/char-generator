@@ -54,12 +54,10 @@ angular
         };
     })
     .filter('filterTools', function() {
-        return function(items, character) {
-            var parentTool;
-            if (character.numToolChoices > 0) {
-                parentTool = "Artisan's Tools"; //character.background.tools;
+        return function(items, toolType, characterTools) {
+            if (toolType) {
                 return _.filter(items, function(item) {
-                    return parentTool.indexOf(item.parent) !== -1 && (!character.tools || character.tools.indexOf(item.name) === -1);
+                    return toolType === item.parent_id && (!characterTools || characterTools.indexOf(item.name) === -1);
                 });
             }
             return items;

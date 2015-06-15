@@ -392,6 +392,7 @@ angular.module('app')
                             }
                         } else if (prop === 'tools') { // e.g. Dwarf
                             that.raceObj.bonusTool = featureBonus[prop];
+                            that.handleTools();
                         } else if (prop === 'tool_choice') {    // e.g. Battle Master
                             bonusArray = featureBonus[prop].split(', ');    // e.g. [0] = Artisan's Tools, [1] = 1
                             that.numToolChoices += parseInt(bonusArray[1]);
@@ -599,10 +600,11 @@ angular.module('app')
             this.background = backgroundObj;
             this.selectedLanguages = [];    // reset
             this.numToolChoices = 0;  // reset
-            if (this.background.num_tool_choices > 0) {
+            if (this.background.tool_choices) { // ex: artisans_tools, gaming_set, or musical_instrument
                 this.numToolChoices++;
                 this.selectedTools = [];    // reset
             }
+            this.handleTools();
             //this.numLanguages = this.background ? parseInt(this.background.languages) : 0;
             this.handleLanguages();
             this.updateSkillProficiency(_.pluck(this.background.skills, 'readable_id'), true, true);
@@ -621,6 +623,7 @@ angular.module('app')
             that.classObj.selectedSkills = [];
             that.handleArmor();
             that.handleWeapons();
+            that.handleTools();
             if (angular.isArray(that.classObj.features)) {
                 //$scope.character.featureIds = [];  // reset
                 angular.forEach(that.classObj.features, function(featureObj, idx) {
@@ -922,7 +925,7 @@ angular.module('app')
             this.classObj.weapons = angular.isString(this.classObj.weapons) ? this.classObj.weapons.split(', ') : [];
 
         };
-        Character.prototype.handleTools = function(selectedTools) {
+        Character.prototype.handleTools = function() {
             var raceTools, classTools, backgroundTools;
             this.tools = [];
             if (this.raceObj.bonusTool) {
@@ -930,14 +933,18 @@ angular.module('app')
                 this.tools = this.tools.concat(raceTools);
             }
             if (this.classObj.tools) {
-                classTools = this.classObj.tools.split(', ');
+                classTools = _.pluck(this.classObj.tools, 'name');
                 this.tools = this.tools.concat(classTools);
             }
-            if (this.background && this.background.tools && this.background.num_tool_choices < 1) { // background tools can be blank in the database
-                backgroundTools = this.background.tools.split(', ');
+            if (this.background.tools) { // background tools can be blank in the database
+                backgroundTools = _.pluck(this.background.tools, 'name');
                 this.tools = this.tools.concat(backgroundTools);
-            } else if (angular.isArray(selectedTools)) {
-                this.tools = this.tools.concat(_.pluck(selectedTools, 'name'));
+            }
+            if (angular.isArray(this.background.selectedTools)) {
+                this.tools = this.tools.concat(_.pluck(this.background.selectedTools, 'name'));
+            }
+            if (angular.isArray(this.classObj.selectedTools)) {
+                this.tools = this.tools.concat(_.pluck(this.classObj.selectedTools, 'name'));
             }
             this.tools = $.unique(this.tools);  // remove potential duplicates
             this.tools.sort();

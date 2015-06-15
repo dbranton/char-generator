@@ -24,7 +24,7 @@
 </head>
 
 <body ng-app="app">
-<div class="scrollable" style="padding-top:40px;">
+<div class="scrollable body">
 <!-- HEADER -->
 <div class="scrollable-header">
     <nav class="navbar-static-top navbar-inverse" role="navigation"> <!--navbar-fixed-top-->
@@ -66,7 +66,7 @@
 
         <footer class="">
             <div class="row">
-                <div class="col-lg-12">
+                <div class="col-sm-12">
                     <p>Copyright &copy; Daniel Branton <?php echo date("Y") ?></p>
                 </div>
             </div>

@@ -83,12 +83,12 @@
                         <fieldset ng-show="character.classObj.name && (character.numToolChoices > 0 || character.numLanguages > 0)">
                             <legend>Proficiencies</legend>
                             <div>
-                                <div class="form-group" ng-show="character.numToolChoices > 0">
+                                <div class="form-group" ng-show="character.background.tool_choices">
                                     <label class="col-sm-4 control-label">Tools:</label>
                                     <div class="col-sm-8">
-                                        <select-modal tools ng-model="character.selectedTools" placeholder="Select your Tool(s)"
+                                        <select-modal tools ng-model="character.background.selectedTools" placeholder="Select your Tool(s)"
                                                       data="availableTools" click="openToolDialog()" name="character.selectedTools"
-                                                      multiple max="character.numToolChoices" filter="filterTools: character" select></select-modal>
+                                                      multiple max="character.numToolChoices" filter="filterTools: character.background.tool_choices:character.tools" select></select-modal>
                                     </div>
                                 </div>
                                 <div class="form-group" ng-show="character.numLanguages > 0">

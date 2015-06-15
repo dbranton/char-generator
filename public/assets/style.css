@@ -15,6 +15,10 @@
     }
 }
 
+.body {
+    padding-top: 40px; /* height of header */
+}
+
 .modal .desc-col {
     display: block !important;
 }

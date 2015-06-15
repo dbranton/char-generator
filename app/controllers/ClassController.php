@@ -7,6 +7,7 @@ class ClassController extends \BaseController {
     public $featureList = array();
     public $subfeatureList = array();
     public $subclassFeatureList = array();
+    public $toolList = array();
 
     public function __construct() {
         //$this->beforeFilter('serviceAuth');
@@ -23,6 +24,8 @@ class ClassController extends \BaseController {
             ->where('type', '=', 'class')->orderBy('name')->get()->toArray();
         foreach ($classes as $class) {
             $this->featureList = array();    // reset
+            $toolList = $this->_getTools(explode(', ', $class['tools']));
+            $class['tools'] = $toolList;
             $features = $this->_getClassFeatures($class);
             foreach ($features as $feature) {
                 if ($feature['parent_id'] == '0' || empty($feature['parent_id'])) {
@@ -99,5 +102,12 @@ class ClassController extends \BaseController {
             $feature['subfeatures'] = $this->subfeatureList;
         }
         return $feature;
+    }
+
+    private function _getTools($tools) {
+        return ToolsTable::whereIn('readable_id', $tools)
+            ->orderBy('name')
+            ->get()
+            ->toArray();
     }
 } 

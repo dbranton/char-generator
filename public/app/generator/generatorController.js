@@ -336,7 +336,7 @@ angular.module('app')
                 $scope.traitName = $scope.infoObj.trait_name;
                 $scope.traitDesc = $scope.infoObj.trait_desc;
                 $scope.skills = _.pluck($scope.infoObj.skills, 'name').join(', ');
-                $scope.tools = $scope.infoObj.tools;
+                $scope.tools = $scope.infoObj.tools_desc;
                 $scope.languages = $scope.infoObj.language_desc;
             };
 
