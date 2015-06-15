@@ -602,7 +602,7 @@ angular.module('app')
             this.numToolChoices = 0;  // reset
             if (this.background.tool_choices) { // ex: artisans_tools, gaming_set, or musical_instrument
                 this.numToolChoices++;
-                this.selectedTools = [];    // reset
+                this.background.selectedTools = [];    // reset
             }
             this.handleTools();
             //this.numLanguages = this.background ? parseInt(this.background.languages) : 0;

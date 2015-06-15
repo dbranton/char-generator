@@ -286,15 +286,18 @@ angular
                     general.DialogItemsController.apply(undefined, arguments);
                 }
                 scope.openToolDialog = function() {
+                    var availableTools = _.filter(TOOLS_LIST, function(tool) {
+                        var filters = attrs.filter.split(' ')[1],
+                            toolType = scope.$eval(filters.split(':')[0]),
+                            existingFilters = scope.$eval(filters.split(':')[1]);
+                        return tool.parent_id === toolType && existingFilters.indexOf(tool.name) === -1;
+                    });
                     var opts = {
+                        noOverlay: true,
                         templateUrl: '/app/views/dialog_items.html',
                         controller: DialogToolController,
                         resolve: {
-                            toolData: function() {
-                                return _.filter(scope.availableTools, function(obj) {
-                                    return obj.parent === "Artisan's Tools";
-                                })
-                            },
+                            toolData: function() { return availableTools; },
                             max: function() { return parseInt(attrs.max) || 1; },
                             toolIds: function() {
                                 return scope.character.selectedTools ? _.pluck(scope.character.selectedTools, 'id') : null;
@@ -534,7 +537,7 @@ angular
                         $scope.tempSpells.push($scope.selectedSpell); //.name
                         selectobj.spell.active = true;
                     } else if ($scope.selectedSpell.active) {
-                        $scope.tempSpells.splice($scope.tempSpells.indexOf($scope.selectedSpell.name), 1); // remove cantrip
+                        $scope.tempSpells.splice(_.findIndex($scope.tempSpells, 'name', $scope.selectedSpell.name), 1); // remove cantrip
                         selectobj.spell.active = false;
                     }
                     $scope.disabled = $scope.spellsLeft - $scope.tempSpells.length !== 0; // disabled is true if there are still cantrips left to choose
