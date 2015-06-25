@@ -24,6 +24,7 @@ Route::group(array('prefix' => 'service'), function() {
     Route::resource('feats_table', 'FeatsController');
     Route::resource('language_table', 'LanguageController');
     Route::resource('tools_table', 'ToolsController');
+    Route::resource('armor_table', 'ArmorController');
     Route::resource('weapons_table', 'WeaponsController');
     Route::get('spells_table/{class_id}/{max_spell_level}/{term?}', 'SpellsController@getSpellsBySchool'); //->where(array('class_id' => '[0-9]+', 'max_spell_level' => '[0-9]+', 'term' => '[a-z]+'));
     Route::get('spells_by_level/{class_id}/{spell_level}/{term?}', 'SpellsController@getSpellsByLevel');

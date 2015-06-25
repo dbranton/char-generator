@@ -8,8 +8,14 @@ angular
     .module('app')
     .filter('joinBy', function() {
         return function(input, delimiter) {
-            var nameArr = _.chain(input).sortBy('name').pluck('name').value();
-            return (nameArr || []).join(delimiter || ', ');
+            var nameArr = [];
+            var hasSequence = _.find(input, 'sequence');
+            if (hasSequence) {
+                nameArr = _.chain(input).sortBy('sequence').pluck('name').value();
+            } else {
+                nameArr = _.chain(input).sortBy('name').pluck('name').value();
+            } // after .chain: .sortBy('name')
+            return nameArr.join(delimiter || ', ');
         };
     })
     .filter('addPlus', function() {
@@ -61,32 +67,6 @@ angular
                 });
             }
             return items;
-        };
-    })
-    .filter('filterFeats', function() {
-        return function(items, character) {
-            return _.filter(items, function(item) {
-                return !item.prereq_stat || (handlePrereq(item.prereq_stat, character));
-            });
-
-            function handlePrereq(prereqStat, character) {
-                var prereq = prereqStat.split(', '),
-                    stat = prereq[0], val;
-                switch(stat) {
-                    case 'minStat':
-                        val = prereq[1];
-                        return character.ability[val].score >= 13;
-                    case 'profReq':
-
-                        return;
-                    case 'spellReq':
-
-                        return;
-                    default:
-                        return true;
-                }
-            }
-            //return items;
         };
     })
     .filter('filterWeapons', function() {

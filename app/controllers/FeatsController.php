@@ -12,11 +12,16 @@ class FeatsController extends \BaseController {
      * @return Response
      */
     public function index() {
-        $feats = FeatsTable::where('active', '=', '1')
+        $combat_feats = FeatsTable::where('active', '=', '1')
+            ->where('type', '=', 'combat')
+            ->orderBy('name')->get()->toArray();
+        $skill_feats = FeatsTable::where('active', '=', '1')
+            ->where('type', '=', 'skill')
             ->orderBy('name')->get()->toArray();
 
         return Response::json([
-            'feats' => $feats
+            'combatFeats' => $combat_feats,
+            'skillFeats' => $skill_feats
         ]);
     }
 

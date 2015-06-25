@@ -61,7 +61,7 @@ angular.module('app')
 
                 $scope.showDescription = function(selectobj) {
                     $scope.selectedItem = angular.copy(selectobj.item); // used in UI
-                    if (!$scope.selectedItem.locked) {
+                    if (!$scope.selectedItem.locked && !$scope.selectedItem.disabled) {
                         if (!$scope.selectedItem.active && $scope.max - $scope.tempItems.length > 0) {
                             $scope.tempItems.push($scope.selectedItem);
                             selectobj.item.active = true;

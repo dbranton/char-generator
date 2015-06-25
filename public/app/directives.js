@@ -168,21 +168,18 @@ angular
     })
     .directive('skills', function(configObj) {
         function returnTemplate(element, attrs) {
-            if (configObj.deviceType === 'phone' || configObj.deviceType === 'tablet') {
-                return '<div class="list-group">' +
-                    '<label class="list-group-item" ng-repeat="skill in character.skills" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
-                    '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
-                    '<span ng-show="skill.val >= 0">+</span>{{skill.val}} {{skill.name}} ({{skill.ability}})' +
-                    '</label>' +
-                    '</div>';
-            } else {
-                return '<div class="list-group">' +
-                        '<label class="list-group-item" ng-repeat="skill in character.skills" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
-                            '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
-                            '<span ng-show="skill.val >= 0">+</span>{{skill.val}} {{skill.name}} ({{skill.ability}}) <i class="fa fa-info-circle pull-right" tooltip-placement="left" tooltip-html-unsafe="{{skill.description}}"></i>' +
-                        '</label>' +
-                    '</div>';
+            var skills = 'character.skills';
+            if (attrs.col === '1') {
+                skills = 'character.skills1';
+            } else if (attrs.col === '2') {
+                skills = 'character.skills2';
             }
+            return '<div class="list-group">' +
+                    '<label class="list-group-item" ng-repeat="skill in ' + skills + '" ng-class="{active: skill.proficient, disabled: skill.disabled}">' +
+                        '<input type="checkbox" name="skill[]" value="{{skill.name}}" ng-checked="skill.proficient" ng-disabled="skill.disabled" ng-model="skill.proficient" ng-change="selectSkill(skill)" /> ' +
+                        '<span ng-show="skill.val >= 0">+</span>{{skill.val}} {{skill.name}} ({{skill.ability}}) <i class="fa fa-info-circle pull-right hide-mobile" tooltip-placement="left" tooltip-html-unsafe="{{skill.description}}"></i>' +
+                    '</label>' +
+                '</div>';
         }
         return {
             restrict: 'EA',
@@ -194,7 +191,7 @@ angular
             }
         };
     })
-    .directive('languages', function(charGenFactory, general, $modal) {
+    .directive('languages', function(charGenFactory, general) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -270,7 +267,7 @@ angular
             }
         }
     })
-    .directive('tools', function($modal, charGenFactory, general) {
+    .directive('tools', function(charGenFactory, general) {
         return {
             restrict: 'EA',
             require: 'ngModel',
@@ -318,7 +315,7 @@ angular
             }
         };
     })
-    .directive('bonusAbility', function(general, $modal) {
+    .directive('bonusAbility', function(general) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -368,7 +365,7 @@ angular
             }
         }
     })
-    .directive('expertise', function(general, $modal, configObj) {
+    .directive('expertise', function(general, configObj) {
         return {
             restrict: 'A',
             require: 'ngModel',
@@ -486,7 +483,116 @@ angular
             }
         }
     })
-    .directive('spellDialog', function(charGenFactory, $modal, $compile, configObj, general) {
+    .directive('feats', function(general, charGenFactory) {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                scope.featsData = [];
+                charGenFactory.Feats().get({}, function(data) {
+                    scope.combatFeat = data.combatFeats;
+                    scope.skillFeat = data.skillFeats;
+                });
+
+                scope.$watch('character.ability.pointsLeft', function(newVal) {
+                    if (angular.isDefined(newVal)) {
+                        ngModel.$setViewValue(filterFeats(ngModel.$viewValue));
+                    }
+                });
+                scope.$watch('character.armor', function(newVal) {
+                    if (angular.isDefined(newVal)) {
+                        ngModel.$setViewValue(filterFeats(ngModel.$viewValue));
+                    }
+                });
+
+                scope.$watch('character.classObj.name', function(newVal) {
+                    if (angular.isDefined(newVal)) {
+                        ngModel.$setViewValue([]);
+                    }
+                });
+
+                function DialogFeatsController($scope, $modalInstance, featsData, max, featIds, title, featureType) {
+                    general.DialogItemsController.apply(undefined, arguments);
+                    var oldShowDescription = $scope.showDescription;
+                    $scope.showDescription = function() {
+                        oldShowDescription.apply(this, arguments);
+                        if (this.item.prerequisite) {
+                            $scope.selectedItem.description = '<div><i>' + this.item.prerequisite + '</i></div>';
+                        } else {
+                            $scope.selectedItem.description = '';
+                        }
+                        $scope.selectedItem.description += '<div>' + this.item.benefit_desc + '</div>';
+                    };
+                }
+
+                function filterFeats(items) {
+                    return _.filter(items, function(item) {
+                        return !item.prereq_stat || (handlePrereq(item.prereq_stat, scope.character));
+                    });
+                }
+
+                function disableFeats(items) {
+                    var feats = angular.copy(items);
+                    angular.forEach(feats, function(item) {
+                        if (!handlePrereq(item.prereq_stat, scope.character)) {
+                            item.disabled = true;
+                        }
+                    });
+                    return feats;
+                }
+
+                function handlePrereq(prereqStat, character) {
+                    var prereq = prereqStat.split(', '),
+                        stat = prereq[0], val;
+                    switch(stat) {
+                        case 'minStat':
+                            val = prereq[1];
+                            return character.ability[val].score >= 13;
+                        case 'profReq':
+                            val = prereq[1];    // ex: medium_armor
+                            return _.findIndex(character.armor, 'readable_id', val) !== -1;
+                        case 'spellReq':
+                            return angular.isDefined(character.raceObj.spellcasting) ||
+                                angular.isDefined(character.classObj.spellcasting);
+                        default:
+                            return true;
+                    }
+                }
+
+                scope.openFeatsDialog = function(featType) {
+                    var featsData = disableFeats(scope[featType]);  //filterFeats(scope.featsData);
+                    var opts = {
+                        templateUrl: '/app/views/dialog_items.html',
+                        controller: DialogFeatsController,
+                        resolve: {
+                            featsData: function() {
+                                return featsData; //scope.featsData;
+                            },
+                            max: function() { return parseInt(scope.$eval(attrs.max)) || 1; },
+                            featIds: function() {
+                                return _.pluck(ngModel.$viewValue, 'id');
+                            },
+                            title: function() { return 'Select Feats'; },
+                            featureType: function() { return ''; }
+                        }
+                    };
+                    general.openDialog(opts).result.then(function(selectedFeats) {
+                        var features = {}, benefitArray = [];
+                        ngModel.$setViewValue(selectedFeats);
+                        angular.forEach(selectedFeats, function(feat) {
+                            if (feat.benefit) {
+                                benefitArray = feat.benefit.split(', ');    // ex: initiative, 5
+                                features[benefitArray[0]] = benefitArray[1];
+                            }
+                        });
+                        scope.character.featureStats.feats = features;
+                        scope.character.handleFeatureBonuses();
+                    });
+                };
+            }
+        };
+    })
+    .directive('spellDialog', function(charGenFactory, $compile, configObj, general) {
         function DialogSpellController($scope, $modalInstance, list, numSpells, selectedSpells) { // spellIds is an array of objects
             $scope.title = 'Select Spells';
             $scope.tempSpells = [];

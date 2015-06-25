@@ -58,4 +58,12 @@
     .wizard div > .pagination {
         display: none;
     }
+
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .reduce-margin-mobile {
+        margin-top: -20px;
+    }
 }

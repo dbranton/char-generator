@@ -12,7 +12,7 @@
             <div class="list-group">
                 <div ng-repeat="item in items | filter: {name: searchText}" class="relative">
                     <a ng-click="showDescription(this)" class="list-group-item relative"
-                        ng-class="{'active': item.active}" href="" drag-to-reveal> <!--ng-swipe-left="showInfo(this)"-->
+                        ng-class="{'active': item.active && !item.disabled, 'disabled': item.disabled}" href="" drag-to-reveal> <!--ng-swipe-left="showInfo(this)"-->
                         {{item.name}}
                     </a>
                     <a class="list-group-item list-group-item-info item-options invisible" ng-click="showInfo(this)">View</a>

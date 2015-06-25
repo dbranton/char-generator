@@ -23,6 +23,13 @@
                     <fieldset>
                         <legend>Race & Class</legend>
                         <div class="form-group">
+                            <label class="col-sm-4 control-label">Level:</label>
+                            <div class="col-sm-8">
+                                <select-modal ng-model="character.level"
+                                              click="openNewCharDialog()" name="character.levelDesc"></select-modal>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label class="col-sm-4 control-label">Race:</label>
                             <div class="col-sm-8">
                                 <select-modal ng-model="character.raceObj" placeholder="Select a Race" data="raceData"
@@ -69,63 +76,37 @@
                 </div>
                 </div>
             </wz-step>
-            <wz-step wz-title="Skills & Proficiencies"> <!-- canenter="enterValidation"-->
+            <wz-step wz-title="Skills"> <!-- canenter="enterValidation"-->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <legend>Skills</legend>
+                        <label>Passive Perception:</label> {{character.passivePerception}}
+                        <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft + character.raceObj.numSkillChoices - character.bonusSkills.length}} Skills Left</div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-sm-6">
-                        <fieldset>
-                            <legend>Skills</legend>
-                            <label>Passive Perception:</label> {{character.passivePerception}}
-                            <div ng-show="character.numSkillsLeft >= 0">{{character.numSkillsLeft + character.raceObj.numSkillChoices - character.bonusSkills.length}} Skills Left</div>
-                            <skills></skills>
-                        </fieldset>
+                        <skills col="1"></skills>
                     </div>
-                    <div class="col-sm-6">
-                        <fieldset ng-show="character.classObj.name && (character.numToolChoices > 0 || character.numLanguages > 0)">
-                            <legend>Proficiencies</legend>
-                            <div>
-                                <div class="form-group" ng-show="character.background.tool_choices">
-                                    <label class="col-sm-4 control-label">Tools:</label>
-                                    <div class="col-sm-8">
-                                        <select-modal tools ng-model="character.background.selectedTools" placeholder="Select your Tool(s)"
-                                                      data="availableTools" click="openToolDialog()" name="character.background.selectedTools"
-                                                      multiple max="character.numToolChoices" filter="filterTools: character.background.tool_choices:character.tools" select></select-modal>
-                                    </div>
-                                </div>
-                                <div class="form-group" ng-show="character.numLanguages > 0">
-                                    <label class="col-sm-4 control-label">Languages:</label>
-                                    <div class="col-sm-8">
-                                        <select-modal languages="character.numLanguages" ng-model="character.selectedLanguages"
-                                                      placeholder="Select your Language(s)" data="availableLanguages"
-                                                      click="openLanguageDialog()" name="character.selectedLanguages"
-                                                      filter="filterLanguages: character.raceObj.languages" multiple
-                                                      max="select2Languages" select></select-modal>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
+                    <div class="col-sm-6 reduce-margin-mobile">
+                         <skills col="2"></skills>
                     </div>
                 </div>
             </wz-step>
-            <wz-step wz-title="Features & Spells">
+            <wz-step wz-title="Features">
                 <div class="row">
                     <div class="col-sm-6">
                         <fieldset>
                             <legend>Features</legend>
-                            <!--<div class="form-group" ng-show="character.numFeats > 0">
+                            <div class="form-group" ng-show="character.classObj.numFeats > 0">
                                 <label class="col-sm-4 control-label">Feats:</label>
                                 <div class="col-sm-8">
-                                    <ui-select multiple ng-model="character.selectedFeats"
-                                               feats
-                                               max="{{character.numFeats}}"
-                                               theme="select2"
-                                               style="width: 100%;">
-                                        <ui-select-match placeholder="Select your feat(s)">{{$item.name}}</ui-select-match>
-                                        <ui-select-choices repeat="feat in featsData | filter: {name: $select.search} | filterFeats: character">
-                                            <div ng-bind-html="feat.name | highlight: $select.search"></div>
-                                        </ui-select-choices>
-                                    </ui-select>
+                                    <select-modal ng-model="character.feats" feats
+                                                  placeholder="Select your Feat(s)"
+                                                  click="openFeatsDialog(character.classObj.featType)" name="character.feats"
+                                                  multiple max="character.classObj.numFeats"></select-modal>
                                 </div>
-                            </div>-->
+                            </div>
                             <div class="form-group" ng-if="character.classObj.expertise">
                                 <label class="col-sm-4 control-label">{{character.classObj.expertise.label}}:</label>
                                 <div class="col-sm-8">
@@ -167,7 +148,7 @@
                     </div> <!-- .col-sm-6 -->
                     <div class="col-sm-6">
                         <fieldset>
-                            <legend>Spells</legend>
+                            <legend ng-show="character.raceObj.spellcasting || character.classObj.spellcasting">Spells</legend>
                             <div class="form-group" ng-if="character.raceObj.spellcasting.classId">
                                 <label class="col-sm-4 control-label">Bonus Cantrip:</label>
                                 <div class="col-sm-8">
@@ -185,35 +166,34 @@
                                                   other-spell="character.raceObj.cantrip"></spell-dialog>
                                 </div>
                             </div>
-                            <!-- subclass cantrips -->
+                            <!-- subclass cantrips (mainly for nature clerics) -->
                             <div class="form-group" ng-show="character.classObj.subclassObj.cantrips">
                                 <label class="col-sm-4 control-label">Cantrips:</label>
                                 <div class="col-sm-8">
-                                    <div class="input-group">
-                                        <!--<label class="input-group-addon btn btn-default" ng-click="openSubclassCantripDialog()">
-                                            <span class="fa fa-columns"></span>
-                                        </label>
-                                        <select ui-select2 ng-model="character.classObj.selectedCantrips" id="chosenSubclassCantrips" multiple max="{{character.classObj.numCantrips}}" style="width: 100%" ng-change="broadcastNonObj(character.classObj.selectedCantrips, 'selectedCantrips')">
-                                            <option ng-repeat="cantrip in character.classObj.subclassObj.cantrips">{{cantrip.name}}</option>
-                                        </select>-->
-                                        <!--<spell-dialog spell-obj="character.classObj.spellcasting" ng-model="character.classObj.selectedCantrips"></spell-dialog>
-                                        <ui-select ng-model="character.classObj.selectedCantrips"
-                                                   multiple
-                                                   list="classSpells"
-                                                   max="{{character.classObj.numCantrips}}"
-                                                   select2-spellcasting="character.classObj.spellcasting"
-                                                   bonus="bonusSelectedSpells"
-                                                   theme="select2"
-                                                   style="width: 100%;">
-                                            <ui-select-match placeholder="Pick your spells">{{$item.name}}</ui-select-match>
-                                            <ui-select-choices group-by="'level_desc'"
-                                                               repeat="spell in classSpells track by $index"
-                                                               refresh="refreshSpells($select.search)"
-                                                               refresh-delay="500">
-                                                <div ng-bind-html="spell.name | highlight: $select.search"></div>
-                                            </ui-select-choices>
-                                        </ui-select>-->
-                                    </div>
+                                    <!--<spell-dialog ng-model="character.classObj.subclassObj.selectedCantrips" list="classCantrips" placeholder="bonus cantrip"
+                                                  select2-spellcasting="character.classObj.cantrip"
+                                                  other-spell="character.raceObj.cantrip"></spell-dialog>-->
+                                    <!--
+                                    <select ui-select2 ng-model="character.classObj.selectedCantrips" id="chosenSubclassCantrips" multiple max="{{character.classObj.numCantrips}}" style="width: 100%" ng-change="broadcastNonObj(character.classObj.selectedCantrips, 'selectedCantrips')">
+                                        <option ng-repeat="cantrip in character.classObj.subclassObj.cantrips">{{cantrip.name}}</option>
+                                    </select>-->
+                                    <!--<spell-dialog spell-obj="character.classObj.spellcasting" ng-model="character.classObj.selectedCantrips"></spell-dialog>
+                                    <ui-select ng-model="character.classObj.selectedCantrips"
+                                               multiple
+                                               list="classSpells"
+                                               max="{{character.classObj.numCantrips}}"
+                                               select2-spellcasting="character.classObj.spellcasting"
+                                               bonus="bonusSelectedSpells"
+                                               theme="select2"
+                                               style="width: 100%;">
+                                        <ui-select-match placeholder="Pick your spells">{{$item.name}}</ui-select-match>
+                                        <ui-select-choices group-by="'level_desc'"
+                                                           repeat="spell in classSpells track by $index"
+                                                           refresh="refreshSpells($select.search)"
+                                                           refresh-delay="500">
+                                            <div ng-bind-html="spell.name | highlight: $select.search"></div>
+                                        </ui-select-choices>
+                                    </ui-select>-->
                                 </div>
                             </div>
                             <div class="form-group" ng-show="character.classObj.spellcasting.numSpellsKnown">
@@ -246,19 +226,55 @@
             </wz-step>
             <wz-step wz-title="Details">
                 <div class="row">
+                    <div class="col-sm-12">
+                        <legend>Describe Your Character</legend>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-sm-6">
                         <fieldset>
-                            <legend>Describe Your Character</legend>
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Name:</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" ng-model="character.name"> <!--placeholder="Pick a Name..."-->
+                                    <input type="text" class="form-control" ng-model="character.name" placeholder="Pick a Name...">
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.numLanguages > 0">
+                                <label class="col-sm-4 control-label">Languages:</label>
+                                <div class="col-sm-8">
+                                    <select-modal languages="character.numLanguages" ng-model="character.selectedLanguages"
+                                                  placeholder="Select your Language(s)" data="availableLanguages"
+                                                  click="openLanguageDialog()" name="character.selectedLanguages"
+                                                  filter="filterLanguages: character.raceObj.languages" multiple
+                                                  max="select2Languages" select></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.background.tool_choices">
+                                <label class="col-sm-4 control-label">Tool Proficiency:</label>
+                                <div class="col-sm-8">
+                                    <select-modal tools ng-model="character.background.selectedTools" placeholder="Select your Tool(s)"
+                                                  data="availableTools" click="openToolDialog()" name="character.background.selectedTools"
+                                                  multiple max="character.numToolChoices" filter="filterTools: character.background.tool_choices:character.tools" select></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Ideal:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.ideal" placeholder="Select an Ideal"
+                                                  click="openIdealDialog()" name="character.ideal.name"></select-modal>
                                 </div>
                             </div>
                         </fieldset>
                     </div>
                     <div class="col-sm-6">
-
+                        <fieldset>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Backstory:</label>
+                                <div class="col-sm-8">
+                                    <textarea class="form-control" ng-model="character.backstory" rows="4" maxlength="512"></textarea>
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
                 </div>
             </wz-step>
@@ -306,11 +322,11 @@
                             </tr>
                             <tr>
                                 <th>Armor Proficiencies: </th>
-                                <td><span ng-if="!character.armor">None</span>{{character.armor}}</td>
+                                <td><span ng-if="!character.armor">None</span>{{character.armor | joinBy}}</td>
                             </tr>
                             <tr>
                                 <th>Weapon Proficiencies: </th>
-                                <td><span ng-if="!character.weapons">None</span>{{character.weapons}}</td>
+                                <td><span ng-if="!character.weapons">None</span>{{character.weapons | joinBy}}</td>
                             </tr>
                             <tr>
                                 <th>Tool Proficiencies: </th>
@@ -381,6 +397,28 @@
                                 <li ng-repeat="skill in character.skills">{{skill.name}} {{skill.val | addPlus}}</li>
                             </ul>
                         </div>
+                    </div> <!-- col-sm-6 -->
+                    <div class="col-sm-6">
+                        <h4>Features & Traits</h4>
+                        <dl>
+                            <div ng-repeat="racialTrait in character.raceObj.racialTraits">
+                                <dt>{{racialTrait.name}}</dt>
+                                <dd compile="racialTrait.benefit"></dd>
+                            </div>
+                            <div ng-repeat="classFeature in character.classObj.charFeatures">
+                                <dt>{{classFeature.name}}</dt>
+                                <dd compile="classFeature.benefit"></dd>
+                            </div>
+                            <div ng-repeat="feat in character.feats">
+                                <dt>{{feat.name}}</dt>
+                                <dd compile="feat.benefit_desc"></dd>
+                            </div>
+                            <div>
+                                <dt>{{character.background.trait_name}}</dt>
+                                <dd>{{character.background.trait_desc}}</dd>
+                            </div>
+                        </dl>
+
                         <div ng-if="character.classObj.spellcasting || character.raceObj.spellcasting">
                             <h4>Spellcasting</h4>
                             <table class="table table-condensed">
@@ -451,23 +489,6 @@
                                 </tr>
                             </table>
                         </div>
-                    </div> <!-- col-sm-6 -->
-                    <div class="col-sm-6">
-                        <h4>Features & Traits</h4>
-                        <dl>
-                            <div ng-repeat="classFeature in character.classObj.charFeatures">
-                                <dt>{{classFeature.name}}</dt>
-                                <dd compile="classFeature.benefit"></dd>
-                            </div>
-                            <div ng-repeat="racialTrait in character.raceObj.racialTraits">
-                                <dt>{{racialTrait.name}}</dt>
-                                <dd compile="racialTrait.benefit"></dd>
-                            </div>
-                            <div>
-                                <dt>{{character.background.trait_name}}</dt>
-                                <dd>{{character.background.trait_desc}}</dd>
-                            </div>
-                        </dl>
                     </div> <!-- col-sm-6 -->
                 </div> <!-- row -->
             </wz-step>

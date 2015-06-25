@@ -9,17 +9,29 @@ class WeaponsController extends \BaseController {
     }
 
     /**
-     * Send back all backgrounds as JSON
+     * Send back all weapons as JSON
      *
      * @return Response
      */
     public function index() {
-        $weapons = DB::table('weapons_table')
+        $weapon_types = DB::table('weapons_table')
             ->where('active', '=', '1')
+            ->where('weapon_type', '=', 'weapon_type')
+            ->get();
+        $simple_weapons = DB::table('weapons_table')
+            ->where('active', '=', '1')
+            ->where('weapon_type', '=', 'simple_weapon')
+            ->orderBy('name')
+            ->get();
+        $martial_weapons = DB::table('weapons_table')
+            ->where('active', '=', '1')
+            ->where('weapon_type', '=', 'martial_weapon')
             ->orderBy('name')
             ->get();
         return Response::json([
-            'weapons' => $weapons
+            'weaponTypes' => $weapon_types,
+            'simpleWeapons' => $simple_weapons,
+            'martialWeapons' => $martial_weapons
         ]);
     }
 } 

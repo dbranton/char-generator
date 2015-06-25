@@ -74,6 +74,12 @@ class CharacterController extends \BaseController {
                     $feature->benefit_desc = str_replace('href', 'spell-info-dialog', $feature->benefit_desc);
                 }
             }
+            if (!empty($character['feat_ids'])) {
+                $character['feats'] = DB::table('feats_table as feats')
+                    ->whereIn('feats.readable_id', explode(', ', $character['feat_ids']))
+                    ->orderBy('name')
+                    ->get();
+            }
             if (!empty($character['cantrips'])) {
                 $character['cantrips'] = DB::table('spells_table')
                     ->whereIn('spells_table.id', explode(', ', $character['cantrips']))
@@ -108,6 +114,7 @@ class CharacterController extends \BaseController {
         $data = array(
             'user_id' => $user['id'],   //$character['userId'],
             'name' => $character['name'],
+            'backstory' => $character['backstory'],
             'race' => $character['raceObj']['name'],
             'background' => $character['background']['name'],
             'class' => $character['classObj']['name'],
@@ -119,8 +126,8 @@ class CharacterController extends \BaseController {
             'hit_points' => $character['hitPoints'],
             'hit_dice' => $character['classObj']['hit_dice'],
             'armor_class' => $character['armorClass'],
-            'armor_prof' => $character['armor'],
-            'weapon_prof' => $character['weapons'],
+            //'armor_prof' => $character['armor'],
+            //'weapon_prof' => $character['weapons'],
             'tool_prof' => $character['tools'],
             'languages' => $character['languages'],
             'strength' => $character['ability']['str']['adjScore'],
@@ -164,6 +171,14 @@ class CharacterController extends \BaseController {
             'survival' => $character['skills'][17]['val'],
             'date_added' => date("m/d/Y")
         );
+        $armorProf = array_map(function($val) {
+            return $val['name'];
+        }, $character['armor']);    // convert array of objects to array of strings
+        $data['armor_prof'] = implode(', ', $armorProf);
+        $weaponProf = array_map(function($val) {
+            return $val['name'];    // ""
+        }, $character['weapons']);
+        $data['weapon_prof'] = implode(', ', $weaponProf);
         if (isset($character['raceObj']['racialTraits'])) {
             $racialTraitIds = array_map(function($val) {
                 return $val['id'];
@@ -176,6 +191,10 @@ class CharacterController extends \BaseController {
             }, $character['classObj']['charFeatures']);
             $data['class_feature_ids'] = implode(', ', $classFeatureIds);
         }
+        $featIds = array_map(function($val) {
+            return $val['readable_id'];
+        }, $character['feats']);
+        $data['feat_ids'] = implode(', ', $featIds);
         if (isset($character['classObj']['subclassObj']['name'])) {
             $data['pseudo_class'] = $character['classObj']['subclassObj']['name'];
         }

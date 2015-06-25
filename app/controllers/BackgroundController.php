@@ -5,6 +5,7 @@ class BackgroundController extends \BaseController {
     public $backgroundList = array();
     public $skillList = array();
     public $toolList = array();
+    public $idealList = array();
 
     public function __construct() {
         //$this->beforeFilter('serviceAuth');
@@ -24,6 +25,8 @@ class BackgroundController extends \BaseController {
             $background['skills'] = $skillList;
             $toolList = $this->_getTools(explode(', ', $background['tools']));
             $background['tools'] = $toolList;
+            $idealList = $this->_getIdeals($background['readable_id']);
+            $background['ideals'] = $idealList;
             $backgroundList[] = $background;
         }
         return Response::json([
@@ -40,6 +43,14 @@ class BackgroundController extends \BaseController {
 
     private function _getTools($tools) {
         return ToolsTable::whereIn('readable_id', $tools)
+            ->orderBy('name')
+            ->get()
+            ->toArray();
+    }
+
+    private function _getIdeals($backgroundId) {
+        return CharacteristicsTable::where('background_id', '=', $backgroundId)
+            ->where('type', '=', 'ideal')
             ->orderBy('name')
             ->get()
             ->toArray();

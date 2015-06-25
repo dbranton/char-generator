@@ -13,9 +13,12 @@ angular.module('app')
             {id:'wis', name:'Wisdom'},
             {id:'cha', name:'Charisma'}
         ];
+        var ARMOR_MAPPER = {};
+        var WEAPON_MAPPER = {};
 
         function Character() {
             this.name = null,
+            this.ideal = {};
             this.raceObj = {};
             this.classObj = {}; // contains subclasses property
             this.background = {};   // & background.skills
@@ -40,8 +43,10 @@ angular.module('app')
             this.passivePerception = 10;
             this.selectedFeats = [];
             this.featureStats = {};
-            this.selectedExpertise = []
+            this.selectedExpertise = [];
             this.selectedBonusAbilities = [];
+            this.feats = [];
+            this.backstory = '';
         }
         Character.prototype.updateSkillProficiency = function(skillName, isAdded, disabled) {   // if isAdded is false, then remove skill
             var that = this;
@@ -143,10 +148,14 @@ angular.module('app')
                 this.bonusSkills = [];
             }
             this.updateSkillProficiency(false); // wipe skill proficiencies
+            this.resetSkills();
             this.enableSkills(false);   // disable all skills
-            if (this.background) {
+            if (this.background.skills) {
                 this.updateSkillProficiency(_.pluck(this.background.skills, 'readable_id'), true, true);
                 //this.enableSkills(classSkills, this.background.skills);
+            }
+            if (this.raceObj.bonusSkill) {
+                this.updateSkillProficiency(this.raceObj.bonusSkill, true, true);
             }
             this.enableSkills(true);
         };
@@ -239,7 +248,7 @@ angular.module('app')
             }
             // handle dexterity-specific stats
             if (!ability || ability === 'dex') {
-                this.initiative = this.ability.dex.mod;
+                this.initiative = this.handleInitiative();
                 this.armorClass = 10 + this.ability.dex.mod;
             }
             if (!ability || ability === 'con') {
@@ -338,16 +347,24 @@ angular.module('app')
             this.ability[ability].adjScore = this.ability[ability].score;
             this.calculateModifiers(ability);
         };
-        Character.prototype.handleFeatureBonuses = function() {
+        Character.prototype.handleFeatureBonuses = function(dontReset) {
             var featureStats = this.featureStats,
                 bonusArray = [], characterArray = [], that = this,
                 featureBonus, expertiseArr, bonusSpells = [];
+            // *** Reset
             this.numBonusLanguages = 0;
             this.handleLanguages();
             this.resetRacialBonuses();
-            this.armor = this.classObj.armor_shield_prof;
-            this.weapons = this.classObj.weapon_prof;
+            this.armor = this.mapArmor(this.classObj.armor_prof);   // needs to be here to reset
+            this.weapons = this.mapWeapons(this.classObj.weapon_prof);   //this.classObj.weapon_prof;
             this.classObj.bonusLanguages = [];  //reset
+            if (angular.isArray(that.classObj.selectedFeatures)) {
+                angular.forEach(that.classObj.selectedFeatures, function(feature) {
+                    feature.max = feature.initMax;
+                });
+            }
+            this.bonusInitiative = 0;   // reset
+            // *** end reset
             for (var featureType in featureStats) {
                 featureBonus = angular.copy(featureStats[featureType]);
                 for (var bonusProp in featureBonus) {
@@ -356,9 +373,12 @@ angular.module('app')
                         featureBonus[prop] = featureBonus[bonusProp].split(' : ')[ind];
                         if (prop === 'baseSpeed') {
                             that.speed = parseInt(featureBonus[prop]);
-                        } else if (that[prop] !== null && (prop === 'initiative' || prop === 'armorClass' || prop === 'attackMod' ||
+                        } else if (that[prop] !== null && (prop === 'armorClass' || prop === 'attackMod' ||
                             prop === 'speed')) {
                             that[prop] += parseInt(featureBonus[prop]); // character prop needs to exist to add
+                        } else if (prop === 'initiative') {
+                            that.bonusInitiative = parseInt(featureBonus[prop]);
+                            that.initiative = that.handleInitiative();
                         } else if (prop === 'numLanguages') {
                             that.numBonusLanguages += parseInt(featureBonus[prop]);
                             that.handleLanguages();
@@ -369,26 +389,24 @@ angular.module('app')
                             that.increaseAbilityScore(prop, parseInt(featureBonus[prop]));
                         } else if (prop === 'any') {
                             that.raceObj.bonusAbilities = _.reject(ABILITY_MAPPER, {'id': featureBonus[prop]});
-                        } else if (prop === 'armor' || prop === 'weapons') {
-                            var allResults = '';
-                            if (prop === 'armor') {
-                                allResults = 'All Armor';
-                            } else if (prop === 'weapons') {
-                                allResults = 'Martial Weapons';
-                            }
-                            if (that[prop] && that[prop] !== 'None') {
-                                if (that[prop].indexOf(allResults) === -1) {
-                                    bonusArray = featureBonus[prop].split(', ');    // ex: ['longsword', 'shortsword', 'shortbow', 'longbow']
-                                    characterArray = that[prop].split(', ');   // ex: ['Simple weapons', 'martial weapons']
-                                    bonusArray.forEach(function(weapon) {
-                                        if (that[prop].indexOf(weapon) === -1) {
-                                            characterArray.push(weapon);
-                                        }
-                                    });
-                                    that[prop] = characterArray.join(', ');
+                        } else if (prop === 'armor') {  // handles armor proficiency
+                            bonusArray = featureBonus[prop].split(', ');
+                            angular.forEach(bonusArray, function(armorProf) {
+                                if (_.findIndex(that[prop], 'readable_id', armorProf) === -1) {
+                                    that[prop] = that[prop].concat(that.mapArmor(armorProf));
                                 }
-                            } else {
-                                that[prop] = featureBonus[prop];
+                            });
+                        } else if (prop === 'weapons') {    // handles weapon proficiency
+                            if (_.findIndex(that[prop], 'readable_id', 'martial_weapon') === -1) {
+                                bonusArray = featureBonus[prop].split(', ');    // ex: ['longsword', 'shortsword', 'shortbow', 'longbow']
+                                bonusArray.forEach(function(weaponProf) {
+                                    var weaponObj = that.mapWeapons(weaponProf)[0];
+                                    if (_.findIndex(that[prop], 'readable_id', weaponProf) === -1
+                                            && !(weaponObj.weapon_type === 'simple_weapon'
+                                            && _.findIndex(that[prop], 'readable_id', 'simple_weapon') !== -1)) {
+                                        that[prop].push(weaponObj);
+                                    }
+                                });
                             }
                         } else if (prop === 'tools') { // e.g. Dwarf
                             that.raceObj.bonusTool = featureBonus[prop];
@@ -402,8 +420,10 @@ angular.module('app')
                         } else if (prop === 'defense') {
                             that.classObj.bonusArmorAbility = featureBonus[prop];   // ex: wis
                             that.armorClass += that.ability[featureBonus[prop]].mod;
+                        } else if (prop.indexOf('Feat') !== -1) {
+                            that.classObj.featType = prop;
+                            that.classObj.numFeats = parseInt(featureBonus[prop]);
                         } else if (prop === 'skills') {
-                            that.updateSkillProficiency(featureBonus[prop], true, true);
                             that.raceObj.bonusSkill = featureBonus[prop];
                         } else if (prop === 'bonus_skill_choices') { // can only come from raceFeatures for now
                             that.raceObj.numSkillChoices = parseInt(featureBonus[prop]);  // e.g. 2
@@ -498,7 +518,7 @@ angular.module('app')
                         } else if (prop === 'additional_feature') { // ex: Fighting Style
                             angular.forEach(that.classObj.selectedFeatures, function(feature) {
                                 if (feature.label === featureBonus[prop]) {
-                                    feature.max++;  // = 2;    // assume feature_choices is 1
+                                    feature.max = feature.initMax + 1;  // = 2;    // assume feature_choices is 1
                                 }
                             });
                         } else if (prop === 'bonus_class_cantrip_choice') { // ex: Circle of the Moon bonus druid cantrip
@@ -550,11 +570,11 @@ angular.module('app')
         Character.prototype.determineLevelBonus = function(level) {
             var index = level - 1,
                 PROFICIENCY_ARRAY = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
-                ABILITY_BONUS_ARRAY = [0, 0, 0, 2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6, 8, 8, 8, 10, 10],
-                FEATS_ARRAY = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5];
+                ABILITY_BONUS_ARRAY = [0, 0, 0, 2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6, 8, 8, 8, 10, 10];
+                //FEATS_ARRAY = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5];
             this.profBonus = PROFICIENCY_ARRAY[index];
             this.ability.bonusPoints = ABILITY_BONUS_ARRAY[index];
-            this.numFeats = FEATS_ARRAY[index];
+            //this.numFeats = FEATS_ARRAY[index];
         };
         Character.prototype.determineRace = function(raceObj) {
             var that = this, tempName, features = {}, racialTrait = {};
@@ -594,7 +614,9 @@ angular.module('app')
                 });
             }
             that.featureStats.race = features;
+            //that.handleSkills();
             that.handleFeatureBonuses();
+            that.handleSkills();
         };
         Character.prototype.determineBackground = function(backgroundObj) {
             this.background = backgroundObj;
@@ -617,7 +639,7 @@ angular.module('app')
             that.classObj.subclasses = [];    // reset subclass list, if any
             that.handleHitPoints();
             that.savingThrows = this.classObj.saving_throws;   // e.g. "wis, cha"
-            that.initiative = this.ability.dex.mod;
+            that.initiative = this.handleInitiative();
             that.armorClass = 10 + this.ability.dex.mod;
             that.numSkillsLeft = parseInt(this.classObj.num_skills);
             that.classObj.selectedSkills = [];
@@ -658,7 +680,13 @@ angular.module('app')
                             }
                             // handle features that provide choices
                             if (tempBenefit.benefit_stat === 'feature_choice') {
-                                that.classObj.selectedFeatures[featureChoiceIdx] = {'name': [], 'max': tempBenefit.benefit_value, 'label': featureObj.name, 'index': featureChoiceIdx};
+                                that.classObj.selectedFeatures[featureChoiceIdx] = {
+                                    'name': [],
+                                    'initMax': parseInt(tempBenefit.benefit_value),
+                                    'max': parseInt(tempBenefit.benefit_value),
+                                    'label': featureObj.name,
+                                    'index': featureChoiceIdx
+                                };
                                 that.classObj.selectedFeatures[featureChoiceIdx].choices = that.getFeatureChoices(featureObj.subfeatures, that.level, 'classArr', featureChoiceIdx);
                                 featureChoiceIdx++;
                             } else if (angular.isArray(featureObj.subfeatures)) {    // ignore feature_choices
@@ -693,7 +721,6 @@ angular.module('app')
                 });
             }
             that.classObj.charFeatures = angular.copy(that.classObj.classFeatures);
-            that.resetSkills();
             that.featureStats.clazz = features;
             that.handleFeatureBonuses();
             // needs to come after handleFeatureBonuses to account for racial bonus skills
@@ -708,6 +735,12 @@ angular.module('app')
             that.classObj.subclassObj = subclassObj;
             that.classObj.subclassObj.selectedFeatures = [];    // for feature choices
             that.classObj.subclassObj.classFeatures = [];
+
+            if (angular.isArray(that.classObj.selectedFeatures)) {
+                angular.forEach(that.classObj.selectedFeatures, function(feature) {
+                    feature.name = [];  // wipe out all selected class features to account for changing from lvl 10+ champion
+                });
+            }
 
             if (angular.isArray(that.classObj.subclassObj.features)) {
                 angular.forEach(that.classObj.subclassObj.features, function(feature) {
@@ -739,7 +772,13 @@ angular.module('app')
                              }*/
                         }
                         if (tempSubclassBenefit.benefit_stat === 'feature_choice') {
-                            that.classObj.subclassObj.selectedFeatures[subclassFeatureChoiceIdx] = {'name': [], 'max': tempSubclassBenefit.benefit_value, 'label': feature.name, 'index': subclassFeatureChoiceIdx};    // ng-repeat depends on this array
+                            that.classObj.subclassObj.selectedFeatures[subclassFeatureChoiceIdx] = {
+                                'name': [],
+                                'initMax': parseInt(tempSubclassBenefit.benefit_value),
+                                'max': parseInt(tempSubclassBenefit.benefit_value),
+                                'label': feature.name,
+                                'index': subclassFeatureChoiceIdx
+                            };    // ng-repeat depends on this array
                             that.classObj.subclassObj.selectedFeatures[subclassFeatureChoiceIdx].choices = that.getFeatureChoices(feature.subfeatures, that.level, 'subclassArr', subclassFeatureChoiceIdx);
                             subclassFeatureChoiceIdx++;
                         }
@@ -877,6 +916,13 @@ angular.module('app')
                 that.classObj.charFeatures = angular.copy(that.classObj.classFeatures);
             }
         };
+        Character.prototype.handleInitiative = function() {
+            var initiative = this.ability.dex.mod;
+            if (angular.isDefined(this.bonusInitiative)) {
+                initiative += this.bonusInitiative;
+            }
+            return initiative;
+        }
         Character.prototype.handleLanguages = function() {
             this.numLanguages = this.background.languages ? parseInt(this.background.languages) + this.numBonusLanguages : this.numBonusLanguages;
         };
@@ -893,6 +939,16 @@ angular.module('app')
                     }
                 }
             }
+        };
+        Character.prototype.getArmor = function() {
+            returnObj.Armor().get({}, function(response) {
+                ARMOR_MAPPER = response;
+            });
+        };
+        Character.prototype.getWeapons = function() {
+            returnObj.Weapons().get({}, function(response) {
+                WEAPON_MAPPER = response;
+            });
         };
         Character.prototype.getSkills = function() {
             var that = this;
@@ -912,11 +968,44 @@ angular.module('app')
                     skill.disabled = true;
                 });
                 that.skills = response;
+                that.skills1 = response.slice(0, response.length/2);
+                that.skills2 = response.slice(response.length/2, response.length);
             }
         };
         Character.prototype.resetSkills = function() {
             this.numSkillsLeft = parseInt(this.classObj.num_skills);
-            this.classObj.selectedSkills = [];
+            if (this.classObj.selectedSkills) {
+                this.classObj.selectedSkills.length = 0; // so that expertise continues to bind to selectedSkills
+            }
+            if (this.selectedExpertise) {
+                this.selectedExpertise = [];
+            }
+        };
+        Character.prototype.mapArmor = function(givenArmor) {
+            var armorProf = [];
+            if (givenArmor) {
+                angular.forEach(ARMOR_MAPPER.armorTypes, function(obj) {
+                    if (givenArmor.indexOf(obj.readable_id) !== -1) {
+                        armorProf.push(obj);
+                    }
+                });
+            }
+            return armorProf;
+        };
+        Character.prototype.mapWeapons = function(givenWeapons) {
+            var weaponProf = [];
+            if (givenWeapons) {
+                for (var prop in WEAPON_MAPPER) {
+                    if (WEAPON_MAPPER.hasOwnProperty(prop)) {
+                        angular.forEach(WEAPON_MAPPER[prop], function(obj) {
+                            if (givenWeapons.indexOf(obj.readable_id) !== -1) {
+                                weaponProf.push(obj);
+                            }
+                        });
+                    }
+                }
+            }
+            return weaponProf;
         };
         Character.prototype.handleArmor = function() {
 
@@ -950,6 +1039,9 @@ angular.module('app')
             this.tools.sort();
             this.tools = this.tools.join(', '); // return to a string
         };
+        Character.prototype.determineIdeal = function(idealObj) {
+            this.ideal = idealObj;
+        };
         Character.prototype.prefillCharacter = function(storedCharacter) {
             for (var prop in storedCharacter) {
                 if (storedCharacter.hasOwnProperty(prop)) {
@@ -963,7 +1055,10 @@ angular.module('app')
                 var charLevel = level ? level : 1;
                 character = angular.copy(newCharacter); // resets character
                 character.getSkills();
+                character.getArmor();
+                character.getWeapons();
                 character.level = charLevel;
+                character.levelDesc = "Level " + character.level;
                 character.calculateModifiers(); // recalculate ability modifiers
                 character.determineLevelBonus(charLevel);
                 character.userId = sessionStorage.userId;
@@ -995,6 +1090,9 @@ angular.module('app')
             },
             Feats: function() {
                 return $resource(locationName + 'service/feats_table');
+            },
+            Armor: function() {
+                return $resource(locationName + 'service/armor_table');
             },
             Weapons: function() {
                 return $resource(locationName + 'service/weapons_table');
@@ -1030,76 +1128,25 @@ angular.module('app')
             }
         };
         var character = new Character();
-        character.ability = {
-            str: {
-                score: 10,
-                adjScore: 10,
-                mod: 0,
-                bonus: false,
-                bonusPoints: 0,
-                raceBonus: 0,
-                savingThrow: 0,
-                min: 8,
-                max: 15
-            },
-            dex: {
-                score: 10,
-                adjScore: 10,
-                mod: 0,
-                bonus: false,
-                bonusPoints: 0,
-                raceBonus: 0,
-                savingThrow: 0,
-                min: 8,
-                max: 15
-            },
-            con: {
-                score: 10,
-                adjScore: 10,
-                mod: 0,
-                bonus: false,
-                bonusPoints: 0,
-                raceBonus: 0,
-                savingThrow: 0,
-                min: 8,
-                max: 15
-            },
-            int: {
-                score: 10,
-                adjScore: 10,
-                mod: 0,
-                bonus: false,
-                bonusPoints: 0,
-                raceBonus: 0,
-                savingThrow: 0,
-                min: 8,
-                max: 15
-            },
-            wis: {
-                score: 10,
-                adjScore: 10,
-                mod: 0,
-                bonus: false,
-                bonusPoints: 0,
-                raceBonus: 0,
-                savingThrow: 0,
-                min: 8,
-                max: 15
-            },
-            cha: {
-                score: 10,
-                adjScore: 10,
-                mod: 0,
-                bonus: false,
-                bonusPoints: 0,
-                raceBonus: 0,
-                savingThrow: 0,
-                min: 8,
-                max: 15
-            },
-            bonusPoints: 0, // for Ability Score Improvement
-            pointsLeft: 15  // 27 points to spend with all 8s
-        };
+        (function () {
+            character.ability = {
+                bonusPoints: 0, // for Ability Score Improvement
+                pointsLeft: 15  // 27 points to spend with all 8s
+            };
+            angular.forEach(ABILITIES, function(ability) {
+                character.ability[ability] = {
+                    score: 10,
+                    adjScore: 10,
+                    mod: 0,
+                    bonus: false,
+                    bonusPoints: 0,
+                    raceBonus: 0,
+                    savingThrow: 0,
+                    min: 8,
+                    max: 15
+                };
+            })
+        }());
         var newCharacter = angular.copy(character); // for creating new character
 
         function returnHttpProp(path) {

@@ -122,6 +122,29 @@
             <li>Survival {{character.survival | addPlus}}</li>
         </ul>
     </div>
+    <div ng-if="character.backstory">
+        <h4>Backstory</h4>
+        <div compile="character.backstory"></div>
+    </div>
+</div>
+<div class="col-sm-6">
+    <div ng-if="character.traits">
+        <h4>Racial Traits</h4>
+        <p ng-repeat="trait in character.traits"><b>{{trait.name}}</b>: <span compile="trait.benefit_desc"></span></p>
+    </div>
+    <div ng-if="character.features">
+        <h4>Class Features</h4>
+        <p ng-repeat="feature in character.features"><b>{{feature.name}}</b>: <span compile="feature.benefit_desc"></span></p>
+    </div>
+    <div ng-if="character.feats">
+        <h4>Feats</h4>
+        <div ng-repeat="feat in character.feats">
+            <dt>{{feat.name}}</dt>
+            <dd compile="feat.benefit_desc"></dd>
+        </div>
+    </div>
+    <h4>Background Feature</h4>
+    <p><b>{{character.trait_name}}</b>: {{character.trait_desc}}</p>
     <div ng-if="character.spell_ability">
         <h4>Spellcasting</h4>
         <table class="table table-condensed">
@@ -192,14 +215,4 @@
             </tr>
         </table>
     </div>
-</div>
-<div class="col-sm-6">
-    <h4>Features & Traits</h4>
-    <div ng-if="character.traits">
-        <p ng-repeat="trait in character.traits"><b>{{trait.name}}</b>: <span compile="trait.benefit_desc"></span></p>
-    </div>
-    <div ng-if="character.features">
-        <p ng-repeat="feature in character.features"><b>{{feature.name}}</b>: <span compile="feature.benefit_desc"></span></p>
-    </div>
-    <p><b>{{character.trait_name}}</b>: {{character.trait_desc}}</p>
 </div>

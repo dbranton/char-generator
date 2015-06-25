@@ -58,10 +58,11 @@ angular.module('app')
             opts.templateUrl = '/app/views/dialog_new_character.html';
             opts.controller = DialogNewCharController;
             opts.size = 'sm';
-            opts.backdrop = 'static';
+            opts.resolve = {
+                level: function() { return $scope.character.level; }
+            }
             general.openDialog(opts).result.then(function(level) {
                 $scope.character = charGenFactory.getNewCharacter(level);
-                WizardHandler.wizard().goTo(0); // go back to step 1
             });
         };
 
@@ -136,6 +137,19 @@ angular.module('app')
             });
         };
 
+        $scope.openIdealDialog = function() {
+            var opts = {};
+            opts.templateUrl = '/app/views/dialog_item.html';
+            opts.controller = DialogIdealController;
+            opts.resolve = {
+                ideals: function() { return angular.copy($scope.character.background.ideals); },
+                idealId: function() { return $scope.character.ideal.id || undefined; }
+            };
+            general.openDialog(opts).result.then(function(idealObj) {
+                $scope.character.determineIdeal(idealObj);
+            });
+        };
+
         $scope.isFirstStep = function() {
             var stepNumber = WizardHandler.wizard().currentStepNumber();
             return stepNumber === 1;
@@ -182,7 +196,6 @@ angular.module('app')
             return $scope.character.name ? true : false;
         }
 
-        $scope.openNewCharDialog(); // execute immediately onload
         $scope.init = function() {
             //$scope.storedCharacter = charGenFactory.returnStoredCharacter();
             charGenFactory.Races().get({}, function(data){
@@ -194,9 +207,9 @@ angular.module('app')
             charGenFactory.Classes().get({}, function(data) {
                 $scope.classData = data.classes;
             });
-            charGenFactory.Feats().get({}, function(data) {
-                $scope.featsData = data.feats;
-            });
+            /*charGenFactory.Armor().get({}, function(data) {
+                $scope.armorData = data.armor;
+            });*/
             /*charGenFactory.Weapons().get({}, function(data) {
              $scope.weaponData = data.weapons;
              });*/
@@ -233,13 +246,17 @@ angular.module('app')
             }
         });
 
-        function DialogNewCharController($scope, $modalInstance) {
+        function DialogNewCharController($scope, $modalInstance, level) {
+            $scope.level = level;
             $scope.done = function() {
                 if ($scope.newCharForm.$invalid) {
                     $scope.showError = true;
                 } else {
                     $modalInstance.close($scope.level);
                 }
+            };
+            $scope.close = function() {
+                $modalInstance.dismiss('cancel');
             };
         }
 
@@ -393,13 +410,12 @@ angular.module('app')
                 $scope.features = [];
                 $scope.description = $scope.infoObj.desc;
                 $scope.traitsTitle = "Hit Points";
-                $scope.traits.push(new NameDesc("Hit Dice", "1d" + $scope.infoObj.hit_dice + " per " + $scope.infoObj.name + " level"),
-                    new NameDesc("Hit Points at 1st Level", $scope.infoObj.hit_dice + " + your Constitution modifier"),
-                    new NameDesc("Hit Points at Higher Levels", "1d" + $scope.infoObj.hit_dice + " + your Constitution modifier per " +
-                        $scope.infoObj.name + " level after 1st"));
+                $scope.traits.push(new NameDesc("Hit Dice", $scope.infoObj.hit_dice_desc),
+                    new NameDesc("Hit Points at 1st Level", $scope.infoObj.hp_first_desc),
+                    new NameDesc("Hit Points at Higher Levels", $scope.infoObj.hp_higher_desc));
                 $scope.traits2Title = "Proficiencies";
-                $scope.traits2.push(new NameDesc("Armor", $scope.infoObj.armor_shield_prof || "None"), new NameDesc("Weapons", $scope.infoObj.weapon_prof || "None"),
-                    new NameDesc("Tools", $scope.infoObj.tool_desc || "None"), new NameDesc("Saving Throws", $scope.infoObj.saving_throw_desc),
+                $scope.traits2.push(new NameDesc("Armor", $scope.infoObj.armor_prof_desc), new NameDesc("Weapons", $scope.infoObj.weapon_prof_desc),
+                    new NameDesc("Tools", $scope.infoObj.tool_desc), new NameDesc("Saving Throws", $scope.infoObj.saving_throw_desc),
                     new NameDesc("Skills", $scope.infoObj.avail_skills_desc));
                 if (angular.isArray($scope.infoObj.features)) {
                     angular.forEach($scope.infoObj.features, function(obj) {
@@ -539,6 +555,50 @@ angular.module('app')
                     $modalInstance.close($scope.tempItems);
                 } else {
                     alert("Please select your features");
+                }
+            };
+
+            $scope.close = function(){
+                $modalInstance.dismiss('cancel');
+            };
+        }
+
+        function DialogIdealController($scope, $modalInstance, ideals, idealId) {
+            $scope.title = 'Select Ideal';
+            $scope.items = ideals;   // needed for UI
+            $scope.selectedIndex = angular.isNumber(idealId) ? _.findIndex($scope.items, 'id', idealId) : null;
+            $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
+            $scope.feature = {
+                url: path + "/app/views/partials/dialog_description.html"
+            };
+            $scope.showDescription = function(selectobj, dontSelect) {
+                $scope.infoObj = selectobj.item;
+                if (!dontSelect) {
+                    $scope.selectedIndex = selectobj.$index;    // needed to highlight selected item on ui
+                    $scope.tempItem = $scope.infoObj;
+                }
+                $scope.traitTitle = $scope.infoObj.name;
+                $scope.traitDesc = $scope.infoObj.description;
+            };
+
+            if ($scope.tempItem) {
+                $scope.showDescription({item: $scope.tempItem, $index: $scope.selectedIndex});
+            }
+
+            $scope.showInfo = function(selectobj) {
+                if (selectobj) {
+                    $scope.showDescription(selectobj, true);
+                    $scope.isInfoExpanded = true;
+                } else {
+                    $scope.isInfoExpanded = false;
+                }
+            };
+
+            $scope.done = function() {
+                if ($scope.tempItem) {
+                    $modalInstance.close($scope.tempItem);
+                } else {
+                    alert("Please select your ideal");
                 }
             };
 
