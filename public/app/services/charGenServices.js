@@ -392,7 +392,6 @@ angular.module('app')
                             that.increaseAbilityScore(prop, parseInt(featureBonus[prop]));
                         } else if (prop === 'any') {
                             that.raceObj.bonusAbilities = _.reject(ABILITY_MAPPER, {'id': featureBonus[prop]});
-                            that.selectedBonusAbilities = [];   // reset
                         } else if (prop === 'armor') {  // handles armor proficiency
                             bonusArray = featureBonus[prop].split(', ');
                             angular.forEach(bonusArray, function(armorProf) {
@@ -598,6 +597,7 @@ angular.module('app')
             that.defaultLanguages = this.raceObj.languages || '';
             that.languages = that.defaultLanguages;
             that.selectedLanguages = [];    // reset
+            that.selectedBonusAbilities = [];   // reset
             //this.handleLanguages();
             if (that.raceObj.traits) {
                 that.raceObj.racialTraits = []; // reset
