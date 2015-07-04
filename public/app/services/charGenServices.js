@@ -196,6 +196,9 @@ angular.module('app')
                     }
                     profBonus = skill.proficient ? that.profBonus : 0;
                     that.skills[i].val = profBonus + that.ability[abilityMapper[skill.ability]].mod;
+                    if (that.classObj.jackOfAllTrades && profBonus === 0) {
+                        that.skills[i].val += Math.floor(that.profBonus/2);
+                    }
                     if (selectedExpertise && _.findIndex(selectedExpertise, 'id', skill.id) !== -1) {
                         that.skills[i].val += profBonus;
                         //that.enableSkills(enabledSkills);
@@ -347,7 +350,7 @@ angular.module('app')
             this.ability[ability].adjScore = this.ability[ability].score;
             this.calculateModifiers(ability);
         };
-        Character.prototype.handleFeatureBonuses = function(dontReset) {
+        Character.prototype.handleFeatureBonuses = function() {
             var featureStats = this.featureStats,
                 bonusArray = [], characterArray = [], that = this,
                 featureBonus, expertiseArr, bonusSpells = [];
@@ -389,6 +392,7 @@ angular.module('app')
                             that.increaseAbilityScore(prop, parseInt(featureBonus[prop]));
                         } else if (prop === 'any') {
                             that.raceObj.bonusAbilities = _.reject(ABILITY_MAPPER, {'id': featureBonus[prop]});
+                            that.selectedBonusAbilities = [];   // reset
                         } else if (prop === 'armor') {  // handles armor proficiency
                             bonusArray = featureBonus[prop].split(', ');
                             angular.forEach(bonusArray, function(armorProf) {
@@ -399,22 +403,29 @@ angular.module('app')
                         } else if (prop === 'weapons') {    // handles weapon proficiency
                             if (_.findIndex(that[prop], 'readable_id', 'martial_weapon') === -1) {
                                 bonusArray = featureBonus[prop].split(', ');    // ex: ['longsword', 'shortsword', 'shortbow', 'longbow']
-                                bonusArray.forEach(function(weaponProf) {
-                                    var weaponObj = that.mapWeapons(weaponProf)[0];
-                                    if (_.findIndex(that[prop], 'readable_id', weaponProf) === -1
-                                            && !(weaponObj.weapon_type === 'simple_weapon'
-                                            && _.findIndex(that[prop], 'readable_id', 'simple_weapon') !== -1)) {
-                                        that[prop].push(weaponObj);
-                                    }
-                                });
+
+                                if (bonusArray.indexOf('martial_weapon') !== -1 &&
+                                        _.findIndex(that[prop], 'readable_id', 'simple_weapon') !== -1) {
+                                    that[prop] = [that[prop][_.findIndex(that[prop], 'readable_id', 'simple_weapon')], that.mapWeapons('martial_weapon')[0]];
+                                } else {
+                                    bonusArray.forEach(function(weaponProf) {
+                                        var weaponObj = that.mapWeapons(weaponProf)[0];
+                                        if (_.findIndex(that[prop], 'readable_id', weaponProf) === -1
+                                                && !(weaponObj.weapon_type === 'simple_weapon'
+                                                && _.findIndex(that[prop], 'readable_id', 'simple_weapon') !== -1)) {
+                                            that[prop].push(weaponObj);
+                                        }
+                                    });
+                                }
                             }
                         } else if (prop === 'tools') { // e.g. Dwarf
                             that.raceObj.bonusTool = featureBonus[prop];
                             that.handleTools();
                         } else if (prop === 'tool_choice') {    // e.g. Battle Master
-                            bonusArray = featureBonus[prop].split(', ');    // e.g. [0] = Artisan's Tools, [1] = 1
-                            that.numToolChoices += parseInt(bonusArray[1]);
-                            that.selectedTools = [];    // reset; prevents user from selecting anything if reset (maximum limit exceeded)
+                            bonusArray = featureBonus[prop].split(', ');    // e.g. [artisans_tools, 1]
+                            that.classObj.tool_choices = bonusArray[0];
+                            that.classObj.numToolChoices = parseInt(bonusArray[1]);
+                            that.classObj.selectedTools = [];    // reset; prevents user from selecting anything if reset (maximum limit exceeded)
                         } else if (prop === 'savingThrows') {
                             that.calculateModifiers();
                         } else if (prop === 'defense') {
@@ -427,6 +438,9 @@ angular.module('app')
                             that.raceObj.bonusSkill = featureBonus[prop];
                         } else if (prop === 'bonus_skill_choices') { // can only come from raceFeatures for now
                             that.raceObj.numSkillChoices = parseInt(featureBonus[prop]);  // e.g. 2
+                        } else if (prop === 'jack_of_all_trades') {
+                            that.classObj.jackOfAllTrades = true;
+                            that.updateSkillScore();
                         } else if (prop === 'cantrips') {
                             bonusArray = featureBonus[prop].split(', ');
                             that.classObj.cantrip = {
@@ -577,7 +591,7 @@ angular.module('app')
             //this.numFeats = FEATS_ARRAY[index];
         };
         Character.prototype.determineRace = function(raceObj) {
-            var that = this, tempName, features = {}, racialTrait = {};
+            var that = this, tempName, features = {}, racialTrait = {}, tempBenefit = null;
             that.raceObj = raceObj;
             that.speed = parseInt(this.raceObj.speed);
             that.size = this.raceObj.size_value;
@@ -593,6 +607,21 @@ angular.module('app')
                         name: trait.name,
                         benefit: trait.benefit_desc
                     };
+
+                    // for Dragonborn Draconic Ancestry
+                    /*if (trait.type === 'super_feature') {
+                        angular.forEach(trait.subfeatures, function(subfeature) {
+                            if (subfeature.level <= that.level) {
+                                tempBenefit = subfeature;
+                            }
+                        });
+                        that.raceObj.featureChoices = {
+                            //'name': [],
+                            'list': trait.subfeatures,
+                            'label': trait.name
+                        };
+                    }*/
+
                     if (trait.benefit_desc && trait.level <= that.level) {
                         if (!tempName || tempName !== trait.name) {
                             that.raceObj.racialTraits.push(racialTrait);
@@ -621,15 +650,15 @@ angular.module('app')
         Character.prototype.determineBackground = function(backgroundObj) {
             this.background = backgroundObj;
             this.selectedLanguages = [];    // reset
-            this.numToolChoices = 0;  // reset
+            this.background.numToolChoices = 0;  // reset
             if (this.background.tool_choices) { // ex: artisans_tools, gaming_set, or musical_instrument
-                this.numToolChoices++;
+                this.background.numToolChoices++;
                 this.background.selectedTools = [];    // reset
             }
             this.handleTools();
             //this.numLanguages = this.background ? parseInt(this.background.languages) : 0;
             this.handleLanguages();
-            this.updateSkillProficiency(_.pluck(this.background.skills, 'readable_id'), true, true);
+            this.handleSkills();
         };
         Character.prototype.determineClass = function(classObj) {    // handles hp and saving throws
             var that = this, features = {}, featureChoiceIdx = 0, classFeature = {};
@@ -643,6 +672,12 @@ angular.module('app')
             that.armorClass = 10 + this.ability.dex.mod;
             that.numSkillsLeft = parseInt(this.classObj.num_skills);
             that.classObj.selectedSkills = [];
+            that.classObj.numToolChoices = 0;  // reset
+            if (that.classObj.tool_choices) { // ex: artisans_tools, gaming_set, or musical_instrument
+                that.classObj.numToolChoices = parseInt(that.classObj.tool_choices.split(', ')[1]);
+                that.classObj.tool_choices = that.classObj.tool_choices.split(', ')[0];
+                that.classObj.selectedTools = [];    // reset
+            }
             that.handleArmor();
             that.handleWeapons();
             that.handleTools();
@@ -722,6 +757,9 @@ angular.module('app')
             }
             that.classObj.charFeatures = angular.copy(that.classObj.classFeatures);
             that.featureStats.clazz = features;
+            if (that.featureStats.subclass) {
+                delete that.featureStats.subclass;
+            }
             that.handleFeatureBonuses();
             // needs to come after handleFeatureBonuses to account for racial bonus skills
             that.handleSkills();

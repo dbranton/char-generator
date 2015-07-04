@@ -3,6 +3,8 @@
 class RaceController extends \BaseController {
 
     public $raceList = array();
+    public $featureList = array();
+    public $subfeatureList = array();
 
     public function __construct() {
         //$this->beforeFilter('serviceAuth');
@@ -40,19 +42,24 @@ class RaceController extends \BaseController {
                     $this->raceList[] = $raceObj;   // push to array
                 };
             } else {
+                $this->featureList = array();    // reset
                 $features = FeaturesTable::join('race_features', 'features_table.id', '=', 'race_features.feature_id')
                     ->where('race_features.race_id', '=', $raceObj['readable_id'])
                     ->where('subrace_id', '=', '')
                     ->orderBy('name')
                     ->get()
                     ->toArray();
-                for ($i=0; $i<count($features); $i++) {
-                    $features[$i]['benefit_desc'] = str_replace('href', 'spell-info-dialog', $features[$i]['benefit_desc']);
+                foreach ($features as $feature) {
+                    if ($feature['parent_id'] == '' || $feature['parent_id'] == '0' || empty($feature['parent_id'])) {
+                        $feature = $this->_handleSubFeatures($features, $feature);
+                        $feature['benefit_desc'] = str_replace('href', 'spell-info-dialog', $feature['benefit_desc']);
+                        $this->featureList[] = $feature;
+                    }
                 }
 
                 $raceObj['subrace_id'] = $raceObj['id'];
                 $raceObj['parent'] = $raceObj['name'];
-                $raceObj['traits'] = $features;
+                $raceObj['traits'] = $this->featureList;    //$features;
                 $this->raceList[] = $raceObj;
             }
         };
@@ -60,6 +67,19 @@ class RaceController extends \BaseController {
         return Response::json([
             'races' => $this->raceList
         ]);
+    }
+
+    private function _handleSubFeatures($features, $feature) {
+        if ($feature['type'] == 'super_feature' || $feature['type'] == 'super_feature_alt') {
+            $this->subfeatureList = array();  // reset
+            foreach ($features as $subfeature) {
+                if ($subfeature['parent_id'] == $feature['feature_id']) {
+                    $this->subfeatureList[] = $subfeature;
+                }
+            }
+            $feature['subfeatures'] = $this->subfeatureList;
+        }
+        return $feature;
     }
 
     /**

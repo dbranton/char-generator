@@ -10,13 +10,16 @@ angular.module("app",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.
         var deviceType = configObjProvider.deviceType,
             locationName = configObjProvider.locationName,
             path = configObjProvider.path;
-
+        var pathArray = [];
         function loadCtrl($ocLazyLoad, ctrlPath) {
             var fullPath = path + ctrlPath;
-            var test = $ocLazyLoad.getModuleConfig('app');
-            if (!$ocLazyLoad.isLoaded('generatorController.js')) {
-                return $ocLazyLoad.load(fullPath);
+            if (pathArray.indexOf(ctrlPath) === -1) {
+                pathArray.push(ctrlPath);
+                if (!$ocLazyLoad.isLoaded('generatorController.js')) {
+                    return $ocLazyLoad.load(fullPath);
+                }
             }
+            return false;
         }
 
 		// Now set up the states

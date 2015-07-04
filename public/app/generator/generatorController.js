@@ -197,22 +197,29 @@ angular.module('app')
         }
 
         $scope.init = function() {
+            $scope.progress = 0;
             //$scope.storedCharacter = charGenFactory.returnStoredCharacter();
             charGenFactory.Races().get({}, function(data){
                 $scope.raceData = data.races;
+                $scope.progress += 33;
+                hideLoading($scope.progress)
             });
             charGenFactory.Backgrounds().get({}, function(data) {
                 $scope.backgroundData = data.backgrounds;
+                $scope.progress += 33;
+                hideLoading($scope.progress)
             });
             charGenFactory.Classes().get({}, function(data) {
                 $scope.classData = data.classes;
+                $scope.progress += 33;
+                hideLoading($scope.progress)
             });
-            /*charGenFactory.Armor().get({}, function(data) {
-                $scope.armorData = data.armor;
-            });*/
-            /*charGenFactory.Weapons().get({}, function(data) {
-             $scope.weaponData = data.weapons;
-             });*/
+
+            function hideLoading(progress) {
+                if (progress >= 99) {
+                    $scope.hideLoading = true;
+                }
+            }
         };
 
         $scope.$watch('character.classObj.selectedSpells' , function(newVal, oldVal) {

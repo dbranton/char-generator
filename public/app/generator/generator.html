@@ -18,63 +18,78 @@
     <div class="panel panel-default">
         <div class="panel-body">
             <wz-step wz-title="Race & Class">
-                <div class="row">
-                <div class="col-sm-6">
-                    <fieldset>
-                        <legend>Race & Class</legend>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Level:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="character.level"
-                                              click="openNewCharDialog()" name="character.levelDesc"></select-modal>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Race:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="character.raceObj" placeholder="Select a Race" data="raceData"
-                                        click="openRaceDialog()" name="character.raceObj.name"></select-modal>
-                            </div>
-                        </div>
-                        <div class="form-group" ng-show="character.raceObj.bonusAbilities">
-                            <label class="col-sm-4 control-label">Bonus Abilities:</label>
-                            <div class="col-sm-8">
-                                <select-modal bonus-ability ng-model="character.selectedBonusAbilities"
-                                              placeholder="Select your Bonus Abilities" data="character.raceObj.bonusAbilities"
-                                              click="openBonusAbilityDialog()" name="character.selectedBonusAbilities"
-                                              multiple max="2" select></select-modal>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Background:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="character.background" placeholder="Select a Background" data="backgroundData"
-                                              click="openBackgroundDialog()" name="character.background.name"></select-modal>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">Class:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="character.classObj" placeholder="Select a Class" data="classData"
-                                              click="openClassDialog()" name="character.classObj.name"></select-modal>
-                            </div>
-                        </div>
-                        <div class="form-group" ng-show="character.classObj.subclasses.length > 0 || character.classObj.subclassObj">
-                            <label class="col-sm-4 control-label">{{character.classObj.subclassName}}:</label>
-                            <div class="col-sm-8">
-                                <select-modal ng-model="character.classObj.subclassObj" placeholder="Select a Subclass" data="character.classObj.subclasses"
-                                              click="openSubclassDialog()" name="character.classObj.subclassObj.name"></select-modal>
-                            </div>
-                        </div>
-                    </fieldset>
+                <div class="row loading" ng-hide="hideLoading">
+                    <!--Loading... <i class="fa fa-spinner fa-spin"></i>-->
+                    <div class="col-sm-12">
+                        <progressbar class="progress-striped active" value="progress" type="{{type}}">{{type}} <i ng-show="showWarning">Loading...</i></progressbar>
+                    </div>
                 </div>
-                <div class="col-sm-6">
-                    <fieldset>
-                        <legend>Abilities</legend>
-                        <ability-table character="character" pointsleft="{{character.ability.pointsLeft}}"></ability-table>
-                    </fieldset>
-                </div>
-                </div>
+                <div class="row" ng-show="hideLoading">
+                    <div class="col-sm-6">
+                        <fieldset>
+                            <legend>Race & Class</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Level:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.level"
+                                                  click="openNewCharDialog()" name="character.levelDesc"></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Race:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.raceObj" placeholder="Select a Race" data="raceData"
+                                            click="openRaceDialog()" name="character.raceObj.name"></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.raceObj.bonusAbilities">
+                                <label class="col-sm-4 control-label">Bonus Abilities:</label>
+                                <div class="col-sm-8">
+                                    <select-modal bonus-ability ng-model="character.selectedBonusAbilities"
+                                                  placeholder="Select your Bonus Abilities" data="character.raceObj.bonusAbilities"
+                                                  click="openBonusAbilityDialog()" name="character.selectedBonusAbilities"
+                                                  multiple max="2" select></select-modal>
+                                </div>
+                            </div>
+                            <!--<div class="form-group" ng-show="character.raceObj.featureChoices">
+                                <label class="col-sm-4 control-label">{{character.raceObj.featureChoices.label}}:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.raceObj.selectedFeature"
+                                                  placeholder="Select your Feature" data="character.raceObj.featureChoices.list"
+                                                  name="character.raceObj.selectedFeature"></select-modal>
+                                </div>
+                            </div>-->
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Background:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.background" placeholder="Select a Background" data="backgroundData"
+                                                  click="openBackgroundDialog()" name="character.background.name"></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Class:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.classObj" placeholder="Select a Class" data="classData"
+                                                  click="openClassDialog()" name="character.classObj.name"></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.classObj.subclasses.length > 0 || character.classObj.subclassObj">
+                                <label class="col-sm-4 control-label">{{character.classObj.subclassName}}:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.classObj.subclassObj" placeholder="Select a Subclass" data="character.classObj.subclasses"
+                                                  click="openSubclassDialog()" name="character.classObj.subclassObj.name"></select-modal>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="col-sm-6">
+                        <fieldset>
+                            <legend>Abilities</legend>
+                            <ability-table character="character" pointsleft="{{character.ability.pointsLeft}}"></ability-table>
+                        </fieldset>
+                    </div>
+                </div> <!-- .row -->
+
             </wz-step>
             <wz-step wz-title="Skills"> <!-- canenter="enterValidation"-->
                 <div class="row">
@@ -254,7 +269,15 @@
                                 <div class="col-sm-8">
                                     <select-modal tools ng-model="character.background.selectedTools" placeholder="Select your Tool(s)"
                                                   data="availableTools" click="openToolDialog()" name="character.background.selectedTools"
-                                                  multiple max="character.numToolChoices" filter="filterTools: character.background.tool_choices:character.tools" select></select-modal>
+                                                  multiple max="character.background.numToolChoices" filter="filterTools: character.background.tool_choices:character.tools" select></select-modal>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="character.classObj.tool_choices">
+                                <label class="col-sm-4 control-label">Class Tool Proficiency:</label>
+                                <div class="col-sm-8">
+                                    <select-modal tools ng-model="character.classObj.selectedTools" placeholder="Select your Tool(s)"
+                                                  data="availableTools" click="openToolDialog()" name="character.classObj.selectedTools"
+                                                  multiple max="character.classObj.numToolChoices" filter="filterTools: character.classObj.tool_choices:character.tools" select></select-modal>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -401,6 +424,10 @@
                     <div class="col-sm-6">
                         <h4>Features & Traits</h4>
                         <dl>
+                            <div ng-if="character.raceObj.selectedFeature">
+                                <dt>{{character.raceObj.selectedFeature.parent_name}} ({{character.raceObj.selectedFeature.name}})</dt>
+                                <dd compile="character.raceObj.selectedFeature.benefit_desc"></dd>
+                            </div>
                             <div ng-repeat="racialTrait in character.raceObj.racialTraits">
                                 <dt>{{racialTrait.name}}</dt>
                                 <dd compile="racialTrait.benefit"></dd>

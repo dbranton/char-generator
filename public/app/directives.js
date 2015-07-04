@@ -30,6 +30,9 @@ angular
                     if (ctrl.multiple && (ctrl.selected.length+1) < ctrl.limit) {   // needs to add one to account for selected not getting updated yet
                         ctrl.closeOnSelect = false; // keep dropdown open until user reaches limit
                     } else {
+                        if (arguments.length < 3 && ctrl.selected.length >= ctrl.limit) {  // prevent enter/tab events if limit reached
+                            return;
+                        }
                         ctrl.closeOnSelect = true;
                     }
                     superSelect.apply(ctrl, arguments);
@@ -127,44 +130,46 @@ angular
         };
     })
     .directive('dragToReveal', function($drag, $parse, $timeout){
-       return {
-         restrict: 'A',
-         compile: function(elem, attrs) {
-           var dismissFn = $parse(attrs.dragToDismiss);
-           return function(scope, elem, attrs){
-             var showOptions = false;
-             $drag.bind(elem, {
-               constraint: {
-                 maxX: 0,
-                 minY: 0,
-                 maxY: 0
-               },
-               move: function(c) {
-                 if(c.right <= c.width && !showOptions) { //((5 * c.width) / 6)
-                   showOptions = true;
-                   elem.next().removeClass('invisible');
-                 } else if (c.left >= -(c.width/6) && showOptions) {
-                   showOptions = false;
-                   elem.next().addClass('invisible');
-                 }
-               },
-               cancel: function(){
-               },
-               end: function(c, undo, reset) {
-                 var optionsWidth = 58; // expects 58px
-                 if (showOptions) {
-                   var e = angular.element(elem)[0],
-                       tOrig = $drag.Transform.fromElement(e);
-                   tOrig.mtx[0][2] = -(optionsWidth);
-                   tOrig.set(e);
-                 } else {
-                   reset();
-                 }
-               }
-             });
-           };
-         }
-       };
+        return {
+            restrict: 'A',
+            compile: function(elem, attrs) {
+                var dismissFn = $parse(attrs.dragToDismiss);
+                return function(scope, elem, attrs) {
+                    var showOptions = false;
+                    if ($(elem).parents('.modal-overlay').length) {
+                        $drag.bind(elem, {
+                           constraint: {
+                             maxX: 0,
+                             minY: 0,
+                             maxY: 0
+                           },
+                           move: function(c) {
+                             if(c.right <= c.width && !showOptions) { //((5 * c.width) / 6)
+                               showOptions = true;
+                               elem.next().removeClass('invisible');
+                             } else if (c.left >= -(c.width/6) && showOptions) {
+                               showOptions = false;
+                               elem.next().addClass('invisible');
+                             }
+                           },
+                           cancel: function(){
+                           },
+                           end: function(c, undo, reset) {
+                             var optionsWidth = 58; // expects 58px
+                             if (showOptions) {
+                               var e = angular.element(elem)[0],
+                                   tOrig = $drag.Transform.fromElement(e);
+                               tOrig.mtx[0][2] = -(optionsWidth);
+                               tOrig.set(e);
+                             } else {
+                               reset();
+                             }
+                           }
+                        });
+                    }
+                };
+            }
+        };
     })
     .directive('skills', function(configObj) {
         function returnTemplate(element, attrs) {
@@ -321,9 +326,9 @@ angular
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 var ability, val = 0;
-                scope.character.raceObj.selectedBonusAbilities = [];
+                //scope.character.raceObj.selectedBonusAbilities = [];
                 scope.$watch(attrs.ngModel, function(newVal, oldVal) {
-                    if (angular.isArray(newVal)) {
+                    if (angular.isArray(newVal) && angular.isArray(oldVal) && oldVal.length - newVal.length !== 2) {
                         scope.character.raceObj.selectedBonusAbilities = newVal;
                         if (angular.isArray(oldVal)) {
                             angular.forEach(oldVal, function(ability) {
@@ -646,7 +651,7 @@ angular
                         $scope.tempSpells.splice(_.findIndex($scope.tempSpells, 'name', $scope.selectedSpell.name), 1); // remove cantrip
                         selectobj.spell.active = false;
                     }
-                    $scope.disabled = $scope.spellsLeft - $scope.tempSpells.length !== 0; // disabled is true if there are still cantrips left to choose
+                    $scope.disabled = $scope.tempSpells.length === 0; // only disable if no spells have been selected
                 }
             };
 

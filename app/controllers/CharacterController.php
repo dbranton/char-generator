@@ -117,6 +117,7 @@ class CharacterController extends \BaseController {
             'backstory' => $character['backstory'],
             'race' => $character['raceObj']['name'],
             'background' => $character['background']['name'],
+            'ideal' => $character['ideal']['description'],
             'class' => $character['classObj']['name'],
             'level' => $character['level'],
             'size' => $character['raceObj']['size'],
