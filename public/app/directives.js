@@ -256,7 +256,7 @@ angular
                 });
 
                 //bonus language support
-                scope.$watch(attrs.bonusLanguages, function(newValue, oldValue) {
+                scope.$watch(attrs.bonusLanguages, function(newValue) {
                     if (angular.isArray(newValue)) {
                         var languageList = [];
                         var oldLanguageList = angular.copy(scope.availableLanguages);
@@ -287,12 +287,11 @@ angular
                 function DialogToolController($scope, $modalInstance, toolData, max, toolIds, title, featureType) {
                     general.DialogItemsController.apply(undefined, arguments);
                 }
-                scope.openToolDialog = function() {
+                scope.openToolDialog = function(type) {   // 'background' or 'classObj'
+                    var max = scope.character[type].numToolChoices;
+                    var toolType = scope.character[type].tool_choices;  // ex: 'gaming_set'
                     var availableTools = _.filter(TOOLS_LIST, function(tool) {
-                        var filters = attrs.filter.split(' ')[1],
-                            toolType = scope.$eval(filters.split(':')[0]),
-                            existingFilters = scope.$eval(filters.split(':')[1]);
-                        return tool.parent_id === toolType && existingFilters.indexOf(tool.name) === -1;
+                        return tool.parent_id === toolType;
                     });
                     var opts = {
                         noOverlay: true,
@@ -300,19 +299,20 @@ angular
                         controller: DialogToolController,
                         resolve: {
                             toolData: function() { return availableTools; },
-                            max: function() { return parseInt(attrs.max) || 1; },
+                            max: function() { return parseInt(max) || 1; },
                             toolIds: function() {
-                                return scope.character.selectedTools ? _.pluck(scope.character.selectedTools, 'id') : null;
+                                return scope.character[type].selectedTools ? _.pluck(scope.character[type].selectedTools, 'id') : null;
                             },
                             title: function() { return 'Select Tool'; },
                             featureType: function() { return 'Tools'; }
                         }
                     };
                     general.openDialog(opts).result.then(function(selectedTools) {
-                        ngModel.$setViewValue(selectedTools);
+                        //ngModel.$setViewValue(selectedTools); // doesn't work with multiple tools directives
+                        scope.character[type].selectedTools = selectedTools;
                     });
                 };
-                scope.$watch(attrs.ngModel, function(newValue, oldValue) {
+                scope.$watch(attrs.ngModel, function(newValue) {
                     if (angular.isArray(newValue)) {
                         scope.character.handleTools();
                     }

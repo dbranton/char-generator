@@ -163,7 +163,7 @@ angular.module('app')
                 case 2:
                     return validateStep2();
                 case 3:
-                    return true;
+                    return validateStep3();
                 case 4:
                     return validateStep4();
                 default:
@@ -173,9 +173,7 @@ angular.module('app')
 
         function validateStep1() {
             var char = $scope.character;
-            if (char.raceObj.name && char.background.name && char.classObj.name && char.ability.pointsLeft === 0 &&
-                (!char.classObj.subclasses.length ||
-                    (char.classObj.subclasses.length && char.classObj.subclassObj && char.classObj.subclassObj.name))) {
+            if (char.raceObj.name && char.background.name && char.classObj.name && char.ability.pointsLeft === 0) {
                 return true;
             } else {
                 return false;
@@ -186,6 +184,16 @@ angular.module('app')
             var char = $scope.character;
             if (!char.raceObj.numSkillChoices && char.numSkillsLeft === 0 ||
                 (angular.isArray(char.bonusSkills) && char.numSkillsLeft + char.raceObj.numSkillChoices - char.bonusSkills.length === 0)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function validateStep3() {
+            var char = $scope.character;
+            if ((!char.classObj.subclasses.length ||
+                (char.classObj.subclasses.length && char.classObj.subclassObj && char.classObj.subclassObj.name))) {
                 return true;
             } else {
                 return false;

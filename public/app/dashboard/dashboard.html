@@ -1,5 +1,6 @@
 <alert ng-if="flash" type="success" close="closeAlert($index)">{{flash}}</alert>
 <h3>Your Characters</h3>
+<a class="btn btn-primary" ui-sref="generator"><i class="fa fa-plus"></i> New Character</a>
 <!--<div class="table-responsive">-->
     <table ng-table="tableParams" class="table">
         <tr ng-repeat="character in $data">
@@ -9,9 +10,8 @@
             <td data-title="'Race'">{{character.race}}</td>
             <td data-title="'Class'">{{character.class}}</td>
             <td data-title="'Action'">
-                <button class="btn btn-default" type="button" ng-click="removeCharacter(character)"><i class="fa fa-trash-o"></i></button>
+                <button class="btn btn-danger btn-sm" type="button" ng-click="removeCharacter(character)"><i class="fa fa-trash-o"></i></button>
             </td>
         </tr>
     </table>
 <!--</div>-->
-<a class="btn btn-primary" ui-sref="generator"><i class="fa fa-plus"></i> New Character</a>
