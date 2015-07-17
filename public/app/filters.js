@@ -8,13 +8,16 @@ angular
     .module('app')
     .filter('joinBy', function() {
         return function(input, delimiter) {
-            var nameArr = [];
-            var hasSequence = _.find(input, 'sequence');
+            var nameArr = [],
+                hasSequence = _.find(input, 'sequence'),
+                hasName = _.find(input, 'name');
             if (hasSequence) {
                 nameArr = _.chain(input).sortBy('sequence').pluck('name').value();
-            } else {
+            } else if (hasName) {
                 nameArr = _.chain(input).sortBy('name').pluck('name').value();
-            } // after .chain: .sortBy('name')
+            } else {
+                nameArr = input || [];
+            }
             return nameArr.join(delimiter || ', ');
         };
     })

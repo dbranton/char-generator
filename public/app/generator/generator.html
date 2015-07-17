@@ -117,8 +117,7 @@
                                     <select-modal ng-model="character.selectedExpertise" expertise
                                                   placeholder="Select your Expertise" data="character.classObj.expertise.list"
                                                   click="openExpertiseDialog()" name="character.selectedExpertise"
-                                                  multiple max="character.classObj.expertise.numExpertise"
-                                                  filter="orderBy: 'name'" select></select-modal>
+                                                  multiple max="character.classObj.expertise.numExpertise"></select-modal>
                                 </div>
                             </div>
                             <!-- for Class-based feature choices (ex: Fighting Style, Metamagic) -->
@@ -164,7 +163,8 @@
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="character.raceObj.cantrip" list="bonusRaceCantrips" placeholder="cantrip"
                                                   select2-spellcasting="character.raceObj.spellcasting"
-                                                  other-spell="character.classObj.selectedCantrips"></spell-dialog>
+                                                  other-spell="character.classObj.selectedCantrips"
+                                                  character="character"></spell-dialog>
                                 </div>
                             </div>
 
@@ -173,7 +173,8 @@
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="character.classObj.selectedCantrips" list="classCantrips" placeholder="cantrip(s)"
                                                   select2-spellcasting="character.classObj.cantrip"
-                                                  other-spell="character.raceObj.cantrip"></spell-dialog>
+                                                  other-spell="character.raceObj.cantrip"
+                                                  character="character"></spell-dialog>
                                 </div>
                             </div>
                             <!-- subclass cantrips (mainly for nature clerics) -->
@@ -211,7 +212,8 @@
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="character.classObj.selectedSpells" list="classSpells"
                                                   select2-spellcasting="character.classObj.spellcasting"
-                                                  other-spell="character.classObj.spellcasting.bonusSelectedSpells"></spell-dialog>
+                                                  other-spell="character.classObj.spellcasting.bonusSelectedSpells"
+                                                  character="character"></spell-dialog>
                                 </div>
                             </div>
                             <div class="form-group" ng-show="character.classObj.spellcasting.bonus.numSpellsKnown">
@@ -219,7 +221,8 @@
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="character.classObj.bonusSelectedSpells" list="classBonusSpells"
                                                   select2-spellcasting="character.classObj.spellcasting.bonus"
-                                                  other-spell="character.classObj.selectedSpells"></spell-dialog>
+                                                  other-spell="character.classObj.selectedSpells"
+                                                  character="character"></spell-dialog>
                                 </div>
                             </div>
                             <div class="form-group" ng-repeat="spellObj in character.classObj.spellcasting.bonusSpells">
@@ -227,7 +230,8 @@
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="spellObj.selectedSpell" list="classBonusSpells"
                                                   select2-spellcasting="spellObj"
-                                                  other-spell="character.classObj.selectedSpells"></spell-dialog>
+                                                  other-spell="character.classObj.selectedSpells"
+                                                  character="character"></spell-dialog>
                                 </div>
                             </div>
                         </fieldset>
@@ -268,19 +272,21 @@
                         <fieldset>
                             <legend>Proficiencies</legend>
                             <div class="form-group" ng-show="character.background.tool_choices">
-                                <label class="col-sm-4 control-label">Tool Proficiency:</label>
+                                <label class="col-sm-4 control-label">{{character.background.toolName}}:</label>
                                 <div class="col-sm-8">
                                     <select-modal tools ng-model="character.background.selectedTools" placeholder="Select your Tool(s)"
-                                                  data="availableTools" click="openToolDialog('background')" name="character.background.selectedTools"
-                                                  multiple max="character.background.numToolChoices" filter="filterTools: character.background.tool_choices:character.tools" select></select-modal>
+                                                  data="availableTools" click="openToolDialog('background', character.classObj.selectedTools)" name="character.background.selectedTools"
+                                                  tool-choices="character.background.tool_choices" character="character"
+                                                  multiple max="character.background.numToolChoices"></select-modal>
                                 </div>
                             </div>
                             <div class="form-group" ng-show="character.classObj.tool_choices">
-                                <label class="col-sm-4 control-label">Class Tool Proficiency:</label>
+                                <label class="col-sm-4 control-label">{{character.classObj.toolName}}:</label>
                                 <div class="col-sm-8">
                                     <select-modal tools ng-model="character.classObj.selectedTools" placeholder="Select your Tool(s)"
-                                                  data="availableTools" click="openToolDialog('classObj')" name="character.classObj.selectedTools"
-                                                  multiple max="character.classObj.numToolChoices" filter="filterTools: character.classObj.tool_choices:character.tools" select></select-modal>
+                                                  data="availableTools" click="openToolDialog('classObj', character.background.selectedTools)" name="character.classObj.selectedTools"
+                                                  tool-choices="character.classObj.tool_choices" character="character"
+                                                  multiple max="character.classObj.numToolChoices"></select-modal>
                                 </div>
                             </div>
                             <div class="form-group" ng-show="character.numLanguages > 0">
@@ -289,20 +295,19 @@
                                     <select-modal languages="character.numLanguages" ng-model="character.selectedLanguages"
                                                   placeholder="Select your Language(s)" data="availableLanguages"
                                                   click="openLanguageDialog()" name="character.selectedLanguages"
-                                                  filter="filterLanguages: character.raceObj.languages" multiple
-                                                  max="select2Languages" select></select-modal>
+                                                  multiple max="select2Languages" bonus-languages="character.classObj.bonusLanguages"></select-modal>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Armor Proficiencies:</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static"><span ng-if="!character.armor">None</span>{{character.armor | joinBy}}</p>
+                                    <p class="form-control-static"><span ng-if="!character.armor.length">None</span>{{character.armor | joinBy}}</p>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Weapon Proficiencies:</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static"><span ng-if="!character.weapons">None</span>{{character.weapons | joinBy}}</p>
+                                    <p class="form-control-static"><span ng-if="!character.weapons.length">None</span>{{character.weapons | joinBy}}</p>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -314,7 +319,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">Languages:</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static">{{character.languages}}</p>
+                                    <p class="form-control-static">{{character.languages | joinBy}}</p>
                                 </div>
                             </div>
                         </fieldset>
@@ -370,8 +375,8 @@
                         <table class="table table-condensed">
                             <thead>
                             <tr>
-                                <th colspan="2">Level {{character.level}} {{character.raceObj.name}} {{character.classObj.name}}
-                                    <span ng-if="character.pseudo_class">({{character.pseudo_class}})</span>
+                                <th colspan="2">{{character.raceObj.name}} {{character.classObj.name}} {{character.level}}
+                                    <!--<span ng-if="character.pseudo_class">({{character.pseudo_class}})</span>-->
                                 </th>
                             </tr>
                             </thead>
@@ -402,11 +407,11 @@
                             </tr>
                             <tr>
                                 <th>Armor Proficiencies: </th>
-                                <td><span ng-if="!character.armor">None</span>{{character.armor | joinBy}}</td>
+                                <td><span ng-if="!character.armor.length">None</span>{{character.armor | joinBy}}</td>
                             </tr>
                             <tr>
                                 <th>Weapon Proficiencies: </th>
-                                <td><span ng-if="!character.weapons">None</span>{{character.weapons | joinBy}}</td>
+                                <td><span ng-if="!character.weapons.length">None</span>{{character.weapons | joinBy}}</td>
                             </tr>
                             <tr>
                                 <th>Tool Proficiencies: </th>
@@ -414,7 +419,7 @@
                             </tr>
                             <tr>
                                 <th>Languages</th>
-                                <td>{{character.languages}}</td>
+                                <td>{{character.languages | joinBy}}</td>
                             </tr>
                             <tr>
                                 <th>Passive Perception</th>
@@ -503,7 +508,7 @@
                             </div>
                         </dl>
 
-                        <div ng-if="character.classObj.spellcasting || character.raceObj.spellcasting">
+                        <div ng-if="character.classObj.spellcasting">
                             <h4>Spellcasting</h4>
                             <table class="table table-condensed">
                                 <tr>
@@ -544,7 +549,7 @@
                                 </tr>
                             </table>
                         </div>
-                        <div ng-if="character.bonus_spell_ability">
+                        <div ng-if="character.raceObj.spellcasting">
                             <h4>Bonus Spellcasting</h4>
                             <table class="table table-condensed">
                                 <tr>

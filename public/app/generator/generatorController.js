@@ -72,7 +72,7 @@ angular.module('app')
             opts.controller = DialogRaceController;
             opts.resolve = {
                 raceData: function() { return angular.copy($scope.raceData); },
-                raceId: function() { return parseInt($scope.character.raceObj.subrace_id) || undefined; }
+                raceId: function() { return $scope.character.raceObj.readable_id || undefined; }
             };
             general.openDialog(opts).result.then(function(raceObj) {
                 $scope.character.determineRace(raceObj);
@@ -85,7 +85,7 @@ angular.module('app')
             opts.controller = DialogBackgroundController;
             opts.resolve = {
                 backgroundData: function() { return angular.copy($scope.backgroundData); },
-                backgroundId: function() { return parseInt($scope.character.background.id) || undefined; }
+                backgroundId: function() { return $scope.character.background.readable_id || undefined; }
             };
             general.openDialog(opts).result.then(function(backgroundObj) {
                 $scope.character.determineBackground(backgroundObj);
@@ -98,7 +98,7 @@ angular.module('app')
             opts.controller = DialogClassController;
             opts.resolve = {
                 classData: function() { return angular.copy($scope.classData); },
-                classId: function() { return parseInt($scope.character.classObj.id) || undefined; }
+                classId: function() { return $scope.character.classObj.readable_id || undefined; }
             };
             general.openDialog(opts).result.then(function(classObj) {
                 $scope.character.determineClass(classObj);
@@ -111,7 +111,7 @@ angular.module('app')
             opts.controller = DialogSubclassController;
             opts.resolve = {
                 subclasses: function() { return angular.copy($scope.character.classObj.subclasses); },
-                subclassId: function() { return $scope.character.classObj.subclassObj ? parseInt($scope.character.classObj.subclassObj.id) : undefined; },
+                subclassId: function() { return $scope.character.classObj.subclassObj ? $scope.character.classObj.subclassObj.readable_id : undefined; },
                 subclassType: function() { return $scope.character.classObj.subclassName; }
             };
             general.openDialog(opts).result.then(function(subclassObj) {
@@ -173,7 +173,7 @@ angular.module('app')
 
         function validateStep1() {
             var char = $scope.character;
-            if (char.raceObj.name && char.background.name && char.classObj.name && char.ability.pointsLeft === 0) {
+            if (char.raceObj.name && char.background.name && char.classObj.name) {
                 return true;
             } else {
                 return false;
@@ -181,13 +181,14 @@ angular.module('app')
         }
 
         function validateStep2() {
-            var char = $scope.character;
+            return true;
+            /*var char = $scope.character;
             if (!char.raceObj.numSkillChoices && char.numSkillsLeft === 0 ||
                 (angular.isArray(char.bonusSkills) && char.numSkillsLeft + char.raceObj.numSkillChoices - char.bonusSkills.length === 0)) {
                 return true;
             } else {
                 return false;
-            }
+            }*/
         }
 
         function validateStep3() {
@@ -281,7 +282,7 @@ angular.module('app')
             $scope.searchText = '';
             $scope.description = 'Click a list item to view more information';
             $scope.features = [];
-            $scope.selectedIndex = angular.isNumber(raceId) ? _.findIndex($scope.items, 'subrace_id', raceId) : null;
+            $scope.selectedIndex = angular.isDefined(raceId) ? _.findIndex($scope.items, 'readable_id', raceId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.featureType = '';
             $scope.feature = {
@@ -345,7 +346,7 @@ angular.module('app')
             $scope.searchText = '';
             $scope.description = 'Click a list item to view more information';
             $scope.features = [];
-            $scope.selectedIndex = angular.isNumber(backgroundId) ? _.findIndex($scope.items, 'id', backgroundId) : null;
+            $scope.selectedIndex = angular.isDefined(backgroundId) ? _.findIndex($scope.items, 'readable_id', backgroundId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.featureType = '';
             $scope.feature = {
@@ -407,7 +408,7 @@ angular.module('app')
             $scope.featureType = '';
             $scope.features = [];
             $scope.tempClass = '';
-            $scope.selectedIndex = angular.isNumber(classId) ? _.findIndex($scope.items, 'id', classId) : null;
+            $scope.selectedIndex = angular.isDefined(classId) ? _.findIndex($scope.items, 'readable_id', classId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.feature = {
                 url: path + "/app/views/partials/dialog_class.html"
@@ -473,7 +474,7 @@ angular.module('app')
             $scope.description = 'Click a list item to view more information';
             $scope.featureType = '';
             $scope.features = [];
-            $scope.selectedIndex = angular.isNumber(subclassId) ? _.findIndex($scope.items, 'id', subclassId) : null;
+            $scope.selectedIndex = angular.isDefined(subclassId) ? _.findIndex($scope.items, 'readable_id', subclassId) : null;
             $scope.tempItem = angular.isNumber($scope.selectedIndex) ? $scope.items[$scope.selectedIndex] : '';
             $scope.feature = {
                 url: path + "/app/views/partials/dialog_class.html"

@@ -15,6 +15,11 @@ angular.module('app')
         ];
         var ARMOR_MAPPER = {};
         var WEAPON_MAPPER = {};
+        var TOOL_MAPPER = {
+            artisans_tools: 'Artisan\'s Tools',
+            gaming_set: 'Gaming Set',
+            musical_instrument: 'Musical Instrument'
+        };
 
         function Character() {
             this.name = null,
@@ -25,7 +30,7 @@ angular.module('app')
             //this.selectedSkills = [], // now in classObj
             this.selectedLanguages = [],
             //this.proficientSkills = '', // same as selectedSkills except in string form
-            this.languages = null;
+            this.languages = [];
             this.numLanguages = 0;
             this.numBonusLanguages = 0;
             //alignment = null;
@@ -423,6 +428,7 @@ angular.module('app')
                         } else if (prop === 'tool_choice') {    // e.g. Battle Master
                             bonusArray = featureBonus[prop].split(', ');    // e.g. [artisans_tools, 1]
                             that.classObj.tool_choices = bonusArray[0];
+                            that.classObj.toolName = TOOL_MAPPER[that.classObj.tool_choices];
                             that.classObj.numToolChoices = parseInt(bonusArray[1]);
                             that.classObj.selectedTools = [];    // reset; prevents user from selecting anything if reset (maximum limit exceeded)
                         } else if (prop === 'savingThrows') {
@@ -553,29 +559,9 @@ angular.module('app')
                              cantrips.splice(idx, 1);    // potentially dangerous
                              }
                              });*/
-                        } else if (prop === 'bonus_language') { // not ready yet
-                            if (!that.languages || that.languages.indexOf(featureBonus[prop]) === -1) {
-                                that.classObj.bonusLanguages.push(featureBonus[prop]);
-
-                                bonusArray = that.languages ? that.languages.split(', ') : [];
-                                bonusArray.push(featureBonus[prop]);
-                                bonusArray.sort();
-                                that.languages = bonusArray.join(', ');
-                            }
+                        } else if (prop === 'bonus_language') {
+                            that.classObj.bonusLanguages.push(featureBonus[prop]);
                         }
-                        /*else if (prop === 'languages') {    // taken care of by determineRace
-                         that.defaultLanguages = featureBonus[prop]; // string
-                         that.languages = featureBonus[prop].split(', ');
-                         if (that.selectedLanguages) {
-                         for (var i=0; i<that.selectedLanguages.length; i++) {
-                         if (that.selectedLanguages[i]) {
-                         that.languages.push(that.selectedLanguages[i]);
-                         }
-                         }
-                         }
-                         that.languages.sort();
-                         that.languages = that.languages.join(', ');
-                         }*/
                     });
                 }
             }
@@ -595,7 +581,7 @@ angular.module('app')
             that.speed = parseInt(this.raceObj.speed);
             that.size = this.raceObj.size_value;
             that.defaultLanguages = this.raceObj.languages || '';
-            that.languages = that.defaultLanguages;
+            that.languages = that.defaultLanguages.split(', ');
             that.selectedLanguages = [];    // reset
             that.selectedBonusAbilities = [];   // reset
             //this.handleLanguages();
@@ -654,6 +640,7 @@ angular.module('app')
             if (this.background.tool_choices) { // ex: artisans_tools, gaming_set, or musical_instrument
                 this.background.numToolChoices++;
                 this.background.selectedTools = [];    // reset
+                this.background.toolName = TOOL_MAPPER[this.background.tool_choices];  // ex: Artisan's Tools
             }
             this.handleTools();
             //this.numLanguages = this.background ? parseInt(this.background.languages) : 0;
@@ -677,6 +664,7 @@ angular.module('app')
                 that.classObj.numToolChoices = parseInt(that.classObj.tool_choices.split(', ')[1]);
                 that.classObj.tool_choices = that.classObj.tool_choices.split(', ')[0];
                 that.classObj.selectedTools = [];    // reset
+                that.classObj.toolName = TOOL_MAPPER[that.classObj.tool_choices];
             }
             that.handleArmor();
             that.handleWeapons();
@@ -756,10 +744,18 @@ angular.module('app')
                 });
             }
             that.classObj.charFeatures = angular.copy(that.classObj.classFeatures);
-            that.featureStats.clazz = features;
-            if (that.featureStats.subclass) {
+            /*if (that.featureStats.subclass) {
                 delete that.featureStats.subclass;
+            }*/
+            /*if (that.featureStats.features) {
+                delete that.featureStats.features;
+            }*/
+            for (var prop in that.featureStats) {   // delete any feature choice benefits and subclass benefits
+                if (that.featureStats.hasOwnProperty(prop) && prop !== 'race') {
+                    delete that.featureStats[prop];
+                }
             }
+            that.featureStats.clazz = features;
             that.handleFeatureBonuses();
             // needs to come after handleFeatureBonuses to account for racial bonus skills
             that.handleSkills();
@@ -853,6 +849,11 @@ angular.module('app')
                 });
 
                 that.classObj.charFeatures = that.classObj.classFeatures.concat(that.classObj.subclassObj.classFeatures);
+                for (var prop in that.featureStats) {
+                    if (that.featureStats.hasOwnProperty(prop) && prop !== 'race' && prop !== 'clazz') {
+                        delete that.featureStats[prop];
+                    }
+                }
                 that.featureStats.subclass = features;
                 that.handleFeatureBonuses();
             }
@@ -869,39 +870,6 @@ angular.module('app')
             });
             return tempArr;
         };
-        Character.prototype.addFeatureBenefits = function(featureObj, selectedFeatures) { // for feature choices that provide benefits
-            var benefit, prop = '', value = '';
-            if (angular.isArray(selectedFeatures)) {    // selectedFeatures is feature choice types (Fighting Style, Metamagic, etc.)
-                angular.forEach(selectedFeatures, function(featureChoices) {   // feature is the choices (Empowered Spell, Heightened Spell, etc.)
-                    if (angular.isArray(featureChoices)) {
-                        angular.forEach(featureChoices, function(feature) {
-                            //if (angular.isArray(feature.benefit)) {
-                            //benefit = feature.benefit[0];   // assume that feature choice has only one benefit
-                            benefit = feature.description;
-                            if (benefit.benefit_stat) {
-                                if (!prop) {
-                                    prop += benefit.benefit_stat;
-                                    value += benefit.benefit_value;
-                                } else {
-                                    prop += ' : ' + benefit.benefit_stat;
-                                    value += ' : ' + benefit.benefit_value;
-                                }
-                                /*if (!featureObj[benefit.benefit_stat]) {
-                                 featureObj[benefit.benefit_stat] = benefit.benefit_value;
-                                 } else {    // concatentate with ' : '
-                                 featureObj[benefit.benefit_stat + ' : ' + benefit.benefit_stat] = benefit.benefit_value + ' : ' + benefit.benefit_value;
-                                 }*/
-                            }
-                            //}
-                        });
-                    }
-                });
-                if (prop) {
-                    featureObj[prop] = value;   // assumes feature choices don't have unique benefit properties
-                }
-            }
-            return featureObj;
-        };
         Character.prototype.determineFeatures = function(classFeatures, classObj, index) {
             var that = this,
                 featureChoiceName = '',
@@ -909,6 +877,7 @@ angular.module('app')
                 selectedFeaturesArray = [],
                 featureObj = {};
 
+            that.featureStats.features = that.featureStats.features || {};
             if (angular.isArray(classFeatures)) {
                 angular.forEach(classFeatures, function(selectedFeature) {
                     if (selectedFeature.level <= that.level) {
@@ -921,17 +890,23 @@ angular.module('app')
                             angular.forEach(selectedFeature.benefits, function(benefit, idx) {
                                 if (benefit.level <= that.level) {
                                     featureDesc = selectedFeature.benefits[idx].benefit_desc;
+                                    delete that.featureStats['feature-' + selectedFeature.parent_id];   // so that changing feature won't persist benefits
+                                    if (selectedFeature.benefits[idx].benefit_stat) {
+                                        that.featureStats['feature-' + selectedFeature.parent_id] = {};
+                                        that.featureStats['feature-' + selectedFeature.parent_id][selectedFeature.benefits[idx].benefit_stat] = selectedFeature.benefits[idx].benefit_value;
+                                    }
                                 }
                             });
                         } else {
                             featureDesc = selectedFeature.description;
                         }
                         featureObj = {
-                            id: selectedFeature.benefits[0].id,
+                            id: selectedFeature.benefits[0].id, // assume that feature choices have only one benefit
+                            parentId: selectedFeature.parent_id,
                             name: featureChoiceName,
                             benefit: featureDesc
                         };
-                        // assume that feature choices have only one benefit
+                        classObj.classFeatures = _.reject(classObj.classFeatures, 'parentId', featureObj.parentId);
                         classObj.classFeatures.push(featureObj);
 
                         selectedFeaturesArray.push({id: selectedFeature.id, name: selectedFeature.name});
@@ -942,10 +917,9 @@ angular.module('app')
             }
 
             //that.featureStats.features = that.featureStats.features || {};
-            that.featureStats.features = that.featureStats.features || {};
 
             // warning: might overwrite existing feature benefits
-            that.featureStats.features = that.addFeatureBenefits(that.featureStats.features, that.classObj.selectedFeatureChoices);
+            //that.featureStats.features = that.addFeatureBenefits(that.featureStats.features, that.classObj.selectedFeatureChoices);
             that.handleFeatureBonuses();
 
             if (that.classObj.subclassObj) {

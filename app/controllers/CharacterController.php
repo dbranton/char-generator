@@ -67,6 +67,7 @@ class CharacterController extends \BaseController {
                     )
                     ->join('features_table', 'features_table.id', '=', 'cf.feature_id')
                     ->whereIn('cf.id', explode(', ', $character['class_feature_ids']))
+                    ->where('cf.benefit_desc', '!=', '')
                     ->orderBy('name')
                     ->get();
                 // replace any hrefs in benefit_desc with spell-info-dialog attribute to be used by angular
