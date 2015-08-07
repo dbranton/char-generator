@@ -240,7 +240,9 @@ angular.module('app')
                 }
                 if (angular.isArray($scope.character.classObj.spellcasting.bonusSpells)) {
                     angular.forEach($scope.character.classObj.spellcasting.bonusSpells, function(spellObj) {
-                        selectedSpells.push(spellObj.selectedSpell[0]);  // assumes only one bonus spell
+                        if (spellObj.selectedSpell[0]) {
+                            selectedSpells.push(spellObj.selectedSpell[0]);  // assumes only one bonus spell
+                        }
                     });
                 }
                 _.sortBy(selectedSpells, 'level');
@@ -261,6 +263,10 @@ angular.module('app')
                 }
             }
         });
+
+        $scope.hasArmorProf = function() {
+            return _.findIndex($scope.character.armor, 'readable_id', 'light_armor') !== -1;
+        };
 
         function DialogNewCharController($scope, $modalInstance, level) {
             $scope.level = level;

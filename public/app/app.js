@@ -1,6 +1,6 @@
 angular.module("app",['ngResource','ngSanitize', 'ngRoute', 'ui.bootstrap', 'ui.router', 'ui.select',
         'ngTable', 'angular-loading-bar', 'mobile-angular-ui.core.fastclick', 'mobile-angular-ui.gestures',
-        'mgo-angular-wizard', 'appConfig', 'oc.lazyLoad'])
+        'mgo-angular-wizard', 'appConfig', 'oc.lazyLoad', 'ngTextTruncate'])
 
 	.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', 'configObjProvider',
             function($stateProvider, $urlRouterProvider, $locationProvider, configObjProvider){

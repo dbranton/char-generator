@@ -195,7 +195,7 @@ angular
 
                 scope.openLanguageDialog = function() {
                     scope.availableLanguages = _.filter(LANGUAGE_LIST, function(language) {
-                        var defaultLanguages = scope.$eval(attrs.filter.split(' ')[1]); // ex: "filter: character.raceObj.languages"
+                        var defaultLanguages = scope.character.raceObj.languages; // ex: "filter: character.raceObj.languages"
                         return defaultLanguages.indexOf(language.name) === -1;
                     });
                     var opts = {
@@ -523,7 +523,7 @@ angular
                 if (selectedSpells) {
                     angular.forEach(arr, function(spell) {
                         spellIdx = _.findIndex(selectedSpells, 'readable_id', spell.readable_id);
-                        if (angular.isObject(spell) && spellIdx !== -1) {
+                        if (angular.isObject(spell) && spellIdx !== -1 && !angular.isArray(spell)) {
                             spell.active = true;
                             if (selectedSpells[spellIdx].disabled) {
                                 spell.disabled = true;
@@ -596,6 +596,7 @@ angular
             var placeholder = attrs.placeholder || 'spell(s)';
             return '<div>' +
                 '<a href="" class="btn btn-block" ng-click="openSpellDialog()" ng-class="' + attrs.ngModel + '.length ? \'btn-primary\' : \'btn-default\'">' +
+                    '<span ng-if="!' + attrs.ngModel + '">THIS IS A TEST {{' + attrs.ngModel + '}}</span>' +
                     '<span ng-if="' + attrs.ngModel + '.length === 0">Select your ' + placeholder + '</span>' +
                     '<span ng-if="' + attrs.ngModel + '.length > 1">{{' + attrs.ngModel + '.length}} ' + placeholder + ' selected</span>' +
                     '<span ng-if="' + attrs.ngModel + '.length == 1">{{' + attrs.ngModel + '[0].name}}</span>' +
@@ -612,7 +613,8 @@ angular
                 select2Spellcasting: '=',
                 list: '=',
                 otherSpell: '=',
-                character: '='
+                character: '=',
+                bonusSpell: '='
             },
             link: function(scope, element, attrs, ngModel) {
                 var template = returnTemplate(attrs);
@@ -799,6 +801,164 @@ angular
                         });
                         scope.character.featureStats.feats = features;
                         scope.character.handleFeatureBonuses();
+                    });
+                };
+            }
+        };
+    })
+    .directive('armorEquip', function(general, charGenFactory) {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                var ARMOR_MAPPER = {};
+                charGenFactory.Armor().get({}, function(response) {
+                    ARMOR_MAPPER = response;
+                });
+                function DialogArmorController($scope, $modalInstance, armorData, armorId, title) {
+                    $scope.title = title;
+                    $scope.items = armorData;
+                    $scope.tempItem = null;
+                    $scope.disabled = !$scope.tempItem;
+
+                    $scope.selectArmor = function(selectobj, index) {
+                        $scope.tempItem = angular.copy(selectobj); // used in UI
+                        $scope.selectedIndex = index;
+                        $scope.disabled = false;
+                    };
+
+                    $scope.done = function() {
+                        $modalInstance.close($scope.tempItem);
+                    };
+
+                    $scope.close = function(){
+                        $modalInstance.dismiss('cancel');
+                    };
+                }
+                scope.$watch('character.armor', function(newVal, oldVal) {
+                    if (newVal) {
+                        ngModel.$setViewValue(null);
+                    }
+                });
+                scope.openArmorDialog = function() {
+                    var armorData = ARMOR_MAPPER.lightArmor;
+                    if (_.findIndex(scope.character.armor, 'readable_id', 'medium_armor') !== -1) {
+                        armorData = armorData.concat(ARMOR_MAPPER.mediumArmor);
+                    }
+                    if (_.findIndex(scope.character.armor, 'readable_id', 'heavy_armor') !== -1) {
+                        armorData = armorData.concat(ARMOR_MAPPER.heavyArmor);
+                    }
+                    var opts = {
+                        templateUrl: '/app/views/dialog_armor.html',
+                        controller: DialogArmorController,
+                        resolve: {
+                            armorData: function() {
+                                return armorData;
+                            },
+                            armorId: function() {
+                                return ngModel.$viewValue ? ngModel.$viewValue.id : null;
+                            },
+                            title: function() { return 'Select Armor'; }
+                        }
+                    };
+                    general.openDialog(opts).result.then(function(selectedArmor) {
+                        ngModel.$setViewValue(selectedArmor);
+                        scope.character.calculateArmorClass();
+                    });
+                };
+            }
+        };
+    })
+    .directive('weaponEquip', function(general, charGenFactory) {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                var WEAPON_MAPPER = {};
+                charGenFactory.Weapons().get({}, function(response) {
+                    WEAPON_MAPPER = response;
+                });
+                function DialogWeaponController($scope, $modalInstance, weaponData, weaponId, title) {
+                    $scope.title = title;
+                    $scope.items = weaponData;
+                    $scope.tempItem = null;
+                    $scope.disabled = !$scope.tempItem;
+
+                    $scope.selectWeapon = function(selectobj, index) {
+                        $scope.tempItem = angular.copy(selectobj); // used in UI
+                        $scope.selectedIndex = index;
+                        $scope.disabled = false;
+                    };
+
+                    $scope.done = function() {
+                        $modalInstance.close($scope.tempItem);
+                    };
+
+                    $scope.close = function(){
+                        $modalInstance.dismiss('cancel');
+                    };
+                }
+                scope.$watch('character.armor', function(newVal, oldVal) {
+                    if (newVal) {
+                        ngModel.$setViewValue(null);
+                    }
+                });
+                scope.openWeaponDialog = function() {
+                    var weaponData = [], weaponProf = scope.character.weapons;
+                    angular.forEach(WEAPON_MAPPER.simpleWeapons, function(weapon) {
+                        if (_.findIndex(weaponProf, 'readable_id', 'simple_weapon') !== -1 ||
+                                _.findIndex(weaponProf, 'readable_id', weapon.readable_id) !== -1) {
+                            weaponData.push(weapon);
+                        }
+                    });
+                    angular.forEach(WEAPON_MAPPER.martialWeapons, function(weapon) {
+                        if (_.findIndex(weaponProf, 'readable_id', 'martial_weapon') !== -1 ||
+                            _.findIndex(weaponProf, 'readable_id', weapon.readable_id) !== -1) {
+                            weaponData.push(weapon);
+                        }
+                    });
+                    var opts = {
+                        templateUrl: '/app/views/dialog_weapon.html',
+                        controller: DialogWeaponController,
+                        resolve: {
+                            weaponData: function() {
+                                return weaponData;
+                            },
+                            weaponId: function() {
+                                return ngModel.$viewValue ? ngModel.$viewValue.id : null;
+                            },
+                            title: function() { return 'Select Weapon'; }
+                        }
+                    };
+                    general.openDialog(opts).result.then(function(selectedWeapon) {
+                        var properties = selectedWeapon.properties.split(', '),
+                            modifier = scope.character.ability.str.mod,
+                            rangeDesc = '', range = '', reach = 5, meleeRanged = '';
+                        if (selectedWeapon.style === 'melee') {
+                            meleeRanged = 'Melee Weapon Attack';
+                            rangeDesc = 'reach ';
+                        } else if (selectedWeapon.style === 'ranged') {
+                            meleeRanged = 'Ranged Weapon Attack';
+                            modifier = scope.character.ability.dex.mod;
+                        }
+                        angular.forEach(properties, function(property) {
+                            if (property === 'Finesse' &&
+                                    scope.character.ability.str.mod < scope.character.ability.dex.mod) {
+                                modifier = scope.character.ability.dex.mod;
+                            } else if (property === 'Reach') {
+                                reach += 5;
+                            } else if (property.indexOf('range') !== -1 && selectedWeapon.style === 'melee') {
+                                meleeRanged = 'Melee or Ranged Weapon Attack';
+                                reach += ' ft. or ' + property.substring(property.indexOf('(')+1, property.indexOf(')'));
+                            } else if (property.indexOf('range') !== -1 && selectedWeapon.style === 'ranged') {
+                                reach = property.substring(property.indexOf('(')+1, property.indexOf(')'));
+                            }
+                        })
+                        selectedWeapon.meleeRanged = meleeRanged;
+                        selectedWeapon.attack = scope.character.profBonus + modifier;
+                        selectedWeapon.damage = selectedWeapon.damage_medium + ' + ' + modifier;
+                        selectedWeapon.reach = rangeDesc + reach + ' ft.';
+                        ngModel.$setViewValue(selectedWeapon);
                     });
                 };
             }

@@ -1,0 +1,50 @@
+<div class="modal-header">
+    <h4 class="modal-title">Select Armor</h4>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Armor</th>
+                        <th>Cost</th>
+                        <th>Armor Class (AC)</th>
+                        <th>Strength</th>
+                        <th>Stealth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="item in items" ng-click="selectArmor(item, $index)" ng-class="{true:'active', false:''}[$index==selectedIndex]">
+                        <td>{{item.name}}</td>
+                        <td>{{item.cost}}</td>
+                        <td>{{item.armor_bonus}}
+                            <span ng-if="item.armor_type == 'light_armor' || item.armor_type == 'medium_armor'"> + Dex modifier</span>
+                            <span ng-if="item.armor_type == 'medium_armor'"> (max 2)</span>
+                        </td>
+                        <td>
+                            <span ng-if="item.strength">
+                                Str {{item.strength}}
+                            </span>
+                            <span ng-if="!item.strength">
+                                &mdash;
+                            </span>
+                        </td>
+                        <td>
+                            <span ng-if="item.armor_check_penalty">
+                                Disadvantage
+                            </span>
+                            <span ng-if="!item.armor_check_penalty">
+                                &mdash;
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>	<!-- end span -->
+    </div>
+</div>
+<div class="modal-footer">
+    <button ng-click="close()" class="btn btn-default">Cancel</button>
+    <button ng-click="done()" ng-disabled="!tempItem" class="btn btn-primary">Done</button>
+</div>

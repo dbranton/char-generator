@@ -78,7 +78,6 @@
 
 <script src="<?php echo $path; ?>/assets/script.min.js"></script>
 <script src="<?php echo $path; ?>/app/app.js"></script>
-
 <script src="<?php echo $path; ?>/app/directives.js"></script>
 <script src="<?php echo $path; ?>/app/filters.js"></script>
 <script src="<?php echo $path; ?>/app/services/generalServices.js"></script>

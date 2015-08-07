@@ -54,7 +54,6 @@ angular.module('app')
                     }
                 });
 
-                $scope.description = 'Click a list item to view more information';
                 $scope.max = parseInt(max);
                 $scope.disabled = $scope.max  - $scope.tempItems.length > 0;
                 $scope.featureType = featureType;

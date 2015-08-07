@@ -124,7 +124,7 @@
     </div>
     <div ng-if="character.backstory">
         <h4>Backstory</h4>
-        <div compile="character.backstory"></div>
+        <div ng-text-truncate="character.backstory" ng-tt-words-threshold="50"></div>
     </div>
     <div ng-if="character.ideal">
         <h4>Ideal</h4>
@@ -134,11 +134,11 @@
 <div class="col-sm-6">
     <div ng-if="character.traits">
         <h4>Racial Traits</h4>
-        <p ng-repeat="trait in character.traits"><b>{{trait.name}}</b>: <span compile="trait.benefit_desc"></span></p>
+        <p ng-repeat="trait in character.traits"><b>{{trait.name}}</b>: <span ng-text-truncate="trait.benefit_desc" ng-tt-words-threshold="30"></span></p>
     </div>
     <div ng-if="character.features">
         <h4>Class Features</h4>
-        <p ng-repeat="feature in character.features"><b>{{feature.name}}</b>: <span compile="feature.benefit_desc"></span></p>
+        <p ng-repeat="feature in character.features"><b>{{feature.name}}</b>: <span ng-text-truncate="feature.benefit_desc" ng-tt-words-threshold="30"></span></p>
     </div>
     <div ng-if="character.feats">
         <h4>Feats</h4>
@@ -153,16 +153,16 @@
         <h4>Spellcasting</h4>
         <table class="table table-condensed">
             <tr>
-                <th>Spellcasting Ability: </th>
-                <td>{{character.spell_ability | ability}}</td>
-            </tr>
-            <tr>
                 <th>Spell Save DC: </th>
                 <td>{{character.spell_save_dc}}</td>
             </tr>
             <tr>
                 <th>Spell Attack Bonus: </th>
                 <td>{{character.spell_attk_bonus | addPlus}}</td>
+            </tr>
+            <tr>
+                <th>Spell Slots: </th>
+                <td>{{character.spell_slots}}</td>
             </tr>
             <tr ng-if="character.cantrips">
                 <th>Cantrips: </th>
@@ -193,10 +193,6 @@
     <div ng-if="character.bonus_spell_ability">
         <h4>Bonus Spellcasting</h4>
         <table class="table table-condensed">
-            <tr>
-                <th>Spellcasting Ability: </th>
-                <td>{{character.bonus_spell_ability | ability}}</td>
-            </tr>
             <tr>
                 <th>Spell Save DC: </th>
                 <td>{{character.bonus_spell_save_dc}}</td>

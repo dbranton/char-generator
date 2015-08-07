@@ -84,3 +84,18 @@ input.ng-invalid, .ng-dirty input.ng-invalid {
 .loading {
     padding: 14em 0;
 }
+
+.table>thead>tr>td.active, .table>tbody>tr>td.active, .table>tfoot>tr>td.active,
+.table>thead>tr>th.active, .table>tbody>tr>th.active, .table>tfoot>tr>th.active,
+.table>thead>tr.active>td, .table>tbody>tr.active>td, .table>tfoot>tr.active>td,
+.table>thead>tr.active>th, .table>tbody>tr.active>th, .table>tfoot>tr.active>th,
+.table.table-hover>tbody>tr.active:hover {
+    z-index: 2;
+    color: #fff;
+    background-color: #d9230f !important;
+    border-color: #d9230f;
+}
+
+.control-label {
+    line-height: inherit;
+}

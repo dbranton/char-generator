@@ -123,6 +123,11 @@ module.exports = function(grunt) {
 					{ expand: true, cwd: '<%= bowerDir %>/ng-storage/src', src: ['angular-local-storage.js'], dest: '<%= assetsDir %>/js' }
 				]
 			},
+			ngtexttruncate: {
+				files: [
+					{ expand: true, cwd: '<%= bowerDir %>/ng-text-truncate', src: ['ng-text-truncate.js'], dest: '<%= assetsDir %>/js' }
+				]
+			},
 			ngtranslate: {
 				files: [
 					{ expand: true, cwd: '<%= bowerDir %>/ng-translate', src: ['angular-translate.js'], dest: '<%= assetsDir %>/js' }
@@ -237,6 +242,7 @@ module.exports = function(grunt) {
 					'<%= assetsDir %>/js/angular-local-storage.js',
 					'<%= assetsDir %>/js/angular-translate.js',
 					'<%= assetsDir %>/js/angular-file-upload.js',
+					'<%= assetsDir %>/js/ng-text-truncate.js',
 					'<%= assetsDir %>/js/ng-infinite-scroll.js',
 					'<%= assetsDir %>/js/ui-bootstrap-tpls.js',
 					'<%= assetsDir %>/js/angular-ui-router.js',

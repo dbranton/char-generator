@@ -131,7 +131,6 @@ class CharacterController extends \BaseController {
             //'armor_prof' => $character['armor'],
             //'weapon_prof' => $character['weapons'],
             'tool_prof' => $character['tools'],
-            'languages' => $character['languages'],
             'strength' => $character['ability']['str']['adjScore'],
             'dexterity' => $character['ability']['dex']['adjScore'],
             'constitution' => $character['ability']['con']['adjScore'],
@@ -173,6 +172,7 @@ class CharacterController extends \BaseController {
             'survival' => $character['skills'][17]['val'],
             'date_added' => date("m/d/Y")
         );
+        $data['languages'] = implode(', ', $character['languages']);
         $armorProf = array_map(function($val) {
             return $val['name'];
         }, $character['armor']);    // convert array of objects to array of strings
@@ -201,6 +201,7 @@ class CharacterController extends \BaseController {
             $data['pseudo_class'] = $character['classObj']['subclassObj']['name'];
         }
         if (isset($character['classObj']['spellcasting'])) {
+            $data['spell_slots'] = $character['classObj']['spellcasting']['spellSlots'];
             $data['spell_ability'] = $character['classObj']['spellcasting']['spellAbility'];
             $data['spell_save_dc'] = $character['classObj']['spellcasting']['spellSaveDC'];
             $data['spell_attk_bonus'] = $character['classObj']['spellcasting']['spellAttkBonus'];

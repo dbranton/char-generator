@@ -81,6 +81,7 @@
                         </fieldset>
                     </div>
                 </div> <!-- .row -->
+
             </wz-step>
             <wz-step wz-title="Skills"> <!-- canenter="enterValidation"-->
                 <div class="row">
@@ -208,7 +209,7 @@
                                 </div>
                             </div>
                             <div class="form-group" ng-show="character.classObj.spellcasting.numSpellsKnown">
-                                <label class="col-sm-4 control-label">Spells:</label>
+                                <label class="col-sm-4 control-label">Spells Known:</label>
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="character.classObj.selectedSpells" list="classSpells"
                                                   select2-spellcasting="character.classObj.spellcasting"
@@ -217,7 +218,7 @@
                                 </div>
                             </div>
                             <div class="form-group" ng-show="character.classObj.spellcasting.bonus.numSpellsKnown">
-                                <label class="col-sm-4 control-label">Bonus Spells:</label>
+                                <label class="col-sm-4 control-label">Bonus Spells Known:</label>
                                 <div class="col-sm-8">
                                     <spell-dialog ng-model="character.classObj.bonusSelectedSpells" list="classBonusSpells"
                                                   select2-spellcasting="character.classObj.spellcasting.bonus"
@@ -225,13 +226,13 @@
                                                   character="character"></spell-dialog>
                                 </div>
                             </div>
-                            <div class="form-group" ng-repeat="spellObj in character.classObj.spellcasting.bonusSpells">
-                                <label class="col-sm-4 control-label">Level {{spellObj.spellLevel}} Spell:</label>
+                            <div class="form-group" ng-repeat="bonusSpell in character.classObj.spellcasting.bonusSpells">
+                                <label class="col-sm-4 control-label">Level {{bonusSpell.spellLevel}} Spell:</label>
                                 <div class="col-sm-8">
-                                    <spell-dialog ng-model="spellObj.selectedSpell" list="classBonusSpells"
-                                                  select2-spellcasting="spellObj"
+                                    <spell-dialog ng-model="bonusSpell.selectedSpell" list="classBonusSpells"
+                                                  select2-spellcasting="bonusSpell"
                                                   other-spell="character.classObj.selectedSpells"
-                                                  character="character"></spell-dialog>
+                                                  character="character" bonus-spell="bonusSpell"></spell-dialog>
                                 </div>
                             </div>
                         </fieldset>
@@ -239,31 +240,51 @@
                             <div class="form-group" ng-if="character.raceObj.selectedFeature">
                                 <label class="col-sm-4 control-label">{{character.raceObj.selectedFeature.parent_name}} ({{character.raceObj.selectedFeature.name}})</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static" compile="character.raceObj.selectedFeature.benefit_desc"></p>
+                                    <p class="form-control-static" ng-text-truncate="character.raceObj.selectedFeature.benefit_desc" ng-tt-words-threshold="20"></p>
                                 </div>
                             </div>
                             <div class="form-group" ng-repeat="racialTrait in character.raceObj.racialTraits">
                                 <label class="col-sm-4 control-label">{{racialTrait.name}}</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static" compile="racialTrait.benefit"></p>
+                                    <p class="form-control-static" ng-text-truncate="racialTrait.benefit" ng-tt-words-threshold="20"></p>
                                 </div>
                             </div>
                             <div class="form-group" ng-repeat="classFeature in character.classObj.charFeatures">
                                 <label class="col-sm-4 control-label">{{classFeature.name}}</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static" compile="classFeature.benefit"></p>
+                                    <p class="form-control-static" ng-text-truncate="classFeature.benefit" ng-tt-words-threshold="20"></p>
                                 </div>
                             </div>
                             <div class="form-group" ng-repeat="feat in character.feats">
                                 <label class="col-sm-4 control-label">{{feat.name}}</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static" compile="feat.benefit_desc"></p>
+                                    <p class="form-control-static" ng-text-truncate="feat.benefit_desc" ng-tt-words-threshold="20"></p>
+                                </div>
+                            </div>
+                            <div ng-if="character.classObj.spellcasting">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Spell Save DC: </label>
+                                    <div class="col-sm-8">
+                                        <p class="form-control-static">{{character.classObj.spellcasting.spellSaveDC}}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Spell Attack Bonus: </label>
+                                    <div class="col-sm-8">
+                                        <p class="form-control-static">{{character.classObj.spellcasting.spellAttkBonus | addPlus}}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Spell Slots: </label>
+                                    <div class="col-sm-8">
+                                        <p class="form-control-static">{{character.classObj.spellcasting.spellSlots}}</p>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">{{character.background.trait_name}}</label>
                                 <div class="col-sm-8">
-                                    <p class="form-control-static" compile="character.background.trait_desc"></p>
+                                    <p class="form-control-static" ng-text-truncate="character.background.trait_desc" ng-tt-words-threshold="20"></p>
                                 </div>
                             </div>
                         </fieldset>
@@ -488,33 +509,29 @@
                         <dl>
                             <div ng-if="character.raceObj.selectedFeature">
                                 <dt>{{character.raceObj.selectedFeature.parent_name}} ({{character.raceObj.selectedFeature.name}})</dt>
-                                <dd compile="character.raceObj.selectedFeature.benefit_desc"></dd>
+                                <dd ng-text-truncate="character.raceObj.selectedFeature.benefit_desc" ng-tt-words-threshold="30"></dd>
                             </div>
                             <div ng-repeat="racialTrait in character.raceObj.racialTraits">
                                 <dt>{{racialTrait.name}}</dt>
-                                <dd compile="racialTrait.benefit"></dd>
+                                <dd ng-text-truncate="racialTrait.benefit" ng-tt-words-threshold="30"></dd>
                             </div>
                             <div ng-repeat="classFeature in character.classObj.charFeatures">
                                 <dt>{{classFeature.name}}</dt>
-                                <dd compile="classFeature.benefit"></dd>
+                                <dd ng-text-truncate="classFeature.benefit" ng-tt-words-threshold="30"></dd>
                             </div>
                             <div ng-repeat="feat in character.feats">
                                 <dt>{{feat.name}}</dt>
-                                <dd compile="feat.benefit_desc"></dd>
+                                <dd ng-text-truncate="feat.benefit_desc" ng-tt-words-threshold="30"></dd>
                             </div>
                             <div>
                                 <dt>{{character.background.trait_name}}</dt>
-                                <dd>{{character.background.trait_desc}}</dd>
+                                <dd ng-text-truncate="character.background.trait_desc" ng-tt-words-threshold="30"></dd>
                             </div>
                         </dl>
 
                         <div ng-if="character.classObj.spellcasting">
                             <h4>Spellcasting</h4>
                             <table class="table table-condensed">
-                                <tr>
-                                    <th>Spellcasting Ability: </th>
-                                    <td>{{character.classObj.spellcasting.spellAbility | ability}}</td>
-                                </tr>
                                 <tr>
                                     <th>Spell Save DC: </th>
                                     <td>{{character.classObj.spellcasting.spellSaveDC}}</td>
@@ -523,8 +540,12 @@
                                     <th>Spell Attack Bonus: </th>
                                     <td>{{character.classObj.spellcasting.spellAttkBonus | addPlus}}</td>
                                 </tr>
+                                <tr>
+                                    <th>Spell Slots: </th>
+                                    <td>{{character.classObj.spellcasting.spellSlots}}</td>
+                                </tr>
                                 <tr ng-if="character.classObj.selectedCantrips">
-                                    <th>Cantrips: </th>
+                                    <th>Cantrips (at-will): </th>
                                     <td>
                                         <ul class="list-inline">
                                             <li ng-repeat="cantrip in character.classObj.selectedCantrips">
@@ -552,10 +573,10 @@
                         <div ng-if="character.raceObj.spellcasting">
                             <h4>Bonus Spellcasting</h4>
                             <table class="table table-condensed">
-                                <tr>
+                                <!--<tr>
                                     <th>Spellcasting Ability: </th>
                                     <td>{{character.raceObj.spellcasting.spellAbility | ability}}</td>
-                                </tr>
+                                </tr>-->
                                 <tr>
                                     <th>Spell Save DC: </th>
                                     <td>{{character.raceObj.spellcasting.spellSaveDC}}</td>
@@ -565,7 +586,7 @@
                                     <td>{{character.raceObj.spellcasting.spellAttkBonus | addPlus}}</td>
                                 </tr>
                                 <tr>
-                                    <th>Cantrips: </th>
+                                    <th>Cantrips (at-will): </th>
                                     <td>
                                         <ul class="list-inline">
                                             <li ng-repeat="cantrip in character.raceObj.cantrip">

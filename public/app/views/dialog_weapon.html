@@ -1,0 +1,38 @@
+<div class="modal-header">
+    <h4 class="modal-title">Select Weapon</h4>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Cost</th>
+                    <th>Damage</th>
+                    <th>Properties</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in items" ng-click="selectWeapon(item, $index)" ng-class="{true:'active', false:''}[$index==selectedIndex]">
+                    <td>{{item.name}}</td>
+                    <td>{{item.cost}}</td>
+                    <td>{{item.damage_medium}} {{item.type}}</td>
+                    <td>
+                        <span ng-if="item.properties">
+                            {{item.properties}}
+                        </span>
+                        <span ng-if="!item.properties">
+                            &mdash;
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>	<!-- end span -->
+    </div>
+</div>
+<div class="modal-footer">
+    <button ng-click="close()" class="btn btn-default">Cancel</button>
+    <button ng-click="done()" ng-disabled="!tempItem" class="btn btn-primary">Done</button>
+</div>

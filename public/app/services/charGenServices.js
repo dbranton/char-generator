@@ -52,6 +52,11 @@ angular.module('app')
             this.selectedBonusAbilities = [];
             this.feats = [];
             this.backstory = '';
+            this.gold = 0;
+            this.armorEquip = null;
+            this.weaponEquip1 = null;
+            this.weaponEquip2 = null;
+            this.weaponEquip3 = null;
         }
         Character.prototype.updateSkillProficiency = function(skillName, isAdded, disabled) {   // if isAdded is false, then remove skill
             var that = this;
@@ -223,6 +228,24 @@ angular.module('app')
             });
             this.proficientSkills = profSkillsArray.join(', ');
         };
+        Character.prototype.calculateArmorClass = function() {
+            var baseArmor = 10, maxDexBonus = 10, dexMod = 0;
+            if (this.armorEquip) {
+                baseArmor = parseInt(this.armorEquip.armor_bonus);
+                if (this.armorEquip.max_dex_bonus) {
+                    maxDexBonus = parseInt(this.armorEquip.max_dex_bonus);
+                }
+            }
+            if (this.ability.dex.mod < maxDexBonus) {
+                dexMod = this.ability.dex.mod;
+            } else {
+                dexMod = maxDexBonus;
+            }
+            this.armorClass = baseArmor + dexMod;
+            if (this.classObj.bonusArmorAbility) {
+                this.armorClass += this.ability[this.classObj.bonusArmorAbility].mod;
+            }
+        };
         Character.prototype.calculateSavingThrows = function(ability) {
             var bonus = 0;
             if (this.savingThrows && this.savingThrows.indexOf(ability) !== -1) {
@@ -257,14 +280,12 @@ angular.module('app')
             // handle dexterity-specific stats
             if (!ability || ability === 'dex') {
                 this.initiative = this.handleInitiative();
-                this.armorClass = 10 + this.ability.dex.mod;
+                this.calculateArmorClass();
             }
             if (!ability || ability === 'con') {
                 this.handleHitPoints();
             }
-            if (this.classObj.bonusArmorAbility) {
-                this.armorClass = 10 + this.ability.dex.mod + this.ability[this.classObj.bonusArmorAbility].mod;
-            }
+            this.calculateArmorClass();
 
             function returnModifier(score) {
                 return Math.floor((score - 10) / 2);
@@ -455,6 +476,7 @@ angular.module('app')
                             }
                         } else if (prop === 'spells_known') {   // ex: sorcerer, 1, 2: 1 is max spell level and 2 is number of spells known
                             bonusArray = featureBonus[prop].split(', ');
+                            that.classObj.spellcasting = that.classObj.spellcasting || {};
                             that.classObj.spellcasting.classId = bonusArray[0];
                             that.classObj.spellcasting.maxSpellLevel = bonusArray[1];
                             that.classObj.spellcasting.numSpellsKnown = parseInt(bonusArray[2]);
@@ -473,7 +495,8 @@ angular.module('app')
                             bonusSpells.push({
                                 classId: featureBonus[prop],
                                 spellLevel: parseInt((prop.split('-'))[1]),
-                                numSpellsKnown: 1
+                                numSpellsKnown: 1,
+                                selectedSpell: []
                             });
                             that.classObj.spellcasting.bonusSpells = that.classObj.spellcasting.bonusSpells || bonusSpells;
                         } else if (prop === 'bonus_race_cantrip') {  // assume this always comes before spellcasting if it exists
@@ -517,6 +540,13 @@ angular.module('app')
                                 that.raceObj.spellcasting = null;
                             }*/
                             that.handleSpellcasting();
+                        } else if (prop === 'spell_slot') {
+                            that.classObj.spellcasting = that.classObj.spellcasting || {};
+                            if (!that.classObj.spellcasting.spellSlots) {
+                                returnObj.SpellSlots(featureBonus[prop], that.level).get({}, function(response) {
+                                    that.classObj.spellcasting.spellSlots = response.spell_slots[0].slots;
+                                });
+                            }
                         } else if (prop === 'expertise') {
                             expertiseArr = that.classObj.selectedSkills; //angular.copy(that.selectedSkills);
                             bonusArray = featureBonus[prop].split(', ');    // ex: [2]
@@ -656,10 +686,11 @@ angular.module('app')
             that.handleHitPoints();
             that.savingThrows = this.classObj.saving_throws;   // e.g. "wis, cha"
             that.initiative = this.handleInitiative();
-            that.armorClass = 10 + this.ability.dex.mod;
+            that.calculateArmorClass();
             that.numSkillsLeft = parseInt(this.classObj.num_skills);
             that.classObj.selectedSkills = [];
             that.classObj.numToolChoices = 0;  // reset
+            that.gold = parseInt(that.classObj.starting_wealth);
             if (that.classObj.tool_choices) { // ex: artisans_tools, gaming_set, or musical_instrument
                 that.classObj.numToolChoices = parseInt(that.classObj.tool_choices.split(', ')[1]);
                 that.classObj.tool_choices = that.classObj.tool_choices.split(', ')[0];
@@ -879,6 +910,7 @@ angular.module('app')
 
             that.featureStats.features = that.featureStats.features || {};
             if (angular.isArray(classFeatures)) {
+                classObj.classFeatures = _.reject(classObj.classFeatures, 'parentId', classFeatures[0].parent_id);   // assumes at least one object in classFeatures
                 angular.forEach(classFeatures, function(selectedFeature) {
                     if (selectedFeature.level <= that.level) {
                         if (selectedFeature.parent_name) {
@@ -906,7 +938,6 @@ angular.module('app')
                             name: featureChoiceName,
                             benefit: featureDesc
                         };
-                        classObj.classFeatures = _.reject(classObj.classFeatures, 'parentId', featureObj.parentId);
                         classObj.classFeatures.push(featureObj);
 
                         selectedFeaturesArray.push({id: selectedFeature.id, name: selectedFeature.name});
@@ -993,7 +1024,7 @@ angular.module('app')
                 this.selectedExpertise = [];
             }
         };
-        Character.prototype.mapArmor = function(givenArmor) {
+        Character.prototype.mapArmor = function(givenArmor) {   // ex: 'light_armor, medium_armor'
             var armorProf = [];
             if (givenArmor) {
                 angular.forEach(ARMOR_MAPPER.armorTypes, function(obj) {
@@ -1120,6 +1151,11 @@ angular.module('app')
                 var path = locationName + 'service/';
                 path += 'spells_by_level/' + classId + '/' + spellLevel;
                 path += ((term) ? '/' + term : '');
+                return $resource(path);
+            },
+            SpellSlots: function(classId, level) {
+                var path = locationName + 'service/';
+                path += 'slots/' + classId + '/' + level;
                 return $resource(path);
             },
             /*getSpellsBySchool: function(classId, maxSpellLevel, school, term) {

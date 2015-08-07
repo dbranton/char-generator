@@ -96,4 +96,13 @@ class SpellsController extends \BaseController {
         ]);
     }
 
+    public function getSpellSlots($classId, $level) {
+        return Response::json([
+            'spell_slots' => SpellSlotTable::where('class_id', '=', $classId)
+                    ->where('level', '=', $level)
+                    ->get()
+                    ->toArray()
+        ]);
+    }
+
 } 
