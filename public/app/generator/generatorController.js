@@ -46,7 +46,9 @@ angular.module('app')
                     },
                     function(data, status, headers, config) {
                         $scope.successMessage = null;
-                        $scope.errorMessage = data; // html string
+                        if (angular.isDefined(data.error.message)) {
+                            $scope.errorMessage = data.error.message; // html string
+                        }
                     }
                 );
             }

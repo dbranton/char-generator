@@ -29,19 +29,15 @@ class UsersController extends \BaseController {
         if ($user->save()) {
             // validation has passed and saved, display success message
             return Response::json([
-                    'status' => 'success',
-                    'message' => 'You have successfully registered!'],
-                202
-            );
+                'status' => 'success',
+                'message' => 'You have successfully registered!'
+            ], 202);
         } else {
             // validation has failed, display error messages
-            return Response::json(
-                [
-                    'status' => 'error',
-                    'message' => $user->errors()->all()
-                ],
-                401
-            );
+            return Response::json([
+                'status' => 'error',
+                'message' => $user->errors()->all()
+            ], 401);
         }
     }
 

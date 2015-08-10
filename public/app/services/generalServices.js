@@ -68,7 +68,7 @@ angular.module('app')
                             $scope.tempItems = _.reject($scope.tempItems, {'name': $scope.selectedItem.name});
                             selectobj.item.active = false;
                         }
-                        $scope.disabled = $scope.max - $scope.tempItems.length > 0; // disabled is true if there are still features left to choose
+                        $scope.disabled = $scope.tempItems.length === 0; // disabled is true if user hasn't selected any features
                     }
                 };
 

@@ -25,15 +25,13 @@ function RegisterController($scope, $sanitize, $state, general) {
             }, function(response) {
                 $state.go('login');
                 //$scope.alerts = [{type: "success", msg: response.message}];
-                general.showMsg(response.data.message);
+                general.showMsg(response.message);
                 //general.clearMsg();
                 //sessionStorage.authenticated = true;
             }, function(response){
-                if (angular.isArray(response.data.message)) {
+                if (angular.isDefined(response.data.error)) {
                     $scope.alerts = [];
-                    angular.forEach(response.data.message, function(message) {
-                        $scope.alerts.push({type: "danger", msg: message});
-                    });
+                    $scope.alerts.push({type: "danger", msg: response.data.error});
                 }
             });
         }

@@ -600,10 +600,10 @@ angular.module('app')
             var index = level - 1,
                 PROFICIENCY_ARRAY = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
                 ABILITY_BONUS_ARRAY = [0, 0, 0, 2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 6, 6, 8, 8, 8, 10, 10];
-                //FEATS_ARRAY = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5];
+                FEATS_ARRAY = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5];
             this.profBonus = PROFICIENCY_ARRAY[index];
             this.ability.bonusPoints = ABILITY_BONUS_ARRAY[index];
-            //this.numFeats = FEATS_ARRAY[index];
+            this.numFeats = FEATS_ARRAY[index];
         };
         Character.prototype.determineRace = function(raceObj) {
             var that = this, tempName, features = {}, racialTrait = {}, tempBenefit = null;
