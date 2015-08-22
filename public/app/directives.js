@@ -179,6 +179,65 @@ angular
             }
         };
     })
+    .directive('bonusSkills', function(charGenFactory, general) {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                function DialogSkillsController($scope, $modalInstance, skillsData, max, skillIds, title, featureType) {
+                    general.DialogItemsController.apply(undefined, arguments);
+                }
+
+                scope.$watch('character.classObj.subclassObj.selectedSkills', function(newVal, oldVal) {
+                    if (oldVal && !newVal) {
+                        // remove old selected skills
+                        _.forEach(oldVal, function(skill) {
+                            scope.character.skills[_.findIndex(scope.character.skills, 'readable_id', skill.readable_id)].proficient = false;
+                        });
+                    }
+                });
+
+                scope.openBonusSkillsDialog = function() {
+                    var skillsData = angular.copy(scope.$eval(attrs.data));
+                    if (scope.character.classObj.subclassObj.selectedSkills) {
+                        _.forEach(skillsData, function(skill) {
+                            if (_.findIndex(scope.character.classObj.subclassObj.selectedSkills, 'readable_id', skill.readable_id) !== -1) {
+                                skill.proficient = false;
+                            }
+                        });
+                    }
+                    skillsData = _.filter(skillsData, 'proficient', false);
+                    _.forEach(skillsData, function(skill) {
+                        skill.disabled = false;
+                    });
+                    var opts = {
+                        noOverlay: true,
+                        templateUrl: '/app/views/dialog_items_sm.html',
+                        controller: DialogSkillsController,
+                        size: 'sm',
+                        resolve: {
+                            skillsData: function() { return skillsData; },
+                            max: function() { return parseInt(scope.$eval(attrs.max)) || 1; },
+                            skillIds: function() { return scope.character.classObj.subclassObj.selectedSkills ?
+                                _.pluck(scope.character.classObj.subclassObj.selectedSkills, 'id') : null; },
+                            title: function() { return 'Select Skills'; },
+                            featureType: function() { return 'Skills'; }
+                        }
+                    };
+                    general.openDialog(opts).result.then(function(selectedLanguages) {
+                        if (scope.character.classObj.subclassObj.selectedSkills) {
+                            _.forEach(scope.character.classObj.subclassObj.selectedSkills, function(skill) {
+                                scope.character.skills[_.findIndex(scope.character.skills, 'readable_id', skill.readable_id)].proficient = false;
+                            });
+                        }
+                        ngModel.$setViewValue(selectedLanguages);
+                        selectedBonuSkills = selectedLanguages;
+                        scope.character.updateSkillProficiency(_.pluck(selectedLanguages, 'readable_id'), true, true);
+                    });
+                };
+            }
+        };
+    })
     .directive('languages', function(charGenFactory, general) {
         return {
             restrict: 'A',
@@ -254,7 +313,7 @@ angular
                         });
                         scope.character.languages = languages;
                         scope.character.languages.sort();
-                    } else if (angular.isArray(newVal) && newVal.length === 0 && oldVal) {
+                    } else if (!newVal && oldVal) {
                         angular.forEach(oldVal, function(language) {
                             if (scope.character.defaultLanguages.indexOf(language) === -1) {
                                 scope.character.languages.splice(scope.character.languages.indexOf(language), 1);
@@ -418,12 +477,6 @@ angular
                         });
                     }
                 });
-                // synchronize with the ngModel
-                /*scope.$watch('character.classObj.expertise.selectedExpertise', function(newVal, oldVal) {
-                    if (newVal) {
-                        scope.selectedExpertise = newVal;
-                    }
-                });*/
 
                 function DialogExpertiseController($scope, $modalInstance, expertiseData, max, expertiseIds, title, featureType) {
                     general.DialogItemsController.apply(undefined, arguments);
@@ -440,7 +493,7 @@ angular
                             },
                             max: function() { return parseInt(scope.$eval(attrs.max)) || 1; },
                             expertiseIds: function() {
-                                return scope.selectedExpertise ? _.pluck(scope.selectedExpertise, 'id') : null;
+                                return scope.character.classObj.expertise.selectedExpertise ? _.pluck(scope.character.classObj.expertise.selectedExpertise, 'id') : null;
                             },
                             title: function() { return 'Select Proficiencies'; },
                             featureType: function() { return 'Proficiencies'; }
@@ -596,8 +649,8 @@ angular
             var placeholder = attrs.placeholder || 'spell(s)';
             return '<div>' +
                 '<a href="" class="btn btn-block" ng-click="openSpellDialog()" ng-class="' + attrs.ngModel + '.length ? \'btn-primary\' : \'btn-default\'">' +
-                    '<span ng-if="!' + attrs.ngModel + '">THIS IS A TEST {{' + attrs.ngModel + '}}</span>' +
-                    '<span ng-if="' + attrs.ngModel + '.length === 0">Select your ' + placeholder + '</span>' +
+                    //'<span ng-if="!' + attrs.ngModel + '">THIS IS A TEST {{' + attrs.ngModel + '}}</span>' +
+                    '<span ng-if="!' + attrs.ngModel + ' || ' + attrs.ngModel + '.length === 0">Select your ' + placeholder + '</span>' +
                     '<span ng-if="' + attrs.ngModel + '.length > 1">{{' + attrs.ngModel + '.length}} ' + placeholder + ' selected</span>' +
                     '<span ng-if="' + attrs.ngModel + '.length == 1">{{' + attrs.ngModel + '[0].name}}</span>' +
                 '</a>' +
@@ -898,25 +951,25 @@ angular
                         $modalInstance.dismiss('cancel');
                     };
                 }
-                scope.$watch('character.armor', function(newVal, oldVal) {
-                    if (newVal) {
-                        ngModel.$setViewValue(null);
-                    }
-                });
                 scope.openWeaponDialog = function() {
                     var weaponData = [], weaponProf = scope.character.weapons;
                     angular.forEach(WEAPON_MAPPER.simpleWeapons, function(weapon) {
                         if (_.findIndex(weaponProf, 'readable_id', 'simple_weapon') !== -1 ||
                                 _.findIndex(weaponProf, 'readable_id', weapon.readable_id) !== -1) {
-                            weaponData.push(weapon);
+                            if (!attrs.filter || (attrs.filter === 'ranged' && weapon.style !== 'ranged')) {
+                                weaponData.push(weapon);
+                            }
                         }
                     });
                     angular.forEach(WEAPON_MAPPER.martialWeapons, function(weapon) {
                         if (_.findIndex(weaponProf, 'readable_id', 'martial_weapon') !== -1 ||
                             _.findIndex(weaponProf, 'readable_id', weapon.readable_id) !== -1) {
-                            weaponData.push(weapon);
+                            if (!attrs.filter || (attrs.filter === 'ranged' && weapon.style !== 'ranged')) {
+                                weaponData.push(weapon);
+                            }
                         }
                     });
+                    weaponData = _.sortBy(weaponData, 'name');
                     var opts = {
                         templateUrl: '/app/views/dialog_weapon.html',
                         controller: DialogWeaponController,

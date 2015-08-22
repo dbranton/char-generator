@@ -121,6 +121,15 @@
                                                   multiple max="character.classObj.expertise.numExpertise"></select-modal>
                                 </div>
                             </div>
+                            <div class="form-group" ng-show="character.classObj.subclassObj && character.classObj.subclassObj.numSkills">
+                                <label class="col-sm-4 control-label">Bonus Skills:</label>
+                                <div class="col-sm-8">
+                                    <select-modal ng-model="character.classObj.subclassObj.selectedSkills" bonus-skills
+                                                  placeholder="Select your Skills" data="character.skills"
+                                                  click="openBonusSkillsDialog()" name="character.classObj.subclassObj.selectedSkills"
+                                                  multiple max="character.classObj.subclassObj.numSkills"></select-modal>
+                                </div>
+                            </div>
                             <!-- for Class-based feature choices (ex: Fighting Style, Metamagic) -->
                             <div class="form-group" ng-repeat="selectedFeature in character.classObj.selectedFeatures">
                                 <label class="col-sm-4 control-label">{{selectedFeature.label}}:</label>

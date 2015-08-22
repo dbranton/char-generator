@@ -1,4 +1,5 @@
-angular.module('app')
+angular
+    .module('app')
     .factory('charGenFactory', function($http, $timeout, $resource, configObj) {
         var locationName = configObj.locationName;
         var deviceType = configObj.deviceType;
@@ -381,36 +382,46 @@ angular.module('app')
                 bonusArray = [], characterArray = [], that = this,
                 featureBonus, expertiseArr, bonusSpells = [];
             // *** Reset
-            this.numBonusLanguages = 0;
-            this.handleLanguages();
             this.resetRacialBonuses();
             this.armor = this.mapArmor(this.classObj.armor_prof);   // needs to be here to reset
             this.weapons = this.mapWeapons(this.classObj.weapon_prof);   //this.classObj.weapon_prof;
-            this.classObj.bonusLanguages = [];  //reset
-            if (angular.isArray(that.classObj.selectedFeatures)) {
-                angular.forEach(that.classObj.selectedFeatures, function(feature) {
-                    feature.max = feature.initMax;
-                });
-            }
-            this.bonusInitiative = 0;   // reset
             // *** end reset
             for (var featureType in featureStats) {
                 featureBonus = angular.copy(featureStats[featureType]);
                 for (var bonusProp in featureBonus) {
                     var propArray = bonusProp.split(' : ');  // usually results in one item
                     propArray.forEach(function(prop, ind) {
-                        featureBonus[prop] = featureBonus[bonusProp].split(' : ')[ind];
-                        if (prop === 'baseSpeed') {
+                        if (angular.isString(featureBonus[bonusProp])) {
+                            featureBonus[prop] = featureBonus[bonusProp].split(' : ')[ind];
+                        }
+                        if (prop === 'baseSpeed') { // ex: 'Fleet of Foot'
                             that.speed = parseInt(featureBonus[prop]);
-                        } else if (that[prop] !== null && (prop === 'armorClass' || prop === 'attackMod' ||
-                            prop === 'speed')) {
+                        } else if (that[prop] !== null && (prop === 'armorClass' || prop === 'attackMod')) {
                             that[prop] += parseInt(featureBonus[prop]); // character prop needs to exist to add
+                        } else if (prop === 'speed' && that.speed) {
+                            that.speed = that.raceObj.speed + parseInt(featureBonus[prop]);
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                that.speed = that.raceObj.speed;
+                            };
                         } else if (prop === 'initiative') {
                             that.bonusInitiative = parseInt(featureBonus[prop]);
                             that.initiative = that.handleInitiative();
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                that.bonusInitiative = 0;
+                            };
                         } else if (prop === 'numLanguages') {
-                            that.numBonusLanguages += parseInt(featureBonus[prop]);
+                            that.numBonusLanguages = parseInt(featureBonus[prop]);
                             that.handleLanguages();
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                that.numBonusLanguages = 0;
+                                that.handleLanguages();
+                            };
                         } else if (that[prop] !== null && prop === 'hitPoints') {   // assume hitPoint bonuses apply every level
                             that[prop] += (that.level * (parseInt(featureBonus[prop])));    // multiply hitPoint bonus by level
                         } else if (ABILITIES.indexOf(prop) !== -1) {    // ex: 'str', 'dex', etc.
@@ -464,6 +475,9 @@ angular.module('app')
                             that.raceObj.bonusSkill = featureBonus[prop];
                         } else if (prop === 'bonus_skill_choices') { // can only come from raceFeatures for now
                             that.raceObj.numSkillChoices = parseInt(featureBonus[prop]);  // e.g. 2
+                        } else if (prop === 'bonus_skills') {   // ex: 'Bonus Proficiencies' from College of Lore
+                            that.classObj.subclassObj.numSkills = parseInt(featureBonus[prop]);
+                            that.classObj.subclassObj.selectedSkills = [];
                         } else if (prop === 'jack_of_all_trades') {
                             that.classObj.jackOfAllTrades = true;
                             that.updateSkillScore();
@@ -474,6 +488,11 @@ angular.module('app')
                                 maxSpellLevel: 0,
                                 numSpellsKnown: parseInt(bonusArray[1])
                             }
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                delete that.classObj.cantrip;
+                            };
                         } else if (prop === 'spells_known') {   // ex: sorcerer, 1, 2: 1 is max spell level and 2 is number of spells known
                             bonusArray = featureBonus[prop].split(', ');
                             that.classObj.spellcasting = that.classObj.spellcasting || {};
@@ -483,14 +502,41 @@ angular.module('app')
                             if (bonusArray[3] && bonusArray[4]) {
                                 that.classObj.spellcasting.restrictedSchools = [bonusArray[3], bonusArray[4]];  // ex: Abjuration, Evocation
                             }
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                delete that.classObj.spellcasting;
+                            };
                         } else if (prop === 'bonus_spells_known') {   // ex: wizard, 2, 2: 2 is max spell level and 2 is number of spells known
                             bonusArray = featureBonus[prop].split(', ');
-                            that.classObj.spellcasting.bonus = {    // expects spellcasting to exist
+                            that.classObj.spellcasting.bonus = that.classObj.spellcasting.bonus || {    // expects spellcasting to exist
                                 classId: bonusArray[0],
                                 maxSpellLevel: bonusArray[1],
-                                numSpellsKnown: parseInt(bonusArray[2])
+                                numSpells: parseInt(bonusArray[2]),
+                                numSpellsKnown: parseInt(bonusArray[2]) // = numSpells + bonus spells (aka Additional Magical Secrets)
                             };
-                        } else if (prop.indexOf('bonus_spell') !== -1) {    // ex: warlock mystic arcanum (warlock, 6 - means warlock spell list, spell level)
+                            if (that.classObj.subclassObj && that.classObj.subclassObj.bonusSpellsKnown) {
+                                that.classObj.spellcasting.bonus.numSpellsKnown = that.classObj.spellcasting.bonus.numSpells + that.classObj.subclassObj.bonusSpellsKnown;
+                            }
+                        } else if (prop === 'extra_bonus_spells_known') {   // ex: 'Additional Magical Secrets'
+                            bonusArray = featureBonus[prop].split(', ');
+                            if (!that.classObj.subclassObj.bonusSpellsKnown) {
+                                that.classObj.subclassObj.bonusSpellsKnown = parseInt(bonusArray[2]);
+                            }
+                            if (!that.classObj.spellcasting.bonus) {
+                                that.classObj.spellcasting.bonus = {
+                                    classId: bonusArray[0],
+                                    maxSpellLevel: bonusArray[1],
+                                    numSpells: 0,
+                                    numSpellsKnown: 0
+                                };
+                            }
+                            that.classObj.spellcasting.bonus.numSpellsKnown = that.classObj.spellcasting.bonus.numSpells + that.classObj.subclassObj.bonusSpellsKnown;
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                that.classObj.spellcasting.bonus = null;
+                            };
+                        } else if (prop.split('-')[0] === 'bonus_spell') {    // ex: warlock mystic arcanum (warlock, 6 - means warlock spell list, spell level)
                             //bonusArray = featureBonus[prop].split(', ');
                             bonusSpells.push({
                                 classId: featureBonus[prop],
@@ -509,7 +555,12 @@ angular.module('app')
                                     that.raceObj.cantrip = response.spell;  // array
                                 });
                             }
-                            //that.raceObj.cantrip = bonusArray[0];
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                delete that.raceObj.spellcasting;
+                                delete that.raceObj.cantrip;
+                            };
                         } else if (prop === 'bonus_race_cantrip_choice') {  // High Elf bonus cantrip
                             bonusArray = featureBonus[prop].split(', ');
                             that.raceObj.spellcasting = undefined;  // hack
@@ -531,14 +582,6 @@ angular.module('app')
                             if (that.classObj.selectedClassCantrips) {  // incase you switch from a race with bonus cantrip to one without one
                                 that.classObj.selectedCantrips = angular.copy(that.classObj.selectedClassCantrips)
                             }
-                            /*if (that.raceObj.spellcasting &&
-                                    that.raceObj.spellcasting.spellAbility === that.classObj.spellcasting.spellAbility) {  // the race's bonus cantrip spell ability is the same as the spellcasting classes' spell ability
-                                that.classObj.selectedClassCantrips = that.classObj.selectedClassCantrips || [];
-                                //that.classObj.selectedCantrips.push(that.raceObj.cantrip);
-                                that.classObj.selectedCantrips = that.classObj.selectedClassCantrips.concat(that.raceObj.cantrip);  // uses concat so selectedClassCantrips does not change
-                                that.classObj.selectedCantrips.sort();
-                                that.raceObj.spellcasting = null;
-                            }*/
                             that.handleSpellcasting();
                         } else if (prop === 'spell_slot') {
                             that.classObj.spellcasting = that.classObj.spellcasting || {};
@@ -570,6 +613,15 @@ angular.module('app')
                                     feature.max = feature.initMax + 1;  // = 2;    // assume feature_choices is 1
                                 }
                             });
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {
+                                if (angular.isArray(that.classObj.selectedFeatures)) {
+                                    angular.forEach(that.classObj.selectedFeatures, function(feature) {
+                                        feature.max = feature.initMax;
+                                    });
+                                }
+                            };
                         } else if (prop === 'bonus_class_cantrip_choice') { // ex: Circle of the Moon bonus druid cantrip
                             that.classObj.numCantrips += parseInt(featureBonus[prop]);    // usually 1
                         } else if (prop === 'bonus_class_cantrip') {    // for Light Domain bonus cantrip (light)
@@ -589,8 +641,21 @@ angular.module('app')
                              cantrips.splice(idx, 1);    // potentially dangerous
                              }
                              });*/
-                        } else if (prop === 'bonus_language') {
-                            that.classObj.bonusLanguages.push(featureBonus[prop]);
+                        } else if (prop === 'bonus_language') { // ex: 'Draconic' for Dragon favored enemy
+                            that.classObj.bonusLanguages = [featureBonus[prop]];
+
+                            featureStats.reset = featureStats.reset || {};
+                            featureStats.reset[prop + '-reset'] = function() {  // necessary when changing feature choice
+                                delete that.classObj.bonusLanguages;
+                            };
+                        } else {
+                            if (angular.isFunction(featureBonus[prop])) {
+                                bonusArray = prop.split('-');   // ex: 'extra_bonus_spells_known'
+                                if (!_.find(featureStats, bonusArray[0])) {
+                                    featureBonus[prop]();   // assumes it is a function
+                                    delete featureBonus[prop];
+                                }
+                            }
                         }
                     });
                 }
@@ -608,7 +673,8 @@ angular.module('app')
         Character.prototype.determineRace = function(raceObj) {
             var that = this, tempName, features = {}, racialTrait = {}, tempBenefit = null;
             that.raceObj = raceObj;
-            that.speed = parseInt(this.raceObj.speed);
+            that.raceObj.speed = parseInt(this.raceObj.speed);
+            that.speed = that.raceObj.speed;
             that.size = this.raceObj.size_value;
             that.defaultLanguages = this.raceObj.languages || '';
             that.languages = that.defaultLanguages.split(', ');
@@ -649,13 +715,6 @@ angular.module('app')
                     if (trait.benefit_stat) {
                         features[trait.benefit_stat] = trait.benefit_value;
                     }
-                    // handle race cantrips (ex: High Elf)
-                    /*if (trait.cantrip) {
-                     that.raceObj.cantrip = trait.cantrip;
-                     }
-                     if (trait.cantrips && !args.selectedBonusCantrip) {    // trait.cantrips is the cantrip list
-                     that.raceObj.cantrips = angular.copy(trait.cantrips);   // populate cantrips list
-                     }*/
                 });
             }
             that.featureStats.race = features;
@@ -782,8 +841,8 @@ angular.module('app')
                 delete that.featureStats.features;
             }*/
             for (var prop in that.featureStats) {   // delete any feature choice benefits and subclass benefits
-                if (that.featureStats.hasOwnProperty(prop) && prop !== 'race') {
-                    delete that.featureStats[prop];
+                if (that.featureStats.hasOwnProperty(prop) && prop !== 'race' && prop !== 'reset') {
+                    delete that.featureStats[prop]; // uses exceptions to delete because there could be properties (aka feature-479) that it doesn't know about
                 }
             }
             that.featureStats.clazz = features;
@@ -881,7 +940,7 @@ angular.module('app')
 
                 that.classObj.charFeatures = that.classObj.classFeatures.concat(that.classObj.subclassObj.classFeatures);
                 for (var prop in that.featureStats) {
-                    if (that.featureStats.hasOwnProperty(prop) && prop !== 'race' && prop !== 'clazz') {
+                    if (that.featureStats.hasOwnProperty(prop) && prop !== 'race' && prop !== 'clazz' && prop !== 'reset') {
                         delete that.featureStats[prop];
                     }
                 }

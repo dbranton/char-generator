@@ -1,4 +1,5 @@
-angular.module('app')
+angular
+    .module('app')
     .factory('general', function($rootScope, $modal, $resource, configObj) {
         var deviceType = configObj.deviceType,
             locationName = configObj.locationName,
